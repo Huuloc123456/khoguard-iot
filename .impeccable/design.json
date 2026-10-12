@@ -1,0 +1,380 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-12T04:10:26.525Z",
+  "title": "Design System: KhoGuard",
+  "extensions": {
+    "colorMeta": {
+      "white": {
+        "role": "neutral",
+        "displayName": "White",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(27% 0.0000 89.88)",
+          "oklch(38% 0.0000 89.88)",
+          "oklch(50% 0.0000 89.88)",
+          "oklch(61% 0.0000 89.88)",
+          "oklch(73% 0.0000 89.88)",
+          "oklch(84% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Text",
+        "tonalRamp": [
+          "oklch(15% 0.0214 231.79)",
+          "oklch(27% 0.0214 231.79)",
+          "oklch(38% 0.0214 231.79)",
+          "oklch(50% 0.0214 231.79)",
+          "oklch(61% 0.0214 231.79)",
+          "oklch(73% 0.0214 231.79)",
+          "oklch(84% 0.0214 231.79)",
+          "oklch(95% 0.0214 231.79)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0202 240.27)",
+          "oklch(27% 0.0202 240.27)",
+          "oklch(38% 0.0202 240.27)",
+          "oklch(50% 0.0202 240.27)",
+          "oklch(61% 0.0202 240.27)",
+          "oklch(73% 0.0202 240.27)",
+          "oklch(84% 0.0202 240.27)",
+          "oklch(95% 0.0202 240.27)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(15% 0.0051 228.82)",
+          "oklch(27% 0.0051 228.82)",
+          "oklch(38% 0.0051 228.82)",
+          "oklch(50% 0.0051 228.82)",
+          "oklch(61% 0.0051 228.82)",
+          "oklch(73% 0.0051 228.82)",
+          "oklch(84% 0.0051 228.82)",
+          "oklch(95% 0.0051 228.82)"
+        ]
+      },
+      "subtle": {
+        "role": "neutral",
+        "displayName": "Subtle",
+        "tonalRamp": [
+          "oklch(15% 0.0025 228.78)",
+          "oklch(27% 0.0025 228.78)",
+          "oklch(38% 0.0025 228.78)",
+          "oklch(50% 0.0025 228.78)",
+          "oklch(61% 0.0025 228.78)",
+          "oklch(73% 0.0025 228.78)",
+          "oklch(84% 0.0025 228.78)",
+          "oklch(95% 0.0025 228.78)"
+        ]
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Primary",
+        "tonalRamp": [
+          "oklch(15% 0.0805 179.99)",
+          "oklch(27% 0.0805 179.99)",
+          "oklch(38% 0.0805 179.99)",
+          "oklch(50% 0.0805 179.99)",
+          "oklch(61% 0.0805 179.99)",
+          "oklch(73% 0.0805 179.99)",
+          "oklch(84% 0.0805 179.99)",
+          "oklch(95% 0.0805 179.99)"
+        ]
+      },
+      "primary-deep": {
+        "role": "primary",
+        "displayName": "Primary Deep",
+        "tonalRamp": [
+          "oklch(15% 0.0690 181.06)",
+          "oklch(27% 0.0690 181.06)",
+          "oklch(38% 0.0690 181.06)",
+          "oklch(50% 0.0690 181.06)",
+          "oklch(61% 0.0690 181.06)",
+          "oklch(73% 0.0690 181.06)",
+          "oklch(84% 0.0690 181.06)",
+          "oklch(95% 0.0690 181.06)"
+        ]
+      },
+      "primary-soft": {
+        "role": "primary",
+        "displayName": "Primary Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0109 167.80)",
+          "oklch(27% 0.0109 167.80)",
+          "oklch(38% 0.0109 167.80)",
+          "oklch(50% 0.0109 167.80)",
+          "oklch(61% 0.0109 167.80)",
+          "oklch(73% 0.0109 167.80)",
+          "oklch(84% 0.0109 167.80)",
+          "oklch(95% 0.0109 167.80)"
+        ]
+      },
+      "warning": {
+        "role": "neutral",
+        "displayName": "Warning",
+        "tonalRamp": [
+          "oklch(15% 0.1067 61.72)",
+          "oklch(27% 0.1067 61.72)",
+          "oklch(38% 0.1067 61.72)",
+          "oklch(50% 0.1067 61.72)",
+          "oklch(61% 0.1067 61.72)",
+          "oklch(73% 0.1067 61.72)",
+          "oklch(84% 0.1067 61.72)",
+          "oklch(95% 0.1067 61.72)"
+        ]
+      },
+      "warning-soft": {
+        "role": "neutral",
+        "displayName": "Warning Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0197 77.32)",
+          "oklch(27% 0.0197 77.32)",
+          "oklch(38% 0.0197 77.32)",
+          "oklch(50% 0.0197 77.32)",
+          "oklch(61% 0.0197 77.32)",
+          "oklch(73% 0.0197 77.32)",
+          "oklch(84% 0.0197 77.32)",
+          "oklch(95% 0.0197 77.32)"
+        ]
+      },
+      "danger": {
+        "role": "neutral",
+        "displayName": "Danger",
+        "tonalRamp": [
+          "oklch(15% 0.1513 23.87)",
+          "oklch(27% 0.1513 23.87)",
+          "oklch(38% 0.1513 23.87)",
+          "oklch(50% 0.1513 23.87)",
+          "oklch(61% 0.1513 23.87)",
+          "oklch(73% 0.1513 23.87)",
+          "oklch(84% 0.1513 23.87)",
+          "oklch(95% 0.1513 23.87)"
+        ]
+      },
+      "danger-soft": {
+        "role": "neutral",
+        "displayName": "Danger Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0151 17.42)",
+          "oklch(27% 0.0151 17.42)",
+          "oklch(38% 0.0151 17.42)",
+          "oklch(50% 0.0151 17.42)",
+          "oklch(61% 0.0151 17.42)",
+          "oklch(73% 0.0151 17.42)",
+          "oklch(84% 0.0151 17.42)",
+          "oklch(95% 0.0151 17.42)"
+        ]
+      },
+      "info": {
+        "role": "neutral",
+        "displayName": "Info",
+        "tonalRamp": [
+          "oklch(15% 0.0690 244.12)",
+          "oklch(27% 0.0690 244.12)",
+          "oklch(38% 0.0690 244.12)",
+          "oklch(50% 0.0690 244.12)",
+          "oklch(61% 0.0690 244.12)",
+          "oklch(73% 0.0690 244.12)",
+          "oklch(84% 0.0690 244.12)",
+          "oklch(95% 0.0690 244.12)"
+        ]
+      },
+      "info-soft": {
+        "role": "neutral",
+        "displayName": "Info Soft",
+        "tonalRamp": [
+          "oklch(15% 0.0093 242.84)",
+          "oklch(27% 0.0093 242.84)",
+          "oklch(38% 0.0093 242.84)",
+          "oklch(50% 0.0093 242.84)",
+          "oklch(61% 0.0093 242.84)",
+          "oklch(73% 0.0093 242.84)",
+          "oklch(84% 0.0093 242.84)",
+          "oklch(95% 0.0093 242.84)"
+        ]
+      },
+      "control-line": {
+        "role": "neutral",
+        "displayName": "Control Line",
+        "tonalRamp": [
+          "oklch(15% 0.0086 225.09)",
+          "oklch(27% 0.0086 225.09)",
+          "oklch(38% 0.0086 225.09)",
+          "oklch(50% 0.0086 225.09)",
+          "oklch(61% 0.0086 225.09)",
+          "oklch(73% 0.0086 225.09)",
+          "oklch(84% 0.0086 225.09)",
+          "oklch(95% 0.0086 225.09)"
+        ]
+      },
+      "pill-neutral": {
+        "role": "neutral",
+        "displayName": "Pill Neutral",
+        "tonalRamp": [
+          "oklch(15% 0.0035 219.53)",
+          "oklch(27% 0.0035 219.53)",
+          "oklch(38% 0.0035 219.53)",
+          "oklch(50% 0.0035 219.53)",
+          "oklch(61% 0.0035 219.53)",
+          "oklch(73% 0.0035 219.53)",
+          "oklch(84% 0.0035 219.53)",
+          "oklch(95% 0.0035 219.53)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "title": {
+        "displayName": "Section title",
+        "purpose": "Panel headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Inherited operational text."
+      },
+      "label": {
+        "displayName": "Control label",
+        "purpose": "Buttons and text actions."
+      },
+      "reading": {
+        "displayName": "Reading",
+        "purpose": "Selected-zone measurements."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "control-state",
+        "value": "background-color 160ms ease-out, border-color 160ms ease-out",
+        "purpose": "Button, input and select state feedback; disabled under reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide-plan-min",
+        "value": "1500px"
+      },
+      {
+        "name": "compact-desktop-max",
+        "value": "1200px"
+      },
+      {
+        "name": "stacked-detail-max",
+        "value": "1023px"
+      },
+      {
+        "name": "mobile-max",
+        "value": "767px"
+      },
+      {
+        "name": "narrow-detail-max",
+        "value": "399px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary simulation action, with pressed and focus states.",
+      "html": "<button class=\"ds-primary\">Mô phỏng</button>",
+      "css": ".ds-primary{font-family:\"Segoe UI\",-apple-system,BlinkMacSystemFont,sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 13px;border:1px solid #dce3e6;border-radius:var(--radius-sm);font-size:12px;font-weight:500;min-height:38px;cursor:pointer;transition:background-color 160ms ease-out,border-color 160ms ease-out;background:var(--color-primary);border-color:var(--color-primary);color:#fff}.ds-primary:hover,.ds-primary[aria-expanded=\"true\"]{background:#12594f;border-color:#12594f}.ds-primary:focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-primary{transition:none!important}}"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Export and acknowledgement controls.",
+      "html": "<button class=\"ds-secondary\">Tiếp nhận</button>",
+      "css": ".ds-secondary{font-family:\"Segoe UI\",-apple-system,BlinkMacSystemFont,sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 13px;border:1px solid #dce3e6;border-radius:var(--radius-sm);font-size:12px;font-weight:500;min-height:38px;cursor:pointer;transition:background-color 160ms ease-out,border-color 160ms ease-out;background:#fff;color:var(--color-text)}.ds-secondary:hover:not(:disabled){background:#f4f7f8;border-color:#bcc9ce}.ds-secondary:focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;}.ds-secondary:disabled{color:var(--color-muted);background:var(--color-subtle);cursor:default}@media(prefers-reduced-motion:reduce){.ds-secondary{transition:none!important}}"
+    },
+    {
+      "name": "Text action",
+      "kind": "button",
+      "refersTo": "button-text",
+      "description": "Inline detail or reset action.",
+      "html": "<button class=\"ds-text\">Chi tiết</button>",
+      "css": ".ds-text{font-family:\"Segoe UI\",-apple-system,BlinkMacSystemFont,sans-serif;border:0;background:none;color:var(--color-primary);padding:5px 2px;font-size:12px;font-weight:500;cursor:pointer;transition:background-color 160ms ease-out,border-color 160ms ease-out;}.ds-text:hover{text-decoration:underline;text-underline-offset:3px}.ds-text:focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-text{transition:none!important}}"
+    },
+    {
+      "name": "Search field",
+      "kind": "input",
+      "refersTo": "search",
+      "description": "Door identifier search with wrapper focus.",
+      "html": "<label class=\"ds-search\"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.65\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M21 21l-5-5m2-6a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z\"/></svg><input aria-label=\"Tìm mã cửa\" placeholder=\"Tìm cửa, ví dụ D07\"></label>",
+      "css": ".ds-search{font-family:\"Segoe UI\",-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;gap:8px;border:1px solid #dce3e6;border-radius:6px;padding:8px 10px;color:var(--color-muted)}.ds-search input{font-family:\"Segoe UI\",-apple-system,BlinkMacSystemFont,sans-serif;border:0;outline:none;width:160px;background:none;font-size:12px;color:var(--color-text);caret-color:var(--color-primary);transition:background-color 160ms ease-out,border-color 160ms ease-out;}.ds-search input::placeholder{color:var(--color-muted)}.ds-search:focus-within{outline:2px solid var(--color-primary);outline-offset:2px}.ds-search input:focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-search input{transition:none!important}}"
+    },
+    {
+      "name": "Active navigation",
+      "kind": "nav",
+      "refersTo": "nav-active",
+      "description": "Navigation selection with soft teal surface.",
+      "html": "<nav aria-label=\"Điều hướng chính\"><button class=\"ds-nav\" aria-current=\"page\">Tổng quan</button></nav>",
+      "css": ".ds-nav{font-family:\"Segoe UI\",-apple-system,BlinkMacSystemFont,sans-serif;border:0;display:flex;align-items:center;gap:12px;text-align:left;padding:12px;border-radius:var(--radius-sm);color:var(--color-primary);background:var(--color-primary-soft);font-size:14px;font-weight:600;cursor:pointer;transition:background-color 160ms ease-out,border-color 160ms ease-out;}.ds-nav:focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;}.ds-nav:hover{background:var(--color-primary-soft)}@media(prefers-reduced-motion:reduce){.ds-nav{transition:none!important}}"
+    },
+    {
+      "name": "Warning pill",
+      "kind": "chip",
+      "refersTo": "pill-warning",
+      "description": "Noninteractive semantic state with text and a small dot.",
+      "html": "<span class=\"ds-pill\"><span class=\"ds-dot\"></span>Cảnh báo</span>",
+      "css": ".ds-pill{font-family:\"Segoe UI\",-apple-system,BlinkMacSystemFont,sans-serif;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:11px;font-weight:500;color:var(--color-warning);background:var(--color-warning-soft);padding:4px 8px;border-radius:4px}.ds-dot{display:inline-block;width:5px;height:5px;background:currentColor;border-radius:50%}@media(prefers-reduced-motion:reduce){.ds-pill{transition:none!important}}"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Flat white container with heading inset and fine border.",
+      "html": "<section class=\"ds-panel\"><div class=\"ds-heading\"><h2>Thông số môi trường</h2><p>Đối chiếu nhiệt độ theo ngưỡng của từng khu vực</p></div></section>",
+      "css": ".ds-panel{font-family:\"Segoe UI\",-apple-system,BlinkMacSystemFont,sans-serif;border:1px solid var(--color-line);border-radius:var(--radius-md);background:#fff;color:var(--color-text);min-width:0}.ds-heading{padding:19px 20px}.ds-heading h2{margin:0;font-size:16px;font-weight:650;line-height:1.4}.ds-heading p{margin:4px 0 0;font-size:11px;line-height:1.5;color:var(--color-muted)}@media(prefers-reduced-motion:reduce){.ds-panel{transition:none!important}}"
+    },
+    {
+      "name": "Zone selection",
+      "kind": "custom",
+      "refersTo": "zone",
+      "description": "Selectable plan zone with the shipped hover and pressed treatment.",
+      "html": "<button class=\"ds-zone\" aria-pressed=\"true\"><strong>Kho lạnh</strong><span class=\"ds-temp\">−18,2°C</span></button>",
+      "css": ".ds-zone{font-family:\"Segoe UI\",-apple-system,BlinkMacSystemFont,sans-serif;width:100%;border:1px solid #dce3e6;border-radius:4px;padding:13px 12px 10px;background:#fff;text-align:left;display:flex;flex-direction:column;color:var(--color-text);cursor:pointer;transition:background-color 160ms ease-out,border-color 160ms ease-out;}.ds-zone strong{font-size:12px;font-weight:600}.ds-temp{margin-top:7px;font-size:11px}.ds-zone:hover{border-color:#85b6a7;background:#fcfefd}.ds-zone[aria-pressed=\"true\"]{border-color:var(--color-primary);background:#f2f8f5}.ds-zone:focus-visible{outline:2px solid var(--color-primary);outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-zone{transition:none!important}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A basic warehouse operating plan",
+    "overview": "The implemented world follows the user's basic white-background direction: white surfaces, fine cool-gray borders, charcoal text and restrained teal selection. It favors compact operational information over decorative imagery.\n\nThe four-zone plan is drawn with CSS geometry and small outline SVG icons. Environmental readings, door states and alerts remain textual as well as colored; the interface explicitly identifies demonstration data.",
+    "keyCharacteristics": [
+      "White surfaces with fine dividing rules.",
+      "Teal selection with amber and red semantic states.",
+      "Compact controls and a selectable schematic.",
+      "Flat depth with no decorative shadows."
+    ],
+    "rules": [
+      {
+        "name": "The State Has Words Rule",
+        "body": "Pair state color with explicit text so warnings, selection and door state remain readable without interpreting hue alone.",
+        "section": "colors"
+      },
+      {
+        "name": "The Flat Surface Rule",
+        "body": "Use border and tonal changes for emphasis, as the shipped panels and controls do.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do preserve the user's white-background direction and fine panel divisions.",
+      "Do pair operational state colors with explicit text.",
+      "Do retain visible keyboard focus and reduced-motion behavior.",
+      "Do identify simulated data and disconnected integrations explicitly."
+    ],
+    "donts": [
+      "Don't replace the basic operating interface with decorative imagery or ornamental depth.",
+      "Don't imply that accepting an alert changes sensor conditions or door interlocks.",
+      "Don't copy the existing tiny schematic labels or system-font page display treatment into new surfaces as a house standard."
+    ]
+  }
+}
