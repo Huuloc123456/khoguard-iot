@@ -27,3 +27,10 @@ npm run build
 - **Đặt lại** khôi phục toàn bộ dữ liệu mẫu. Mỗi kịch bản bắt đầu từ một bản dữ liệu mẫu độc lập.
 
 Các số liệu, sơ đồ và nhật ký là dữ liệu giả lập trong bộ nhớ trình duyệt; tải lại trang sẽ đặt lại phiên. Chưa kết nối MQTT, WMS, cơ sở dữ liệu hoặc Wokwi. Logic liên động hiện tại phục vụ trình diễn giao diện, không điều khiển phần cứng.
+
+## Kế hoạch và tiến độ
+
+- [Agent.md](Agent.md): công cụ, kiến trúc, các mốc triển khai và ma trận kiểm thử.
+- [DESITION.md](DESITION.md): quyết định và lý do; đã chốt giữ MySQL.
+- [QUA_TRINH.md](QUA_TRINH.md): việc đã làm, kiểm tra, lỗi và phần còn thiếu.
+- [contracts/README.md](contracts/README.md): hợp đồng MQTT/API snapshot và cách chạy bộ kiểm tra M01. Fixture và validator đã có; backend/firmware/DB chưa được tích hợp.
