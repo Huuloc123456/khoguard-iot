@@ -34,3 +34,9 @@ Các số liệu, sơ đồ và nhật ký là dữ liệu giả lập trong b�
 - [DESITION.md](DESITION.md): quyết định và lý do; đã chốt giữ MySQL.
 - [QUA_TRINH.md](QUA_TRINH.md): việc đã làm, kiểm tra, lỗi và phần còn thiếu.
 - [contracts/README.md](contracts/README.md): hợp đồng MQTT/API snapshot và cách chạy bộ kiểm tra M01. Fixture và validator đã có; backend/firmware/DB chưa được tích hợp.
+
+## Môi trường IoT cục bộ đã chuẩn bị ở M02
+
+Đã có broker riêng `127.0.0.1:18884`, ACL/tài khoản theo thiết bị và schema MySQL `khoguard_demo` với runtime/migration account riêng. Dashboard vẫn là demo frontend, chưa nhận dữ liệu từ broker/database.
+
+Xem [infra/README.md](infra/README.md) để setup/start và kiểm tra MQTT, MySQL, bảo vệ secret. Cấu hình thật nằm trong `.local/` được bảo vệ, không vào Git. Trước `npm ci` trên Windows cần dừng Vite của dự án để tránh khóa thư viện native.

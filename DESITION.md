@@ -53,6 +53,20 @@ Tên file giữ theo yêu cầu người dùng. Đây là sổ quyết định: 
 - Vì sao: dùng được công cụ đã cài mà không ảnh hưởng ứng dụng khác trên máy.
 - Hệ quả: cần thông tin đăng nhập hợp lệ cho tạo schema và xác minh cổng trước khi chạy broker riêng; không lưu secret trong Git hoặc chat.
 
+## DEC-008 — Bootstrap M02 và quyền runtime riêng
+
+- Ngày: 12/10/2026. Trạng thái: **đã triển khai và kiểm thử thật**; thực hiện DEC-007.
+- Quyết định: broker 127.0.0.1:18884, 5 device account + backend + observer chỉ đọc; khoguard_demo và runtime/migration account trên MySQL hiện có.
+- Admin do người dùng điền local, chỉ dùng bootstrap. Collision check và marker ownership chặn nhận nhầm tài nguyên; không reset password/đổi dịch vụ cũ. Runtime chỉ DML, migration DDL/DML trong schema dự án.
+- Hệ quả: bootstrap nhiều lệnh không nguyên tử, gián đoạn sẽ chặn retry tự động để kiểm tra. Giữ .local để còn credential/marker. MQTT chưa TLS, chỉ loopback; M12 nghiệm thu TLS riêng.
+
+## DEC-009 — Secret local và một installation boundary
+
+- Ngày: 12/10/2026. Trạng thái: **đã triển khai và kiểm thử**.
+- Quyết định: secret trong .local, NTFS chỉ người dùng hiện tại/SYSTEM; Git ignore và Vite HTTP deny. Sinh password ngẫu nhiên, không log SQL/password; env.example trống.
+- Dùng manifest/lockfile npm gốc cho mqtt/mysql2 và infra; chưa tạo server manifest riêng. .npmrc tắt install lifecycle scripts; clean install/build/test đạt, không có package hiện tại cần install hook.
+- Hệ quả: M04 dùng npm script gốc, không npm --prefix server ci trước khi có boundary riêng. Dừng Vite trước clean install trên Windows, không dùng admin toàn máy để vượt EPERM.
+
 ## Cách cập nhật
 
 Mỗi quyết định mới thêm DEC-xxx với ngày, trạng thái, lý do và hệ quả. Khi thay đổi, thêm mục mới tham chiếu mục bị thay thế; giữ lịch sử. Chỉ ghi “đã triển khai” khi có công việc/test tương ứng trong `QUA_TRINH.md`.

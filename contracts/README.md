@@ -1,6 +1,6 @@
 # Hợp đồng KhoGuard v1 — M01
 
-Ngày chốt: 12/10/2026. Đây là hợp đồng và bộ kiểm tra **trước khi tích hợp**; chưa có MQTT consumer, HTTP server, database hoặc firmware KhoGuard. Các JSON example là fixture, không phải kết quả thiết bị đang online.
+Ngày chốt: 12/10/2026. Đây là hợp đồng và bộ kiểm tra **trước khi tích hợp**; chưa có MQTT consumer, HTTP server hoặc firmware KhoGuard. M02 đã tạo broker/schema infrastructure theo [hướng dẫn](../infra/README.md), chưa lưu dữ liệu nghiệp vụ. Các JSON example là fixture, không phải kết quả thiết bị đang online.
 
 ## File và cách kiểm tra
 

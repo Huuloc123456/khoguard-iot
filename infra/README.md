@@ -34,7 +34,7 @@ npm run infra:mqtt:start
 
 Broker mặc định deny, anonymous bị chặn. Hash password do `mosquitto_passwd` tạo; file hash chỉ đưa vào sử dụng khi đã tạo đủ account. [Password utility](https://mosquitto.org/man/mosquitto_passwd-1.html).
 
-Bootstrap từ chối nếu schema/tên account đã tồn tại mà không có marker của lần provision này; không ALTER USER, reset password hay drop database. Sau khi hoàn tất, chạy lại xác minh setup ID/server UUID rồi bỏ qua DDL/GRANT. DDL MySQL không phải transaction nguyên tử: setup bị gián đoạn có state `creating` sẽ chặn retry tự động; phải đối chiếu marker và xử lý đúng tài nguyên dự án. [CREATE USER](https://dev.mysql.com/doc/refman/8.4/en/create-user.html), [GRANT](https://dev.mysql.com/doc/refman/8.4/en/grant.html).
+Bootstrap từ chối nếu schema/tên account đã tồn tại mà không có marker của lần provision này; không ALTER USER, reset password hay drop database. Sau khi hoàn tất, chạy lại xác minh setup ID/server UUID rồi bỏ qua DDL/GRANT. Chuỗi lệnh bootstrap không được rollback như một transaction DML: setup bị gián đoạn có state `creating` sẽ chặn retry tự động; phải đối chiếu marker và xử lý đúng tài nguyên dự án. [CREATE USER](https://dev.mysql.com/doc/refman/8.4/en/create-user.html), [GRANT](https://dev.mysql.com/doc/refman/8.4/en/grant.html).
 
 `db/bootstrap.sql` là template được helper kiểm tra collision và thay token bằng password hex ngẫu nhiên; không chạy template trực tiếp. Bảng `infra_meta` chỉ giữ marker ownership M02; migration/seed nghiệp vụ ở M04.
 

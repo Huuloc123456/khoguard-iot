@@ -4,7 +4,7 @@ Cập nhật: **12/10/2026**. Phạm vi: đồ án **mô phỏng**, lập trình
 
 ## 1. Sau giao diện, làm gì trước?
 
-**M01 đã hoàn thành phần hợp đồng/validator ngày 12/10/2026. Tiếp theo M02–M03: chuẩn bị môi trường riêng cho dự án và kiểm tra Wokwi kết nối broker trên máy. Sau đó xây một luồng nhỏ: cảm biến → MQTT → backend → MySQL → dashboard.** Chỉ khi luồng này hoạt động mới bổ sung RFID, liên động cửa, sức chứa và lịch làm việc.
+**M01 và M02 đã đạt ngày 12/10/2026: hợp đồng/validator, broker riêng và schema/account MySQL đã kiểm tra thật. Tiếp theo M03: kiểm tra Wokwi kết nối broker trên máy. Sau đó xây một luồng nhỏ: cảm biến → MQTT → backend → MySQL → dashboard.** Chỉ khi luồng này hoạt động mới bổ sung RFID, liên động cửa, sức chứa và lịch làm việc.
 
 Quyết định: [DESITION.md](DESITION.md). Công việc và kết quả thực tế: [QUA_TRINH.md](QUA_TRINH.md). Hợp đồng M01: [contracts/README.md](contracts/README.md). Người dùng đã chốt **giữ MySQL**; không chuyển MongoDB.
 
@@ -27,9 +27,9 @@ Nội dung tài liệu Word là yêu cầu tham khảo cho mô hình. Các thi�
 | Hợp đồng M01 | Registry/schema/fixture/validator ở `contracts/`; 23 test contract + 7 test giao diện = 30 test đạt ngày 12/10/2026; chưa là kết nối IoT thật |
 | Kiểm tra trình duyệt | Các màn hình và kịch bản đã được kiểm tra; bố cục ở chiều rộng 320, 390, 825 và 1440 px |
 | Firmware | Đã build thử ESP32 ở bước kiểm tra công cụ; **chưa có firmware của KhoGuard trong repository** |
-| MQTT | Mosquitto đang chạy; đã thử publish/subscribe bằng broker tạm riêng. Chưa nối dashboard/backend/ESP32 với broker dự án |
-| MySQL | Dịch vụ đang chạy và phản hồi kết nối TCP; chưa đăng nhập, tạo schema hay lưu dữ liệu KhoGuard |
-| Chưa có | Backend, API, WebSocket dữ liệu thật, xác thực ứng dụng, MQTT/TLS của dự án, lưu trữ, WMS, liên động tại edge, kiểm thử tích hợp |
+| MQTT | Broker dự án 127.0.0.1:18884, 7 account/ACL riêng; 11 kiểm tra MQTT thật đạt. Dashboard/backend/ESP32 chưa nối; TLS chưa cấu hình |
+| MySQL | Đã tạo khoguard_demo/infra_meta, runtime/migration account riêng; 6 kiểm tra DB thật đạt. Chưa bảng/dữ liệu nghiệp vụ |
+| Chưa có | Backend/API/WebSocket dữ liệu thật, xác thực ứng dụng, TLS, lưu telemetry nghiệp vụ, WMS, liên động edge, kiểm thử Wokwi/end-to-end |
 
 Các kịch bản hiện tại tạo lại snapshot mẫu, không phải chuỗi sự kiện từ firmware. Nút tiếp nhận chỉ đánh dấu đã xem, không xóa điều kiện nguy hiểm. Test panic hiện tại có cửa mẫu vốn đang mở; cần test riêng chuyển trạng thái **đóng → nhấn panic → mở** khi xây bộ điều khiển.
 
@@ -45,9 +45,9 @@ Phiên bản dưới đây là kết quả kiểm tra môi trường trong phiê
 | Node.js 24.19 / npm 11.17 | Đã cài | Dùng cho frontend, backend và script giả lập các node còn lại |
 | Git 2.55 | Đã cài; repository đã có commit giao diện | Ghi từng thay đổi có thể kiểm chứng; không đổi cấu hình Git toàn máy |
 | Python 3.12.10 | Đã cài | Công cụ phụ để đọc tài liệu; không bắt buộc cho runtime |
-| Mosquitto 2.1.2 | Dịch vụ đang chạy | Tạo cấu hình broker riêng, tài khoản/ACL/TLS; không ghi đè dịch vụ hiện tại |
+| Mosquitto 2.1.2 | Dịch vụ cũ và broker dự án riêng đang chạy | ACL/account đã có; cấu hình TLS ở M12 |
 | MQTTX 1.13.1 | Đã cài | Quan sát topic/payload, thử dữ liệu hợp lệ/sai, kiểm tra quyền truy cập |
-| MySQL Server 26.7 / service `MySQL267` | Đang chạy ở cổng 3306 | Tạo schema và tài khoản riêng sau khi có thông tin đăng nhập hợp lệ |
+| MySQL Server 26.7.0 / service `MySQL267` | Đang chạy 3306; schema/account riêng đã tạo | Migration/seed nghiệp vụ ở M04 |
 | MySQL Workbench 8.0.47 / TablePlus 26.10.2 | Đã cài | Chọn một công cụ để xem bảng; không cần dùng cả hai |
 | Postman 12.29 | Đã cài | Lưu bộ request API và biến môi trường không chứa secret trong Git |
 | React / Vite | Đã có trong dự án | Giữ cấu trúc giao diện hiện tại; dùng `package-lock.json` |
@@ -55,7 +55,7 @@ Phiên bản dưới đây là kết quả kiểm tra môi trường trong phiê
 | WSL2 / Ubuntu | Đã có | Tùy chọn; ưu tiên chạy native Windows đang có |
 | Arduino IDE 2.3.10 | Đã cài | Không cần cho luồng PlatformIO |
 
-**Chưa cần cài thêm phần mềm hệ thống.** M01 đã thêm Ajv/ajv-formats vào dev dependency để kiểm tra JSON Schema. Khi triển khai backend mới bổ sung dependency theo từng bước: Express cho HTTP, `mqtt` cho MQTT, `mysql2` cho MySQL, `ws` cho WebSocket; những package backend này chưa có trong dự án. Validator dùng ở runtime phải có dependency runtime tương ứng. Chọn thư viện MQTT firmware sau thử tương thích ESP32, QoS, reconnect và TLS; không chọn chỉ vì ví dụ ngắn.
+**Chưa cần cài thêm phần mềm hệ thống.** M01 có Ajv/ajv-formats dev dependency; M02 có mqtt/mysql2 ở manifest gốc cho kết nối. Express/ws chưa có, bổ sung ở mốc backend. .npmrc chặn install lifecycle scripts, clean install đã kiểm chứng. Validator dùng runtime phải có dependency runtime tương ứng. Chọn thư viện MQTT firmware sau thử tương thích ESP32, QoS, reconnect và TLS; không chọn chỉ vì ví dụ ngắn.
 
 Kiểm thử dùng `node:test` đã có. Kiểm thử firmware thuần logic dùng PlatformIO/native khi toolchain tương ứng khả dụng; adapter ESP32 vẫn phải build và chạy Wokwi. Chỉ thêm Playwright vào dev dependency khi viết kiểm thử trình duyệt có thể chạy lại. Không cần Redis, Kubernetes, Node-RED, driver USB hay phần mềm PLC cho phạm vi mô phỏng.
 
@@ -120,7 +120,7 @@ Nguồn cấu hình: [Mosquitto — listener, authentication, ACL và TLS](https
 
 ### 6.2. MySQL và ứng dụng
 
-- Dự kiến schema `khoguard_demo`; tạo bằng tài khoản được phép, không sửa dữ liệu hay mật khẩu của schema khác.
+- Đã tạo schema `khoguard_demo` bằng account được phép; có marker ownership và runtime/migration account riêng, không sửa schema khác.
 - Tài khoản migration có quyền DDL riêng; tài khoản runtime chỉ có quyền cần thiết trên schema KhoGuard. Dùng pool và prepared statements.
 - Backend bind `127.0.0.1`, cổng dự kiến `3001`; frontend Vite `5173`. Dùng Vite proxy `/api` và `/ws` để tránh cấu hình CORS rộng.
 - Secret ở `.env` backend hoặc file local bị ignore; `.env.example` chỉ mô tả biến. Mọi biến `VITE_*` có thể xuất hiện ở trình duyệt nên không chứa password/token broker/DB.
@@ -254,10 +254,11 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 
 ### M02 — Môi trường broker và DB riêng
 
-- [ ] Tạo cấu hình broker, tài khoản/ACL, `.env.example`, kiểm tra cổng; tạo schema/migration bằng quyền được cấp.
-- [ ] Kiểm tra publish/subscribe hợp lệ, từ chối sai mật khẩu/topic; tạo kết nối DB bằng tài khoản runtime.
+- [x] Tạo cấu hình broker, tài khoản/ACL, .env.example, kiểm tra cổng; tạo schema/bootstrap infrastructure bằng quyền được cấp.
+- [x] Kiểm tra publish/subscribe hợp lệ, từ chối sai mật khẩu/topic; tạo kết nối DB bằng tài khoản runtime.
 - Phụ thuộc: M01. Phạm vi: `infra/mosquitto/`, `db/`, cấu hình local bị ignore.
 - Nghiệm thu: không ảnh hưởng broker/schema cũ; không có secret trong Git; có hướng dẫn start/stop broker riêng và test DB. TLS phải có bằng chứng riêng ở M12.
+- Kết quả: 35 unit/contract test, 11 MQTT probe, 6 MySQL probe và 5 URL secret bị chặn đạt; clean install/build đạt. [Hướng dẫn infra](infra/README.md), [bằng chứng M02](docs/evidence/M02-2026-10-12.md). Chưa schema nghiệp vụ/ingest/UI dữ liệu thật; làm M04–M06.
 
 ### M03 — Probe PlatformIO/Wokwi và mạng
 
@@ -429,15 +430,16 @@ npm run dev
 ```powershell
 & 'C:\Users\LECOO\.platformio\penv\Scripts\pio.exe' run -d firmware
 & 'C:\Users\LECOO\.platformio\penv\Scripts\pio.exe' test -d firmware -e native
-npm --prefix server ci
-npm --prefix server run migrate
-npm --prefix server test
-npm --prefix server run dev
+npm run server:migrate
+npm run server:test
+npm run server:dev
 npm run test:integration
 npm run test:e2e
 ```
 
-Tên environment `native` và các script migration/integration/E2E phải được tạo tại mốc tương ứng; hiện chưa tồn tại. Chạy Wokwi bằng lệnh Start Simulator trong VS Code sau build, không cần upload vào ESP32 thật. [PlatformIO — lệnh build và project directory](https://docs.platformio.org/en/latest/core/userguide/cmd_run.html).
+Tên environment `native` và các script server/migration/integration/E2E phải được tạo tại mốc tương ứng; hiện chưa tồn tại. M02 chốt dùng manifest/lockfile gốc, không có server manifest riêng. Chạy Wokwi bằng Start Simulator trong VS Code sau build, không upload vào ESP32 thật. [PlatformIO — lệnh build và project directory](https://docs.platformio.org/en/latest/core/userguide/cmd_run.html).
+
+Các lệnh M02 đã có: `infra:setup`, `infra:mqtt:start`, `infra:db:init`, `infra:mqtt:check`, `infra:db:check`, `infra:secrets:check`; dùng `npm run <tên>` theo [hướng dẫn](infra/README.md). Dừng Vite trước `npm ci` trên Windows.
 
 Thứ tự khởi động bản tích hợp: MySQL → broker riêng → migration/seed lần đầu → backend → nguồn Wokwi/script → frontend. Trước reset/migration phải kiểm tra tên schema và môi trường demo. Khi dừng, dừng các tiến trình dự án; không dừng dịch vụ người dùng đang sử dụng.
 
@@ -469,10 +471,10 @@ Còn thiếu: điều kiện chưa xác minh; bước tiếp theo
 | Điểm chưa chắc | Cách xử lý | Chặn phần nào? |
 | --- | --- | --- |
 | Wokwi license và đường mạng private gateway | Thử chạy/publish ở M03; không suy từ extension đã cài | Chặn nghiệm thu Wokwi, không chặn backend bằng script |
-| Quyền đăng nhập/tạo schema MySQL | Dùng cấu hình local do người dùng cung cấp; không yêu cầu gửi password vào chat | Chặn migration/persistence, không chặn unit test |
+| Quyền đăng nhập/tạo schema MySQL | Đã có cấu hình local và account/schema riêng M02; không gửi password vào chat | Đã gỡ điểm chặn; schema nghiệp vụ chưa làm |
 | Chứng chỉ/hostname và listener riêng | Tạo CA demo có SAN đúng, kiểm tra lỗi CA/hostname | Chặn mốc TLS, không chấp nhận bỏ verify |
 | Kích thước/tải trọng slot, buffer, ca kết thúc và chính sách reset | Ghi bộ giá trị demo có nhãn giả định; hỏi khi ảnh hưởng quy tắc | Chặn nghiệm thu quy tắc tương ứng |
 | Linh kiện mmWave/CO₂/thermal không có trong Wokwi | Dùng input giả lập được ghi nguồn | Không chặn kiểm thử logic; không chứng minh độ chính xác cảm biến |
 | Log khi nguồn/DB mất và giới hạn replay | Chốt application ack/gap policy, thử T24 | Chặn tuyên bố lưu trữ đầy đủ khi mất kết nối |
 
-**Việc tiếp theo cụ thể:** thực hiện M02 dựng broker/schema riêng và probe M03. Chưa cần mở rộng thêm giao diện trước khi chứng minh luồng dữ liệu đầu tiên.
+**Việc tiếp theo cụ thể:** M03 probe PlatformIO/Wokwi tới broker riêng. Quyền/schema MySQL đã có; chưa cần mở rộng giao diện trước khi chứng minh luồng dữ liệu đầu tiên.

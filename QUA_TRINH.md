@@ -59,9 +59,42 @@ Kết quả nghiệm thu cuối:
 
 Chưa làm: broker/config/ACL thật của dự án, đăng nhập/migration MySQL, firmware Wokwi, ingest/dedupe/replay, HTTP/WebSocket server, điều khiển hoặc transaction giữ chỗ. Validator contract không thay thế các bước này.
 
+## 05 — Triển khai M02: broker/schema riêng
+
+Ngày: 12/10/2026. Nhánh: codex/m02-local-infrastructure. Trạng thái: **đã đạt M02**.
+
+Đã làm:
+
+- Tạo template/ACL từ registry, script setup/start và 7 account MQTT; broker riêng 127.0.0.1:18884 đang chạy.
+- Tạo .local với ACL NTFS riêng, Git ignore/Vite deny; người dùng điền admin local, không nhận password qua chat.
+- Xác minh MySQL 26.7.0, tạo khoguard_demo/infra_meta, khoguard_runtime chỉ DML và khoguard_migrate DDL/DML trong schema.
+- Bootstrap preflight collision và xác minh ownership khi chạy lại, không sửa tài nguyên ứng dụng khác; không log secret.
+- Thêm mqtt/mysql2 ở manifest gốc, .npmrc chặn install hook; script kiểm tra MQTT/MySQL/secret và infra/README.md.
+
+Lỗi/cách xử lý:
+
+1. Root không password bị từ chối; người dùng điền và lưu mysql-admin.env rồi tiếp tục, không reset password.
+2. Child PowerShell không load Set-Acl; dùng API ACL .NET tương ứng runtime.
+3. Hash password file dùng file tạm rồi rename khi đủ account; kiểm tra danh sách user tránh file dở.
+4. DB probe chỉ cleanup bảng chính lần chạy tạo; MQTT probe có deadline/kiểm tra lỗi, không coi timeout như ACL pass.
+5. Clean install EPERM vì Vite khóa native binding: dừng đúng process dự án, npm ci đạt và mở lại UI. Không dừng dịch vụ cũ.
+
+Kết quả thực tế:
+
+- npm test: **35/35 đạt**, không skip; production build đạt, JS gzip 76,47 kB.
+- infra:mqtt:check: **11 kiểm tra thật đạt**, 7 account, sai password/anonymous, cross-topic, quyền các role và MQTT 3.1.1.
+- infra:db:check: **6 kiểm tra thật đạt**, DML/rollback, DDL migration, runtime không CREATE/DROP và hai account không đọc bảng quản trị.
+- infra:secrets:check: 4 credential file Git ignore, 5 URL gồm @fs trả **403**. NTFS riêng đã kiểm tra.
+- Setup/init chạy lại giữ credential, marker/instance khớp, không áp lại GRANT. npm ci đạt; audit lúc cài báo 0 vulnerability.
+- npm audit signatures: 79 registry signature/22 attestation hợp lệ; mqtt 5.16.0, mysql2 3.24.5, không đổi version package cũ.
+- Broker 18884/Vite 5173 đang chạy; dịch vụ Mosquitto/MySQL cũ vẫn chạy. [Bằng chứng M02](docs/evidence/M02-2026-10-12.md).
+- Save point: d9b35be (dependency/install policy), c74f784 (infrastructure/probe); sau tách helper config khỏi schema compiler, 5 infra unit test chạy lại đạt và 5 file secret được kiểm tra NTFS.
+
+Chưa làm: firmware/Wokwi/TLS, schema nghiệp vụ, ingest/API/WebSocket hay UI dữ liệu thật. MQTT probe là client Node, không phải ESP32. Quyết định mới: DEC-008/DEC-009.
+
 ## Bước kế tiếp
 
-M02: tạo môi trường Mosquitto/schema MySQL riêng, account/ACL và cấu hình local không vào Git. Sau đó M03 thử build/run Wokwi và publish vào broker. Chỉ đánh dấu đạt khi có bằng chứng kết nối thực tế; license hoặc quyền DB còn thiếu phải ghi ở đây.
+M03: firmware PlatformIO/Wokwi publish message hợp contract vào broker riêng. License/private gateway chưa xác minh; ghi kết quả trước khi đánh dấu đạt. Backend/schema nghiệp vụ bắt đầu M04 sau đó.
 
 ## Mẫu ghi thêm ở mỗi bước
 
