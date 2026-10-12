@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:khoguard:snapshot:v1",
+  "title": "GET /api/snapshot response v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "warehouse_id", "revision", "generated_at", "connections", "zones", "doors", "devices", "alerts"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "warehouse_id": { "const": "WH01" },
+    "revision": { "$ref": "urn:khoguard:mqtt:v1#/definitions/counter" },
+    "generated_at": { "$ref": "urn:khoguard:mqtt:v1#/definitions/utc" },
+    "connections": {
+      "type": "object", "additionalProperties": false, "required": ["broker", "database"],
+      "properties": { "broker": { "enum": ["connected", "disconnected"] }, "database": { "enum": ["connected", "disconnected"] } }
+    },
+    "zones": { "type": "array", "maxItems": 50, "items": { "$ref": "#/definitions/zone" } },
+    "doors": { "type": "array", "maxItems": 50, "items": { "$ref": "#/definitions/door" } },
+    "devices": { "type": "array", "maxItems": 50, "items": { "$ref": "#/definitions/device" } },
+    "alerts": { "type": "array", "maxItems": 500, "items": { "$ref": "#/definitions/alert" } }
+  },
+  "definitions": {
+    "nullableUtc": { "anyOf": [{ "$ref": "urn:khoguard:mqtt:v1#/definitions/utc" }, { "type": "null" }] },
+    "text": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "zone": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "name", "range", "capacity", "occupied", "reserved", "environment", "occupancy"],
+      "properties": {
+        "id": { "$ref": "urn:khoguard:mqtt:v1#/definitions/zone" },
+        "name": { "$ref": "#/definitions/text" },
+        "range": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number", "minimum": -100, "maximum": 100 } },
+        "capacity": { "type": "integer", "minimum": 0, "maximum": 100000 },
+        "occupied": { "type": "integer", "minimum": 0, "maximum": 100000 },
+        "reserved": { "type": "integer", "minimum": 0, "maximum": 100000 },
+        "environment": { "$ref": "urn:khoguard:mqtt:v1#/definitions/environment" },
+        "occupancy": { "$ref": "urn:khoguard:mqtt:v1#/definitions/occupancy" }
+      }
+    },
+    "door": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "zone", "state", "beam_clear", "panic_latched", "local_inputs_healthy", "open_seconds", "updated_at"],
+      "properties": {
+        "id": { "$ref": "urn:khoguard:mqtt:v1#/definitions/doorId" },
+        "zone": { "$ref": "urn:khoguard:mqtt:v1#/definitions/zone" },
+        "state": { "$ref": "urn:khoguard:mqtt:v1#/definitions/doorState" },
+        "beam_clear": { "$ref": "urn:khoguard:mqtt:v1#/definitions/signal" },
+        "panic_latched": { "$ref": "urn:khoguard:mqtt:v1#/definitions/signal" },
+        "local_inputs_healthy": { "type": "boolean" },
+        "open_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "updated_at": { "$ref": "#/definitions/nullableUtc" }
+      }
+    },
+    "device": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "zone", "source", "state", "freshness", "last_seen_at", "boot_id", "session_id", "controller_revision"],
+      "properties": {
+        "id": { "type": "string", "maxLength": 32 },
+        "zone": { "$ref": "urn:khoguard:mqtt:v1#/definitions/zone" },
+        "source": { "enum": ["wokwi", "node-simulator"] },
+        "state": { "enum": ["online", "offline", "unknown"] },
+        "freshness": { "enum": ["fresh", "stale", "unknown"] },
+        "controller_revision": { "anyOf": [{ "$ref": "urn:khoguard:mqtt:v1#/definitions/counter" }, { "type": "null" }] },
+        "last_seen_at": { "$ref": "#/definitions/nullableUtc" },
+        "boot_id": { "anyOf": [{ "$ref": "urn:khoguard:mqtt:v1#/definitions/token" }, { "type": "null" }] },
+        "session_id": { "anyOf": [{ "$ref": "urn:khoguard:mqtt:v1#/definitions/token" }, { "type": "null" }] }
+      }
+    },
+    "alert": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "zone", "code", "title", "detail", "level", "state", "acknowledged", "raised_at"],
+      "properties": {
+        "id": { "$ref": "urn:khoguard:mqtt:v1#/definitions/token" },
+        "zone": { "$ref": "urn:khoguard:mqtt:v1#/definitions/zone" },
+        "code": { "type": "string", "maxLength": 64, "pattern": "^[A-Z_]+$" },
+        "title": { "$ref": "#/definitions/text" },
+        "detail": { "$ref": "#/definitions/text" },
+        "level": { "enum": ["info", "warning", "danger"] },
+        "state": { "enum": ["active", "resolved"] },
+        "acknowledged": { "type": "boolean" },
+        "raised_at": { "$ref": "urn:khoguard:mqtt:v1#/definitions/utc" }
+      }
+    }
+  }
+}

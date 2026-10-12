@@ -1,0 +1,134 @@
+[
+  {
+    "topic": "khoguard/v1/WH01/devices/ESP-C01/telemetry",
+    "message": {
+      "schema_version": 1,
+      "warehouse_id": "WH01",
+      "device_id": "ESP-C01",
+      "boot_id": "boot-c-001",
+      "seq": 10,
+      "kind": "telemetry",
+      "clock_synced": true,
+      "sent_at": "2026-10-12T02:00:00.000Z",
+      "uptime_ms": 20000,
+      "payload": {
+        "zone_id": "C",
+        "environment": {
+          "temperature_c": -18.4,
+          "humidity_pct": 55,
+          "co2_ppm": 600
+        },
+        "occupancy": {
+          "current_occupants": 0,
+          "count_verified": true,
+          "presence": true
+        },
+        "doors": [
+          {
+            "door_id": "D07",
+            "state": "open",
+            "beam_clear": true,
+            "panic_latched": false,
+            "local_inputs_healthy": true
+          },
+          {
+            "door_id": "D08",
+            "state": "closed",
+            "beam_clear": true,
+            "panic_latched": false,
+            "local_inputs_healthy": true
+          }
+        ],
+        "controller_revision": 42
+      },
+      "session_id": "session-c-001"
+    }
+  },
+  {
+    "topic": "khoguard/v1/WH01/devices/ESP-C01/events",
+    "message": {
+      "schema_version": 1,
+      "warehouse_id": "WH01",
+      "device_id": "ESP-C01",
+      "boot_id": "boot-c-001",
+      "seq": 11,
+      "kind": "events",
+      "event_id": "boot-c-001:11",
+      "clock_synced": true,
+      "sent_at": "2026-10-12T02:00:00.000Z",
+      "uptime_ms": 20001,
+      "payload": {
+        "zone_id": "C",
+        "event_type": "rfid",
+        "door_id": "D07",
+        "card_id": "DEMO-017",
+        "direction": "in"
+      },
+      "session_id": "session-c-001"
+    }
+  },
+  {
+    "topic": "khoguard/v1/WH01/devices/ESP-C01/status",
+    "message": {
+      "schema_version": 1,
+      "warehouse_id": "WH01",
+      "device_id": "ESP-C01",
+      "boot_id": "boot-c-001",
+      "seq": 0,
+      "kind": "status",
+      "clock_synced": false,
+      "sent_at": null,
+      "uptime_ms": 0,
+      "payload": {
+        "zone_id": "C",
+        "state": "offline"
+      },
+      "session_id": "session-c-001"
+    }
+  },
+  {
+    "topic": "khoguard/v1/WH01/devices/ESP-C01/commands",
+    "message": {
+      "schema_version": 1,
+      "warehouse_id": "WH01",
+      "device_id": "ESP-C01",
+      "boot_id": "boot-c-001",
+      "seq": 1,
+      "kind": "commands",
+      "clock_synced": true,
+      "sent_at": "2026-10-12T02:00:00.000Z",
+      "uptime_ms": 1000,
+      "payload": {
+        "zone_id": "C",
+        "door_id": "D07",
+        "command_id": "cmd-001",
+        "action": "close",
+        "expires_at": "2026-10-12T02:00:10.000Z",
+        "expected_revision": 42
+      },
+      "session_id": "session-c-001"
+    }
+  },
+  {
+    "topic": "khoguard/v1/WH01/devices/ESP-C01/acks",
+    "message": {
+      "schema_version": 1,
+      "warehouse_id": "WH01",
+      "device_id": "ESP-C01",
+      "boot_id": "boot-c-001",
+      "seq": 12,
+      "kind": "acks",
+      "clock_synced": true,
+      "sent_at": "2026-10-12T02:00:00.050Z",
+      "uptime_ms": 20050,
+      "payload": {
+        "zone_id": "C",
+        "door_id": "D07",
+        "command_id": "cmd-001",
+        "status": "rejected",
+        "reason": "PRESENCE_DETECTED"
+      },
+      "session_id": "session-c-001"
+    }
+  }
+]

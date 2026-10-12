@@ -1,0 +1,11 @@
+{
+  "warehouse_id": "WH01",
+  "zones": ["A", "B", "C", "D"],
+  "devices": [
+    { "id": "SIM-A01", "zone_id": "A", "source": "node-simulator", "doors": ["D01", "D02", "D03"], "environment": true, "occupancy": true },
+    { "id": "SIM-B01", "zone_id": "B", "source": "node-simulator", "doors": ["D04", "D05", "D06"], "environment": true, "occupancy": true },
+    { "id": "ESP-C01", "zone_id": "C", "source": "wokwi", "doors": ["D07", "D08"], "environment": true, "occupancy": true },
+    { "id": "SIM-C02", "zone_id": "C", "source": "node-simulator", "doors": ["D09"], "environment": false, "occupancy": false },
+    { "id": "SIM-D01", "zone_id": "D", "source": "node-simulator", "doors": ["D10", "D11", "D12"], "environment": true, "occupancy": true }
+  ]
+}
