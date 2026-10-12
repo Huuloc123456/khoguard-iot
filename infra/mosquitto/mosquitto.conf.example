@@ -1,0 +1,16 @@
+# Local demo only. TLS and Wokwi connectivity are separate milestones.
+listener 18884 127.0.0.1
+allow_anonymous false
+password_file @LOCAL_DIR@/passwords
+acl_file @LOCAL_DIR@/acl
+persistence true
+persistence_location @LOCAL_DIR@/data/
+autosave_interval 5
+message_size_limit 65536
+max_packet_size 131072
+max_queued_messages 1000
+connection_messages true
+log_dest stdout
+log_type error
+log_type warning
+log_type notice

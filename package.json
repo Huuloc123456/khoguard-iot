@@ -7,7 +7,13 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test"
+    "test": "node --test",
+    "infra:setup": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-local.ps1",
+    "infra:mqtt:start": "node scripts/start-mqtt.mjs",
+    "infra:db:init": "node scripts/provision-mysql.mjs",
+    "infra:mqtt:check": "node scripts/check-mqtt.mjs",
+    "infra:db:check": "node scripts/check-mysql.mjs",
+    "infra:secrets:check": "node scripts/check-secret-files.mjs"
   },
   "dependencies": {
     "mqtt": "^5.16.0",
