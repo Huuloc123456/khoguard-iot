@@ -1,4 +1,5 @@
 $ErrorActionPreference = 'Stop'
+$projectRoot = Split-Path -Parent $PSScriptRoot
 $env:PYTHONIOENCODING = 'utf-8'
 $pioExecutable = Join-Path $env:USERPROFILE '.platformio\penv\Scripts\pio.exe'
 if (-not (Test-Path -LiteralPath $pioExecutable)) {
