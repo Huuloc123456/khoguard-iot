@@ -62,7 +62,8 @@
         "event_type": "rfid",
         "door_id": "D07",
         "card_id": "DEMO-017",
-        "direction": "in"
+        "direction": "in",
+        "result": "accepted"
       },
       "session_id": "session-c-001"
     }

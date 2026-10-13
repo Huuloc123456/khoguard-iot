@@ -5,6 +5,7 @@ import { once } from 'node:events';
 import { setTimeout as delay } from 'node:timers/promises';
 import { join } from 'node:path';
 import mqtt from 'mqtt';
+import { brokerOptions } from '../server/mqtt.mjs';
 import { readConfig } from '../server/config.mjs';
 import { validateMqttMessage } from '../contracts/validate.js';
 import { local, readJson } from './local-config.mjs';
@@ -41,7 +42,7 @@ try {
   console.log(`SIM-A01: node simulation, ${values.temperature} C / ${values.humidity}%; safety signals unknown. Publish every 2 s; Ctrl+C stops.`);
   while (!stopping) {
     const session=`session-${randomUUID()}`, frame=make(session), offline=statusMessage(frame,'offline');
-    client=mqtt.connect({...config.mqtt,username:'SIM-A01',password:accounts['SIM-A01'],clientId:`kg-sim-${randomUUID()}`,
+    client=mqtt.connect({...brokerOptions(config.mqtt),username:'SIM-A01',password:accounts['SIM-A01'],clientId:`kg-sim-${randomUUID()}`,
       reconnectPeriod:0,connectTimeout:1500,keepalive:10,clean:true,queueQoSZero:false,
       will:{topic:topic('status'),payload:JSON.stringify(offline),qos:1,retain:true}});
     currentWill=offline;

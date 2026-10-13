@@ -9,6 +9,14 @@ export const inventoryMigration = { version:'001_inventory', sql:text('./migrati
 inventoryMigration.checksum = hash(inventoryMigration.sql);
 export const telemetryMigration = {version:'002_telemetry',sql:text('./migrations/002_telemetry.sql')};
 telemetryMigration.checksum = hash(telemetryMigration.sql);
+export const eventsMigration = {version:'003_events',sql:text('./migrations/003_events.sql')};
+eventsMigration.checksum = hash(eventsMigration.sql);
+export const controlMigration = {version:'004_control',sql:text('./migrations/004_control.sql')};
+controlMigration.checksum = hash(controlMigration.sql);
+export const accessMigration = {version:'005_access',sql:text('./migrations/005_access.sql')};
+accessMigration.checksum = hash(accessMigration.sql);
+export const reservationMigration = {version:'006_reservations',sql:text('./migrations/006_reservations.sql')};
+reservationMigration.checksum = hash(reservationMigration.sql);
 const seedText = text('./seeds/inventory.json');
 const labels = JSON.parse(seedText);
 export const seedChecksum = hash(JSON.stringify(registry)+seedText);
@@ -95,3 +103,27 @@ export async function applyTelemetry(connection,state) {
     return {applied:true};
   } finally { await connection.execute('SELECT RELEASE_LOCK(?)',[lockName]).catch(()=>{}); }
 }
+
+async function applyAfter(connection,state,previous,migration,tables) {
+  await verifyOwnership(connection,state);
+  const lockName='khoguard_demo:migrations';
+  const [locks]=await connection.execute('SELECT GET_LOCK(?, 0) AS acquired',[lockName]);
+  assert.equal(locks[0].acquired,1,'Another migration is running');
+  try {
+    const [base]=await connection.execute('SELECT checksum, status FROM schema_migrations WHERE version = ?',[previous.version]);
+    assert.equal(migrationAction(base[0],previous.checksum),'skip',`Apply ${previous.version} first`);
+    const [rows]=await connection.execute('SELECT checksum, status FROM schema_migrations WHERE version = ?',[migration.version]);
+    if (migrationAction(rows[0],migration.checksum)==='skip') return {applied:false};
+    const [existing]=await connection.execute(`SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN (${tables.map(()=>'?').join(', ')})`,tables);
+    assert.equal(existing.length,0,`${migration.version} table collision; refusing changes`);
+    await connection.execute('INSERT INTO schema_migrations (version, checksum, status) VALUES (?, ?, ?)',[migration.version,migration.checksum,'applying']);
+    for (const statement of migration.sql.split(';').map(sql=>sql.trim()).filter(Boolean)) await connection.query(statement);
+    await connection.execute('UPDATE schema_migrations SET status = ?, applied_at = CURRENT_TIMESTAMP WHERE version = ?',['complete',migration.version]);
+    return {applied:true};
+  } finally { await connection.execute('SELECT RELEASE_LOCK(?)',[lockName]).catch(()=>{}); }
+}
+
+export const applyEvents = (connection,state) => applyAfter(connection,state,telemetryMigration,eventsMigration,['device_events','event_gaps']);
+export const applyControl = (connection,state) => applyAfter(connection,state,eventsMigration,controlMigration,['door_commands','alerts','alert_acks']);
+export const applyAccess = (connection,state) => applyAfter(connection,state,controlMigration,accessMigration,['users','user_sessions','auth_audit','access_cards','access_audit']);
+export const applyReservations = (connection,state) => applyAfter(connection,state,accessMigration,reservationMigration,['slots','reservations']);

@@ -1,0 +1,53 @@
+CREATE TABLE door_commands (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  command_id VARCHAR(64) COLLATE utf8mb4_bin NOT NULL,
+  device_id VARCHAR(32) NOT NULL,
+  door_id VARCHAR(16) NOT NULL,
+  action ENUM('open','close','reset_panic') NOT NULL,
+  boot_id VARCHAR(64) COLLATE utf8mb4_bin NOT NULL,
+  session_id VARCHAR(64) COLLATE utf8mb4_bin NOT NULL,
+  expected_revision BIGINT UNSIGNED NOT NULL,
+  status ENUM('pending','applied','rejected','expired') NOT NULL DEFAULT 'pending',
+  reason VARCHAR(32) NULL,
+  late_ack VARCHAR(16) NULL,
+  requested_by VARCHAR(64) NOT NULL,
+  created_at DATETIME(3) NOT NULL,
+  expires_at DATETIME(3) NOT NULL,
+  acked_at DATETIME(3) NULL,
+  UNIQUE KEY command_unique (command_id),
+  KEY command_door (door_id,id),
+  FOREIGN KEY (device_id) REFERENCES devices(id),
+  FOREIGN KEY (door_id) REFERENCES doors(id),
+  CHECK (expected_revision <= 9007199254740991)
+) ENGINE=InnoDB;
+CREATE TABLE alerts (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  alert_key VARCHAR(64) NOT NULL,
+  device_id VARCHAR(32) NOT NULL,
+  zone_id VARCHAR(16) NOT NULL,
+  door_id VARCHAR(16) NULL,
+  code VARCHAR(48) NOT NULL,
+  level ENUM('info','warning','danger') NOT NULL,
+  state ENUM('active','resolved') NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  detail VARCHAR(500) NOT NULL,
+  raised_at DATETIME(3) NOT NULL,
+  resolved_at DATETIME(3) NULL,
+  occurrences INT UNSIGNED NOT NULL DEFAULT 1,
+  acknowledged_at DATETIME(3) NULL,
+  acknowledged_by VARCHAR(64) NULL,
+  KEY alert_device_key (device_id,alert_key,id),
+  KEY alert_recent (state,raised_at),
+  FOREIGN KEY (device_id) REFERENCES devices(id),
+  FOREIGN KEY (zone_id) REFERENCES zones(id),
+  FOREIGN KEY (door_id) REFERENCES doors(id)
+) ENGINE=InnoDB;
+CREATE TABLE alert_acks (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  alert_id BIGINT UNSIGNED NOT NULL,
+  acknowledged_at DATETIME(3) NOT NULL,
+  actor VARCHAR(64) NOT NULL,
+  alert_state ENUM('active','resolved') NOT NULL,
+  alert_level ENUM('info','warning','danger') NOT NULL,
+  FOREIGN KEY (alert_id) REFERENCES alerts(id)
+) ENGINE=InnoDB;

@@ -38,7 +38,11 @@ export function parseHistoryQuery(params) {
   return {device,from:sqlUtc(from),to:sqlUtc(to),limit:integer('limit',100,1,200),cursor:integer('cursor',0,0,Number.MAX_SAFE_INTEGER)};
 }
 
-export function buildSnapshot(zones,rows,revision,now,connections,live) {
+const iso = value => value ? new Date(value).toISOString() : null;
+export const alertView = a => ({id:`AL-${a.id}`,zone:a.zone_id,door_id:a.door_id ?? null,code:a.code,title:a.title,detail:a.detail,level:a.level,state:a.state,
+  acknowledged:a.acknowledged_at!==null && a.acknowledged_at!==undefined,raised_at:iso(a.raised_at),resolved_at:iso(a.resolved_at),acknowledged_at:iso(a.acknowledged_at)});
+
+export function buildSnapshot(zones,rows,revision,now,connections,live,alerts=[],slots=[]) {
   const byId = new Map(rows.map(row=>[row.device_id,row]));
   const devices = registry.devices.map(device=>{
     const row=byId.get(device.id), message=row?.message;
@@ -55,13 +59,17 @@ export function buildSnapshot(zones,rows,revision,now,connections,live) {
     zones:zones.map(zone=>{
       const owner=registry.devices.find(d=>d.zone_id===zone.id && d.environment);
       const payload=byId.get(owner.id)?.message?.payload;
-      return {id:zone.id,name:zone.name,range:[zone.temperature_min,zone.temperature_max],capacity:zone.capacity,occupied:null,reserved:null,
+      const count=slots.find(c=>c.zone_id===zone.id);
+      // Capacity is usable slots (defrost excluded); occupancy is demo-seed or confirmed reservations, never a WMS reading.
+      return {id:zone.id,name:zone.name,range:[zone.temperature_min,zone.temperature_max],capacity:count ? Number(count.capacity):zone.capacity,
+        occupied:count ? Number(count.occupied):null,reserved:count ? Number(count.reserved):null,
         environment:payload?.environment ?? {temperature_c:null,humidity_pct:null},
         occupancy:payload?.occupancy ?? {current_occupants:null,count_verified:false,presence:null}};
     }),
     doors:registry.devices.flatMap(device=>device.doors.map(id=>{
       const row=byId.get(device.id), door=row?.message?.payload.doors.find(d=>d.door_id===id);
       return {id,zone:device.zone_id,state:door?.state ?? 'unknown',beam_clear:door?.beam_clear ?? null,panic_latched:door?.panic_latched ?? null,
-        local_inputs_healthy:door?.local_inputs_healthy ?? false,open_seconds:null,updated_at:row?.received_at ? new Date(row.received_at).toISOString():null};
-    })),devices,alerts:[]};
+        local_inputs_healthy:door?.local_inputs_healthy ?? false,locked:door?.locked ?? null,
+        open_seconds:door?.open_ms!==undefined ? door.open_ms/1000 : null,updated_at:row?.received_at ? new Date(row.received_at).toISOString():null};
+    })),devices,alerts:alerts.map(alertView)};
 }

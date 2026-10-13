@@ -53,7 +53,7 @@ try {
   } finally { await migration.rollback(); }
   checks.push('seed rerun preserves existing names; prepared UTF-8 value round-trips');
   await runtime.beginTransaction();
-  try { await assert.rejects(runtime.execute('UPDATE doors SET device_id = ? WHERE id = ?',['SIM-A01','D07']),error=>error.code==='ER_NO_REFERENCED_ROW_2'); }
+  try { await assert.rejects(runtime.execute('UPDATE doors SET device_id = ? WHERE id = ?',['SIM-A01','D07']),error=>['ER_NO_REFERENCED_ROW','ER_NO_REFERENCED_ROW_2'].includes(error.code)); }
   finally { await runtime.rollback(); }
   checks.push('foreign key refuses a door owner from another zone');
 

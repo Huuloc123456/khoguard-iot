@@ -12,6 +12,8 @@
     "infra:mqtt:start": "node scripts/start-mqtt.mjs",
     "infra:db:init": "node scripts/provision-mysql.mjs",
     "infra:mqtt:check": "node scripts/check-mqtt.mjs",
+    "infra:tls:setup": "node scripts/setup-tls.mjs",
+    "infra:tls:check": "node --env-file=.local/runtime.env scripts/check-tls.mjs",
     "infra:db:check": "node scripts/check-mysql.mjs",
     "infra:secrets:check": "node scripts/check-secret-files.mjs",
     "firmware:prepare": "node scripts/prepare-firmware.mjs",
@@ -23,7 +25,18 @@
     "backend:start": "node --env-file=.local/runtime.env server/start.mjs",
     "backend:check": "node --env-file=.local/runtime.env scripts/check-backend.mjs",
     "telemetry:check": "node --env-file=.local/runtime.env scripts/check-telemetry.mjs",
-    "demo:environment": "node --env-file=.local/runtime.env scripts/simulate-environment.mjs"
+    "events:check": "node --env-file=.local/runtime.env scripts/check-events.mjs",
+    "control:check": "node --env-file=.local/runtime.env scripts/check-control.mjs",
+    "recovery:check": "node --env-file=.local/runtime.env scripts/check-recovery.mjs",
+    "auth:setup": "node --env-file=.local/runtime.env scripts/setup-users.mjs",
+    "auth:check": "node --env-file=.local/runtime.env scripts/check-auth.mjs",
+    "reservations:check": "node --env-file=.local/runtime.env scripts/check-reservations.mjs",
+    "reports:check": "node --env-file=.local/runtime.env scripts/check-reports.mjs",
+    "demo:environment": "node --env-file=.local/runtime.env scripts/simulate-environment.mjs",
+    "demo:warehouse": "node --env-file=.local/runtime.env scripts/simulate-warehouse.mjs",
+    "demo:scenarios": "node --env-file=.local/runtime.env scripts/demo-scenarios.mjs",
+    "load:test": "node --env-file=.local/runtime.env scripts/load-run.mjs",
+    "verify:all": "node scripts/verify-all.mjs"
   },
   "dependencies": {
     "ajv": "^8.20.0",

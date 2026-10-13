@@ -9,6 +9,8 @@ autosave_interval 5
 message_size_limit 65536
 max_packet_size 131072
 max_queued_messages 1000
+# M12: an offline persistent session (backend) keeps at most 1000 QoS1 messages and is dropped after one day.
+persistent_client_expiration 1d
 connection_messages true
 log_dest stdout
 log_type error

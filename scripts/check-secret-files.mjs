@@ -4,7 +4,8 @@ import { join } from 'node:path';
 import { root } from './local-config.mjs';
 
 const files = ['mysql-admin.env', 'runtime.env', 'mosquitto/accounts.json', 'mysql-users.json',
-  'firmware/kg_secrets.h', 'firmware-build/esp32dev/firmware.bin', 'firmware-build/esp32dev/firmware.elf'];
+  'firmware/kg_secrets.h', 'firmware-build/esp32dev/firmware.bin', 'firmware-build/esp32dev/firmware.elf',
+  'tls/ca.key', 'tls/server.key', 'dashboard-users.json'];
 for (const file of files) {
   const ignored = spawnSync('git', ['check-ignore', '--quiet', `.local/${file}`], { cwd: root, windowsHide: true });
   assert.equal(ignored.status, 0, 'Local credential file must be ignored by Git');

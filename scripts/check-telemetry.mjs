@@ -7,13 +7,15 @@ import { writeFileSync } from 'node:fs';
 import mqtt from 'mqtt';
 import { local, readJson } from './local-config.mjs';
 import { environmentMessage, statusMessage } from './environment-message.mjs';
-import { connectBroker } from '../server/mqtt.mjs';
+import { connectBroker, brokerOptions } from '../server/mqtt.mjs';
 import { createApp } from '../server/http.mjs';
 import { applyTelemetry, telemetryMigration } from '../db/migrate.mjs';
 import { gate } from './loopback-gate.mjs';
 import { createDbPool, loadOwnership, databaseReady } from '../server/database.mjs';
 import { readConfig } from '../server/config.mjs';
+import { signIn, authFetch } from './check-session.mjs';
 import { createTelemetryStore } from '../server/telemetry-store.mjs';
+import { createAccessStore } from '../server/access-store.mjs';
 import { validateSnapshot } from '../contracts/validate.js';
 const config=readConfig(process.env), state=loadOwnership(), pool=createDbPool(config.db);
 const store=createTelemetryStore(pool);
@@ -62,8 +64,9 @@ try {
   checks.push('M05 migration no-op and incomplete/checksum guards; no reset');
 
   const base=`http://${config.host}:${config.port}`;
+  await signIn(base);
   async function readSnapshot() {
-    const response=await fetch(`${base}/api/snapshot`,{signal:AbortSignal.timeout(5000)});
+    const response=await authFetch(`${base}/api/snapshot`,{signal:AbortSignal.timeout(5000)});
     assert.equal(response.status,200); const value=await response.json();
     assert.equal(validateSnapshot(value).ok,true); return value;
   }
@@ -77,7 +80,7 @@ try {
   let seq=10;
   const make=(session=liveSession,boot=liveBoot)=>environmentMessage({boot,session,seq:seq++,uptime:seq*1000,temperature:25.5,humidity:60});
   const first=make(), will=statusMessage(first,'offline');
-  publisher=mqtt.connect({...config.mqtt,username:'SIM-A01',password:accounts['SIM-A01'],clientId:`kg-check-${randomUUID()}`,
+  publisher=mqtt.connect({...brokerOptions(config.mqtt),username:'SIM-A01',password:accounts['SIM-A01'],clientId:`kg-check-${randomUUID()}`,
     clean:true,reconnectPeriod:0,will:{topic:packet(will).topic,payload:JSON.stringify(will),qos:1,retain:true}});
   publisher.on('error',()=>{});
   await once(publisher,'connect',{signal:AbortSignal.timeout(5000)});
@@ -107,11 +110,11 @@ try {
   stage='history pagination';
   const from=new Date(Date.now()-60000).toISOString(), to=new Date(Date.now()+60000).toISOString();
   const params=new URLSearchParams({device_id:'SIM-A01',from,to,limit:'1'});
-  const history=async()=>{const r=await fetch(`${base}/api/telemetry?${params}`,{signal:AbortSignal.timeout(5000)});assert.equal(r.status,200);return r.json();};
+  const history=async()=>{const r=await authFetch(`${base}/api/telemetry?${params}`,{signal:AbortSignal.timeout(5000)});assert.equal(r.status,200);return r.json();};
   const ids=[]; let cursor=0;
   do {if (cursor) params.set('cursor',String(cursor));const page=await history();assert.ok(page.items.length<=1);ids.push(...page.items.map(i=>i.id));cursor=page.next_cursor;} while(cursor);
   assert.equal(new Set(ids).size,ids.length); assert.ok(ids.length>=2);
-  for (const suffix of ['&limit=201','&device_id=ESP-C01','&unknown=1']) assert.equal((await fetch(`${base}/api/telemetry?${params}${suffix}`)).status,400);
+  for (const suffix of ['&limit=201','&device_id=ESP-C01','&unknown=1']) assert.equal((await authFetch(`${base}/api/telemetry?${params}${suffix}`)).status,400);
   checks.push('history UTC received_at, bounded keyset pagination, no duplicate rows and invalid query rejection');
 
   stage='retained restart';
@@ -119,10 +122,10 @@ try {
   probe=connectBroker(config.mqtt,{...restarted,databaseReady:()=>databaseReady(pool,state)});
   await once(probe,'connect',{signal:AbortSignal.timeout(5000)});
   await until(async()=>probe.ingestReady,x=>x);
-  probeApp=createApp(async()=>({database:await databaseReady(pool,state),mqtt:probe.connected && probe.ingestReady}),restarted);
+  probeApp=createApp(async()=>({database:await databaseReady(pool,state),mqtt:probe.connected && probe.ingestReady}),restarted,createAccessStore(pool));
   probeApp.listen(0,'127.0.0.1');await once(probeApp,'listening');
   await delay(200);
-  const restored=await (await fetch(`http://127.0.0.1:${probeApp.address().port}/api/snapshot`)).json();
+  const restored=await (await authFetch(`http://127.0.0.1:${probeApp.address().port}/api/snapshot`)).json();
   assert.equal(validateSnapshot(restored).ok,true);
   assert.equal(restored.devices[0].freshness,'stale');
   assert.equal(restored.zones[0].environment.temperature_c,25.5);
@@ -160,7 +163,7 @@ try {
   await publisher.endAsync(true);
   const finalSession=`session-${randomUUID()}`, final={...rebooted,session_id:finalSession,seq:2,uptime_ms:2000};
   const finalWill=statusMessage(final,'offline');
-  publisher=mqtt.connect({...config.mqtt,username:'SIM-A01',password:accounts['SIM-A01'],clientId:`kg-will-${randomUUID()}`,
+  publisher=mqtt.connect({...brokerOptions(config.mqtt),username:'SIM-A01',password:accounts['SIM-A01'],clientId:`kg-will-${randomUUID()}`,
     reconnectPeriod:0,keepalive:5,will:{topic:packet(finalWill).topic,payload:JSON.stringify(finalWill),qos:1,retain:true}});
   publisher.on('error',()=>{});await once(publisher,'connect',{signal:AbortSignal.timeout(5000)});
   await publish(statusMessage(final,'online'));await publish(final);
@@ -179,12 +182,12 @@ try {
   await faultStore.ingest(packet(statusMessage(faultFrame,'online')));
   await faultStore.ingest(packet(faultFrame));
   const [beforeFault]=await pool.execute('SELECT seq,message FROM device_current WHERE device_id=?',['SIM-A01']);
-  probeApp=createApp(async()=>({database:await databaseReady(gatedPool,state),mqtt:true}),faultStore);
+  probeApp=createApp(async()=>({database:await databaseReady(gatedPool,state),mqtt:true}),faultStore,createAccessStore(gatedPool));
   probeApp.listen(0,'127.0.0.1');await once(probeApp,'listening');
   const faultBase=`http://127.0.0.1:${probeApp.address().port}`;
   dbGate.setBlocked(true);
   stage='DB fault snapshot 503';
-  assert.equal((await fetch(`${faultBase}/api/snapshot`)).status,503);
+  assert.equal((await authFetch(`${faultBase}/api/snapshot`)).status,503);
   assert.equal((await fetch(`${faultBase}/api/health`)).status,200);
   await assert.rejects(faultStore.ingest(packet({...faultFrame,seq:1,uptime_ms:1000})));
   stage='DB fault unchanged current';
@@ -193,7 +196,7 @@ try {
   dbGate.setBlocked(false);
   await until(()=>databaseReady(gatedPool,state),x=>x);
   stage='DB recovery freshness';
-  const afterRecovery=await (await fetch(`${faultBase}/api/snapshot`)).json();
+  const afterRecovery=await (await authFetch(`${faultBase}/api/snapshot`)).json();
   assert.equal(afterRecovery.devices[0].freshness,'stale');
   stage='DB recovery confirmation';
   assert.equal(await faultStore.ingest(packet({...faultFrame,seq:1,uptime_ms:1000})),'unconfirmed');

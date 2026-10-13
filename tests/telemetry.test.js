@@ -70,3 +70,20 @@ test('snapshot includes offline inventory, unknown WMS and signals, then marks s
   args[3]=new Date(now+1001);
   assert.equal(buildSnapshot(...args,live).devices[0].freshness,'stale');
 });
+test('snapshot carries edge lock/open time and stored alerts with acknowledgement kept separate from state', () => {
+  const zones=registry.zones.map(id=>({id,name:id,temperature_min:-22,temperature_max:30,capacity:100}));
+  const row={device_id:'ESP-C01',boot_id:'b',session_id:'s',state:'online',received_at:new Date(now),
+    message:{...message,device_id:'ESP-C01',payload:{zone_id:'C',controller_revision:3,environment:{temperature_c:-18,humidity_pct:50},
+      occupancy:{current_occupants:0,count_verified:true,presence:false},
+      doors:[{door_id:'D07',state:'open',beam_clear:true,panic_latched:false,local_inputs_healthy:true,locked:false,open_ms:31500},
+        {door_id:'D08',state:'closed',beam_clear:true,panic_latched:false,local_inputs_healthy:true,locked:true}]}}};
+  const alerts=[{id:9,zone_id:'C',door_id:'D07',code:'DOOR_OPEN',title:'Cửa D07 mở từ 30 giây',detail:'d',level:'warning',state:'active',
+    raised_at:new Date(now-1000),resolved_at:null,acknowledged_at:new Date(now)}];
+  const snapshot=buildSnapshot(zones,[row],4,new Date(now),{database:true,mqtt:true},new Set(),alerts);
+  assert.equal(validateSnapshot(snapshot).ok,true,JSON.stringify(validateSnapshot(snapshot).error));
+  const d07=snapshot.doors.find(d=>d.id==='D07'), d08=snapshot.doors.find(d=>d.id==='D08');
+  assert.deepEqual([d07.open_seconds,d07.locked,d08.open_seconds,d08.locked],[31.5,false,null,true]);
+  assert.equal(snapshot.doors.find(d=>d.id==='D01').locked,null);
+  assert.deepEqual(snapshot.alerts[0],{id:'AL-9',zone:'C',door_id:'D07',code:'DOOR_OPEN',title:'Cửa D07 mở từ 30 giây',detail:'d',level:'warning',state:'active',
+    acknowledged:true,raised_at:new Date(now-1000).toISOString(),resolved_at:null,acknowledged_at:new Date(now).toISOString()});
+});

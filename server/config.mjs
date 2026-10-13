@@ -18,7 +18,9 @@ export function readConfig(env, { migration = false } = {}) {
     connectTimeout:1500, charset:'utf8mb4', timezone:'Z', multipleStatements:false,
   } };
   if (!migration) config.mqtt = {
-    host:fixed('MQTT_HOST','127.0.0.1'), port:Number(fixed('MQTT_PORT','18884')),
+    host:fixed('MQTT_HOST','127.0.0.1'), port:['18884','18885'].includes(env.MQTT_PORT) ? Number(env.MQTT_PORT) : fail('MQTT_PORT'),
+    // 18885 is MQTT/TLS with the project demo CA (M12); 18884 stays as the localhost-only plain listener.
+    tls:env.MQTT_PORT==='18885',
     username:fixed('MQTT_USERNAME','khoguard-backend'), password:secret('MQTT_PASSWORD'),
   };
   return config;

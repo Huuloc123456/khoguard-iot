@@ -7,13 +7,23 @@ export const local = fileURLToPath(new URL('../.local/', import.meta.url));
 export const readJson = path => JSON.parse(readFileSync(path, 'utf8'));
 export const registry = readJson(new URL('../contracts/devices.json', import.meta.url));
 
-export function firmwareSecrets(password) {
+const PEM = /^-----BEGIN CERTIFICATE-----\n(?:[A-Za-z0-9+/=]{1,64}\n)+-----END CERTIFICATE-----\n?$/;
+export function firmwareSecrets(password, caPem) {
   if (typeof password !== 'string' || !/^[a-f0-9]{48}$/.test(password)) throw new Error('Invalid ESP-C01 credential');
+  if (caPem !== undefined && (typeof caPem !== 'string' || !PEM.test(caPem.replaceAll('\r\n', '\n')))) throw new Error('Invalid CA certificate');
+  // With the demo CA the edge uses MQTT/TLS 18885 and verifies hostname + CA; without it, the localhost-only 18884 demo port.
   return '#pragma once\n'
     + 'constexpr char MQTT_HOST[] = "host.wokwi.internal";\n'
-    + 'constexpr int MQTT_PORT = 18884;\n'
+    + `constexpr int MQTT_PORT = ${caPem ? 18885 : 18884};\n`
     + 'constexpr char MQTT_USER[] = "ESP-C01";\n'
-    + `constexpr char MQTT_PASSWORD[] = "${password}";\n`;
+    + `constexpr char MQTT_PASSWORD[] = "${password}";\n`
+    + (caPem ? `constexpr char KG_CA_PEM[] = R"PEM(${caPem.replaceAll('\r\n', '\n')})PEM";\n#define MQTT_CA_CERT KG_CA_PEM\n` : '');
+}
+
+// The broker certificate names only the hostnames clients really use: backend (127.0.0.1/localhost) and the Wokwi gateway.
+export function serverCertificateExtensions() {
+  return ['basicConstraints = critical,CA:FALSE', 'keyUsage = critical,digitalSignature,keyEncipherment',
+    'extendedKeyUsage = serverAuth', 'subjectAltName = DNS:localhost,DNS:host.wokwi.internal,IP:127.0.0.1', ''].join('\n');
 }
 
 export function buildAcl() {
@@ -28,10 +38,17 @@ export function buildAcl() {
     ])).join('\n');
 }
 
-export function buildBrokerConfig(directory) {
+const safeDirectory = directory => {
   if (!/^(?:[A-Za-z]:[\\/]|\/)/.test(directory) || /[\r\n\0]/.test(directory)) throw new Error('Invalid broker directory');
-  return readFileSync(new URL('../infra/mosquitto/mosquitto.conf.example', import.meta.url), 'utf8')
-    .replaceAll('@LOCAL_DIR@', directory.replaceAll('\\', '/').replace(/\/$/, ''));
+  return directory.replaceAll('\\', '/').replace(/\/$/, '');
+};
+export function buildBrokerConfig(directory, { tls } = {}) {
+  const config = readFileSync(new URL('../infra/mosquitto/mosquitto.conf.example', import.meta.url), 'utf8')
+    .replaceAll('@LOCAL_DIR@', safeDirectory(directory));
+  if (!tls) return config;
+  const dir = safeDirectory(tls);
+  return `${config.trimEnd()}\n\n# M12: MQTT/TLS on loopback; same accounts and ACL as 18884.\nlistener 18885 127.0.0.1\n`
+    + `cafile ${dir}/ca.crt\ncertfile ${dir}/server.crt\nkeyfile ${dir}/server.key\ntls_version tlsv1.2\n`;
 }
 
 export function readAdminConfig(text) {

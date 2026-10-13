@@ -36,7 +36,7 @@
       "top": 200,
       "left": -220,
       "attrs": {
-        "value": "0"
+        "value": ""
       },
       "label": "D07 contact: HIGH=open"
     },
@@ -56,7 +56,7 @@
       "top": 200,
       "left": 80,
       "attrs": {
-        "value": "0"
+        "value": ""
       },
       "label": "D07 panic"
     },
@@ -66,7 +66,7 @@
       "top": 200,
       "left": 230,
       "attrs": {
-        "value": "0"
+        "value": ""
       },
       "label": "D08 contact: HIGH=open"
     },
@@ -86,7 +86,7 @@
       "top": 290,
       "left": -70,
       "attrs": {
-        "value": "0"
+        "value": ""
       },
       "label": "D08 panic"
     },
@@ -96,9 +96,252 @@
       "top": 290,
       "left": 80,
       "attrs": {
-        "value": "0"
+        "value": ""
       },
       "label": "Presence: HIGH=person"
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-contact07",
+      "top": 170,
+      "left": -235,
+      "attrs": {
+        "text": "D07 contact: HIGH=open"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-beam07",
+      "top": 170,
+      "left": -85,
+      "attrs": {
+        "text": "D07 beam: HIGH=clear"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-panic07",
+      "top": 170,
+      "left": 65,
+      "attrs": {
+        "text": "D07 panic"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-contact08",
+      "top": 170,
+      "left": 215,
+      "attrs": {
+        "text": "D08 contact: HIGH=open"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-beam08",
+      "top": 260,
+      "left": -235,
+      "attrs": {
+        "text": "D08 beam: HIGH=clear"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-panic08",
+      "top": 260,
+      "left": -85,
+      "attrs": {
+        "text": "D08 panic"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-presence",
+      "top": 260,
+      "left": 65,
+      "attrs": {
+        "text": "Presence: HIGH=person"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-lock07",
+      "top": 390,
+      "left": -220,
+      "attrs": {
+        "color": "green"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-lock07",
+      "top": 365,
+      "left": -235,
+      "attrs": {
+        "text": "D07 khóa"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-lock08",
+      "top": 390,
+      "left": -70,
+      "attrs": {
+        "color": "green"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-lock08",
+      "top": 365,
+      "left": -85,
+      "attrs": {
+        "text": "D08 khóa"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-open07",
+      "top": 390,
+      "left": 80,
+      "attrs": {
+        "color": "blue"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-open07",
+      "top": 365,
+      "left": 65,
+      "attrs": {
+        "text": "D07 motor mở"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-close07",
+      "top": 390,
+      "left": 230,
+      "attrs": {
+        "color": "orange"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-close07",
+      "top": 365,
+      "left": 215,
+      "attrs": {
+        "text": "D07 motor đóng"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-open08",
+      "top": 390,
+      "left": 380,
+      "attrs": {
+        "color": "blue"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-open08",
+      "top": 365,
+      "left": 365,
+      "attrs": {
+        "text": "D08 motor mở"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-close08",
+      "top": 480,
+      "left": -220,
+      "attrs": {
+        "color": "orange"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-close08",
+      "top": 455,
+      "left": -235,
+      "attrs": {
+        "text": "D08 motor đóng"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-light",
+      "top": 480,
+      "left": -70,
+      "attrs": {
+        "color": "white"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-light",
+      "top": 455,
+      "left": -85,
+      "attrs": {
+        "text": "Đèn khẩn cấp"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-buzzer",
+      "top": 480,
+      "left": 80,
+      "attrs": {
+        "color": "red"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-buzzer",
+      "top": 455,
+      "left": 65,
+      "attrs": {
+        "text": "Còi"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-heater",
+      "top": 480,
+      "left": 230,
+      "attrs": {
+        "color": "red"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-heater",
+      "top": 455,
+      "left": 215,
+      "attrs": {
+        "text": "Sưởi"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-fan",
+      "top": 480,
+      "left": 380,
+      "attrs": {
+        "color": "cyan"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-fan",
+      "top": 455,
+      "left": 365,
+      "attrs": {
+        "text": "Quạt"
+      }
     }
   ],
   "connections": [
@@ -146,7 +389,7 @@
     ],
     [
       "contact07:2",
-      "esp:D16",
+      "esp:RX2",
       "green",
       []
     ],
@@ -164,7 +407,7 @@
     ],
     [
       "beam07:2",
-      "esp:D17",
+      "esp:TX2",
       "green",
       []
     ],
@@ -268,6 +511,126 @@
       "presence:3",
       "esp:3V3",
       "red",
+      []
+    ],
+    [
+      "led-lock07:A",
+      "esp:D25",
+      "green",
+      []
+    ],
+    [
+      "led-lock07:C",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "led-lock08:A",
+      "esp:D26",
+      "green",
+      []
+    ],
+    [
+      "led-lock08:C",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "led-open07:A",
+      "esp:D27",
+      "blue",
+      []
+    ],
+    [
+      "led-open07:C",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "led-close07:A",
+      "esp:D14",
+      "orange",
+      []
+    ],
+    [
+      "led-close07:C",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "led-open08:A",
+      "esp:D2",
+      "blue",
+      []
+    ],
+    [
+      "led-open08:C",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "led-close08:A",
+      "esp:D13",
+      "orange",
+      []
+    ],
+    [
+      "led-close08:C",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "led-light:A",
+      "esp:D32",
+      "white",
+      []
+    ],
+    [
+      "led-light:C",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "led-buzzer:A",
+      "esp:D33",
+      "red",
+      []
+    ],
+    [
+      "led-buzzer:C",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "led-heater:A",
+      "esp:D4",
+      "red",
+      []
+    ],
+    [
+      "led-heater:C",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "led-fan:A",
+      "esp:D5",
+      "cyan",
+      []
+    ],
+    [
+      "led-fan:C",
+      "esp:GND.2",
+      "black",
       []
     ]
   ],

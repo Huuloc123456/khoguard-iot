@@ -1,7 +1,7 @@
 import mysql from 'mysql2/promise';
 import { join } from 'node:path';
 import { local, readJson } from '../scripts/local-config.mjs';
-import { inventoryMigration, telemetryMigration, seedChecksum } from '../db/migrate.mjs';
+import { inventoryMigration, telemetryMigration, eventsMigration, controlMigration, accessMigration, reservationMigration, seedChecksum } from '../db/migrate.mjs';
 
 export function loadOwnership() {
   const state = readJson(join(local,'mysql-state.json'));
@@ -18,10 +18,16 @@ export async function databaseReady(pool,state) {
       (SELECT meta_value FROM infra_meta WHERE meta_key = ?) AS setup_id,
       (SELECT checksum FROM schema_migrations WHERE version = ? AND status = 'complete') AS checksum,
       (SELECT meta_value FROM infra_meta WHERE meta_key = ?) AS seed_checksum,
-      (SELECT checksum FROM schema_migrations WHERE version = ? AND status = 'complete') AS telemetry_checksum`,timeout:1500},['setup_id',inventoryMigration.version,'seed_registry_v1',telemetryMigration.version]);
+      (SELECT checksum FROM schema_migrations WHERE version = ? AND status = 'complete') AS telemetry_checksum,
+      (SELECT checksum FROM schema_migrations WHERE version = ? AND status = 'complete') AS events_checksum,
+      (SELECT checksum FROM schema_migrations WHERE version = ? AND status = 'complete') AS control_checksum,
+      (SELECT checksum FROM schema_migrations WHERE version = ? AND status = 'complete') AS access_checksum,
+      (SELECT checksum FROM schema_migrations WHERE version = ? AND status = 'complete') AS reservation_checksum`,timeout:1500},['setup_id',inventoryMigration.version,'seed_registry_v1',telemetryMigration.version,eventsMigration.version,controlMigration.version,accessMigration.version,reservationMigration.version]);
     return rows[0]?.server_uuid === state.server_uuid && rows[0]?.setup_id === state.setup_id
       && rows[0]?.checksum === inventoryMigration.checksum && rows[0]?.seed_checksum === seedChecksum
-      && rows[0]?.telemetry_checksum === telemetryMigration.checksum;
+      && rows[0]?.telemetry_checksum === telemetryMigration.checksum && rows[0]?.events_checksum === eventsMigration.checksum
+      && rows[0]?.control_checksum === controlMigration.checksum && rows[0]?.access_checksum === accessMigration.checksum
+      && rows[0]?.reservation_checksum === reservationMigration.checksum;
   } catch { connection?.destroy(); return false; }
   finally { connection?.release(); }
 }

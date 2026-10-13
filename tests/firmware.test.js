@@ -62,3 +62,17 @@ test('new MQTT session starts a new live sample window', () => {
   assert.equal(samples.length, 1);
   assert.equal(samples[0].session_id, next.session_id);
 });
+
+test('observer accepts current RFID and healthy door telemetry without accepting unknown safety signals', () => {
+  const value = sample();
+  value.payload.controller_revision = 3;
+  value.payload.occupancy = {current_occupants:0,count_verified:true,presence:false};
+  value.payload.doors.forEach(door => Object.assign(door, {state:'closed',beam_clear:true,panic_latched:false,local_inputs_healthy:true,locked:true}));
+  const samples=[];
+  assert.equal(accept(samples,value),true);
+  const next=structuredClone(value);
+  next.seq++; next.uptime_ms+=2000; next.payload.controller_revision=2;
+  assert.throws(()=>accept(samples,next),/revision/i);
+  next.payload.controller_revision=4; next.payload.doors[0].beam_clear=null;
+  assert.throws(()=>accept([],next),/healthy/i);
+});

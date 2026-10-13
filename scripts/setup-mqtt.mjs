@@ -37,7 +37,8 @@ if (!existsSync(passwordFile)) {
 const hashedUsers = readFileSync(passwordFile, 'utf8').trim().split(/\r?\n/).map(line => line.split(':')[0]);
 if (hashedUsers.length !== users.length || users.some(user => !hashedUsers.includes(user))) throw new Error('Password file is incomplete; do not use it');
 writeFileSync(join(directory, 'acl'), buildAcl());
-writeFileSync(join(directory, 'mosquitto.conf'), buildBrokerConfig(directory));
+const tls = join(local, 'tls');
+writeFileSync(join(directory, 'mosquitto.conf'), buildBrokerConfig(directory, existsSync(join(tls, 'server.crt')) ? { tls } : {}));
 const runtimeFile = join(local, 'runtime.env');
 if (!existsSync(runtimeFile)) {
   const template = readFileSync(new URL('../.env.example', import.meta.url), 'utf8');

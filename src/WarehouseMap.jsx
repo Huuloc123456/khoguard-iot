@@ -18,7 +18,7 @@ export function WarehouseMap({ demo, selected, onSelect }) {
           <span className={`zone-temperature ${isTemperatureWarning(zone) ? 'warning-text' : ''}`}>{reading(zone.temperature)}°C <span className={warning ? 'warning-text' : ''}>· {zone.mode==='live' ? zoneStatus(zone) : zone.panic ? 'Khẩn cấp' : isTemperatureWarning(zone) ? 'Vượt ngưỡng' : warning ? 'Cần kiểm tra' : 'Ổn định'}</span></span>
           <span className="shelves" aria-hidden="true">{Array.from({ length: 8 }, (_, index) => <span className="shelf" key={index}><i /><i /><i /></span>)}</span>
           <span className="zone-meta"><span><Icon name="people" size={14} />{reading(zone.people)} người</span><span>{reading(zone.occupied)}/{zone.capacity} vị trí</span></span>
-          <span className="zone-doors">{zoneDoors.map(door => <span key={door.id} className={`map-door ${door.open ? 'open' : ''} ${door.seconds > 30 ? 'late' : ''}`}><Icon name="door" size={12} />{door.id}<span className="door-state">{doorLabel(door)}</span></span>)}</span>
+          <span className="zone-doors">{zoneDoors.map(door => <span key={door.id} className={`map-door ${door.open ? 'open' : ''} ${door.seconds >= 30 ? 'late' : ''}`}><Icon name="door" size={12} />{door.id}<span className="door-state">{doorLabel(door)}</span></span>)}</span>
         </button>;
       })}
       <div className="aisle"><span /><Icon name="arrow" size={14} /><span>LỐI ĐI CHÍNH</span><Icon name="arrow" size={14} /><span /></div>
@@ -30,7 +30,7 @@ export function WarehouseMap({ demo, selected, onSelect }) {
 export function ZoneDetail({ zone, doors, alerts }) {
   const isCold = zone.id === 'C';
   const blocked = !canCloseDoor(zone);
-  const warning = alerts.some(alert => alert.zone === zone.id);
+  const warning = alerts.some(alert => alert.zone === zone.id && alert.state !== 'resolved');
   return <section className="panel detail-panel" aria-labelledby="detail-title">
     <div className="panel-heading"><div><h2 id="detail-title">Chi tiết khu vực</h2><p>Khu {zone.id} · {zone.name}</p></div><span className="detail-zone-id">{zone.id}</span></div>
     <div className="detail-body">{zone.mode==='live'&&<p className="source-detail">{zone.source} · {zoneStatus(zone)} · {zone.countVerified?'Count đã xác minh':'Count chưa xác minh'}</p>}

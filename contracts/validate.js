@@ -33,6 +33,8 @@ export function validateMqttMessage(topic, raw) {
   const payload = value.payload;
   if (payload.zone_id !== device.zone_id) return failure('ZONE_MISMATCH', 'Device cannot report another zone');
   const doorIds = payload.doors?.map(door => door.door_id) ?? (payload.door_id ? [payload.door_id] : []);
+  const alarmDoors = (payload.alarms ?? []).filter(alarm => alarm.door_id).map(alarm => alarm.door_id);
+  if (alarmDoors.some(id => !device.doors.includes(id))) return failure('DOOR_NOT_ASSIGNED', 'Alarm door is not assigned to this device');
   if (new Set(doorIds).size !== doorIds.length || doorIds.some(id => !device.doors.includes(id))) {
     return failure('DOOR_NOT_ASSIGNED', 'Door is duplicated or not assigned to this device');
   }

@@ -45,6 +45,7 @@
         "beam_clear": { "$ref": "urn:khoguard:mqtt:v1#/definitions/signal" },
         "panic_latched": { "$ref": "urn:khoguard:mqtt:v1#/definitions/signal" },
         "local_inputs_healthy": { "type": "boolean" },
+        "locked": { "type": ["boolean", "null"] },
         "open_seconds": { "type": ["number", "null"], "minimum": 0 },
         "updated_at": { "$ref": "#/definitions/nullableUtc" }
       }
@@ -70,13 +71,16 @@
       "properties": {
         "id": { "$ref": "urn:khoguard:mqtt:v1#/definitions/token" },
         "zone": { "$ref": "urn:khoguard:mqtt:v1#/definitions/zone" },
-        "code": { "type": "string", "maxLength": 64, "pattern": "^[A-Z_]+$" },
+        "door_id": { "anyOf": [{ "$ref": "urn:khoguard:mqtt:v1#/definitions/doorId" }, { "type": "null" }] },
+        "code": { "type": "string", "maxLength": 64, "pattern": "^[A-Z][A-Z0-9_]*$" },
         "title": { "$ref": "#/definitions/text" },
         "detail": { "$ref": "#/definitions/text" },
         "level": { "enum": ["info", "warning", "danger"] },
         "state": { "enum": ["active", "resolved"] },
         "acknowledged": { "type": "boolean" },
-        "raised_at": { "$ref": "urn:khoguard:mqtt:v1#/definitions/utc" }
+        "raised_at": { "$ref": "urn:khoguard:mqtt:v1#/definitions/utc" },
+        "resolved_at": { "$ref": "#/definitions/nullableUtc" },
+        "acknowledged_at": { "$ref": "#/definitions/nullableUtc" }
       }
     }
   }

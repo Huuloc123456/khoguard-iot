@@ -155,9 +155,41 @@ test('RFID requires direction/card, panic requires input, and door events requir
   delete message.payload.card_id;
   assert.equal(code(validateMqttMessage(event.topic, JSON.stringify(message))), 'INVALID_SCHEMA');
   message.payload.input = 'panic_low';
+  assert.equal(code(validateMqttMessage(event.topic, JSON.stringify(message))), 'INVALID_SCHEMA', 'scan result belongs to RFID only');
+  delete message.payload.result;
+  message.payload.input = 'panic_low';
   assert.equal(validateMqttMessage(event.topic, JSON.stringify(message)).ok, true);
   message.payload = { zone_id: 'C', event_type: 'door', door_id: 'D07' };
   assert.equal(code(validateMqttMessage(event.topic, JSON.stringify(message))), 'INVALID_SCHEMA');
+});
+
+test('RFID events state the edge decision so refused and repeated scans stay auditable', () => {
+  const event = examples.find(example => example.message.kind === 'events');
+  assert.equal(event.message.payload.result, 'accepted');
+  for (const result of ['accepted', 'duplicate', 'unauthorized']) {
+    const message = copy(event.message); message.payload.result = result;
+    assert.equal(validateMqttMessage(event.topic, JSON.stringify(message)).ok, true);
+  }
+  for (const result of [undefined, 'granted', null]) {
+    const message = copy(event.message); message.payload.result = result;
+    if (result === undefined) delete message.payload.result;
+    assert.equal(code(validateMqttMessage(event.topic, JSON.stringify(message))), 'INVALID_SCHEMA');
+  }
+});
+
+test('M09-M11 edge telemetry may report locks, door-open time, local alarms and outputs, but only for its own doors', () => {
+  const message = copy(telemetry.message);
+  message.payload.doors[0] = { ...message.payload.doors[0], locked: false, open_ms: 31000 };
+  message.payload.alarms = [{ code: 'DOOR_OPEN_WARNING', door_id: 'D07' }, { code: 'TRAPPED_PERSON' }];
+  message.payload.outputs = { light: true, buzzer: false, heater: false, fan: true };
+  assert.equal(validate(message).ok, true);
+  for (const bad of [
+    m => { m.payload.alarms = [{ code: 'DOOR_OPEN_WARNING', door_id: 'D01' }]; },
+    m => { m.payload.alarms = [{ code: 'DOOR_OPEN_WARNING' }]; },
+    m => { m.payload.alarms = [{ code: 'MADE_UP' }]; },
+    m => { m.payload.outputs.siren = true; },
+    m => { m.payload.doors[0].locked = 'yes'; },
+  ]) { const value = copy(message); bad(value); assert.equal(validate(value).ok, false); }
 });
 
 test('commands require a synchronized clock and an expiry after issue within 30 seconds', () => {
