@@ -75,10 +75,10 @@ Cập nhật 13/10/2026. Chi tiết và bằng chứng từng mốc ở [Agent.m
 | M13 | Đăng nhập, vai trò, ca làm việc | ✅ Đạt |
 | M14 | Giữ chỗ và điều kiện nhận hàng | ✅ Đạt |
 | M15 | Lịch sử, báo cáo, CSV | ✅ Đạt |
-| M16 | Toàn kho, 4 kịch bản, đo tải | 🟡 4 kịch bản + T08 đạt trên Wokwi, tải P95 186–242 ms; còn T17/T24/T26 một phần |
+| M16 | Toàn kho, 4 kịch bản, đo tải | 🟡 4 kịch bản + T08 trên Wokwi, T17/T24/T26 đạt; chờ chạy lại `verify:all` sau khi sửa ingest |
 | M17 | Đóng gói, bàn giao | ⬜ Chưa làm |
 
-**Nghiệm thu Wokwi đã xong** (13/10/2026, [bằng chứng](docs/evidence/WOKWI-2026-10-13.md)): RFID, mmWave, liên động, rèm quang, panic, T08 (panic khi broker dừng), lệnh trùng/cũ, timer. **Việc còn lại:** T17 (khu đệm đầy, integration), T24 (DB đầy/lỗi ghi), T26 (825/1440 px, bàn phím) để đóng M16; sửa `demo:warehouse` tự nối lại khi broker dừng; M17 (Postman, checklist demo, chạy thử từ bản clone sạch).
+**Nghiệm thu Wokwi đã xong** (13/10/2026, [bằng chứng](docs/evidence/WOKWI-2026-10-13.md)): RFID, mmWave, liên động, rèm quang, panic, T08 (panic khi broker dừng), lệnh trùng/cũ, timer. T17, T24, T26 đạt cùng ngày; T24 tìm và sửa hai lỗi mất dữ liệu ở ingest ([bằng chứng](docs/evidence/M16-PART2-2026-10-13.md)). **Việc còn lại:** tắt Wokwi và chạy `verify:all` để đóng M16; M17 (Postman, checklist demo, chạy thử từ bản clone sạch).
 
 ---
 
@@ -251,6 +251,7 @@ Tất cả chạy bằng `npm run <lệnh>` tại thư mục gốc.
 | `infra:secrets:check` | — (tự bật Vite) | File secret bị Git bỏ qua, URL secret trả 403 |
 | `backend:check`, `telemetry:check`, `events:check`, `control:check`, `auth:check`, `reservations:check` | broker + backend | Tích hợp từng mốc |
 | `recovery:check`, `reports:check` | broker (backend **tắt**, tự bật) | Phục hồi, báo cáo |
+| `writefault:check` | broker + backend, **không** chạy `demo:warehouse` | Lỗi ghi DB (khóa dòng): không lưu giả, phục hồi lưu đúng một lần |
 | `firmware:check -- <boot-id>` | Wokwi | Telemetry thật từ ESP32 |
 | `wokwi:acceptance` | broker + backend + Wokwi | Nghiệm thu firmware thật |
 | `verify:all [-- --skip=a,b]` | broker + MySQL (backend, Vite, Wokwi **tắt**) | Toàn bộ theo đúng thứ tự |
@@ -325,7 +326,6 @@ Bảng đầy đủ: [docs/HUONG_DAN_CAU_HINH.md §17](docs/HUONG_DAN_CAU_HINH.m
 - Chỉ ESP-C01 (cửa D07, D08) nhận lệnh; cửa các khu khác là dữ liệu mô phỏng.
 - Số liệu chứa hàng là dữ liệu demo, chưa nối WMS.
 - Chỉ chạy localhost (cookie chưa `Secure`).
-- `demo:warehouse` thoát khi broker dừng; chạy lại sau khi broker bật.
 
 ---
 

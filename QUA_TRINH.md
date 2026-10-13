@@ -302,3 +302,14 @@ Còn thiếu / bước tiếp theo:
 - Lỗi đã gặp: (1) máy khởi động lại giữa phiên, phải bật lại broker/backend/Vite/gateway/mô phỏng; (2) PowerShell chặn `npm.ps1`, dùng `npm.cmd`; (3) nhiều lần gạt nhầm công tắc làm S3c, S5a hết giờ — S5a chạy lại đạt sau khi harness tự yêu cầu mở D07 trước; (4) `demo:warehouse` thoát khi broker dừng (MQTT.js `reconnectPeriod: 0`), phải chạy lại sau T08/S8 — cần sửa; (5) lần đầu cập nhật ma trận M16 dùng regex không xử lý CRLF làm hỏng file, đã khôi phục từ Git và sửa lại theo dòng.
 - Đánh dấu M07, M08, M10, M11, M12 và ô thứ nhất của M16; Checkpoint B đạt. Chưa thử trên Wokwi: T06, reboot → count chưa xác minh, CA sai phía firmware.
 - Còn lại: T17, T24, T26 để đóng M16; M17. Quyết định: DEC-034. [Bằng chứng](docs/evidence/WOKWI-2026-10-13.md).
+
+## 13/10/2026 — M16 phần 2: T17, T24, T26, mô phỏng tự nối lại
+
+- `demo:warehouse` thoát khi broker dừng (MQTT.js `reconnectPeriod: 0`, publish không bao giờ xong). Sửa: giới hạn 5 s mỗi lần gửi, tự nối lại phiên mới. Dừng broker 10 s: 4 thiết bị báo mất rồi tự nối lại, 5/5 `fresh`.
+- T17: nhóm mới trong `reservations:check` — khu đệm 45/48 nhận, 46/48 `STAGING_BLOCKED` khi kho lưu trữ 209/258; bảng slot trước/sau giống hệt.
+- T24: `writefault:check` mới (khóa dòng SIM-A01). Lần 1 thất bại: khung 4–6 mất. Lần 2 (sau DEC-035): khung 4 lưu, 5–6 mất. Bản sao backend có log từng gói chỉ ra PUBACK của gói thuộc kết nối đã đóng (DEC-036). Sửa theo TDD (RED → GREEN), lần 3 đạt: 4–6 lưu đúng một lần sau 620 ms, không báo `fresh`, ready 503 trong lúc lỗi.
+- T26: 6 trang × 1440/825/320 px không tràn; Tab có thứ tự hợp lý, 100 % có viền focus, mọi ô có nhãn, link bỏ qua hoạt động.
+- Hồi quy: `npm test` 105/105, `backend:check` 9/9, `telemetry:check` 10/10 (hai lần khác lỗi vì ESP-C01 Wokwi cùng tăng revision). **Chưa chạy `verify:all`** sau khi sửa ingest vì Wokwi đang chạy.
+- Lỗi phụ: script tạm mất dấu `\` trong heredoc làm bộ lọc tiến trình broker không khớp; đổi mẫu không cần escape.
+- Quyết định: DEC-035, DEC-036, DEC-037. [Bằng chứng](docs/evidence/M16-PART2-2026-10-13.md).
+- Còn lại: `verify:all` (tắt Wokwi), rồi đánh dấu M16; M17.

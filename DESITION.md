@@ -221,3 +221,22 @@ Mỗi quyết định mới thêm DEC-xxx với ngày, trạng thái, lý do và
 - Firmware in `OUTPUTS ms=… lock=… motor07=… motor08=… light=… buzzer=… heater=… fan=…` mỗi khi output đổi: khi broker dừng, telemetry không gửi được nên Serial là bằng chứng duy nhất output an toàn đã áp dụng tại chỗ; `ms` là đồng hồ thiết bị để đo timer chính xác.
 - T23 gửi lệnh thẳng tới thiết bị bằng tài khoản backend (tài khoản duy nhất được ghi `commands`) để thử ID trùng và phiên cũ; lệnh thử không có dòng DB, kết quả đọc từ Serial.
 - [Kết quả](docs/evidence/WOKWI-2026-10-13.md).
+
+## DEC-035 — Telemetry tồn đọng của phiên hiện hành được lưu làm lịch sử
+
+- Ngày 13/10/2026; người dùng chọn, đã triển khai. Sau lỗi ghi DB hoặc backend khởi động lại, phiên đã xác nhận trong bộ nhớ bị xóa; broker giao lại khung tồn đọng trước `status: online` retained. Trước đây các khung này bị `unconfirmed`, được PUBACK và mất.
+- Nay `telemetryDecision` trả `backlog` khi khung cùng boot/session với `device_current` (không retained, không retired, seq/uptime/revision không lùi, đồng hồ hợp lệ): chỉ INSERT bảng `telemetry`. Không đổi `device_current`, cảnh báo, freshness hay revision kho; chỉ `status: online` của kết nối hiện tại mới làm thiết bị sống lại (giữ quy tắc DEC-005/DEC-015).
+- Phương án loại: giữ nguyên và chỉ ghi gap (vẫn mất số liệu); chấp nhận như `accepted` (khung cũ sẽ làm thiết bị trông `fresh` theo thời điểm nhận).
+- [Bằng chứng](docs/evidence/M16-PART2-2026-10-13.md).
+
+## DEC-036 — Không PUBACK gói thuộc kết nối MQTT đã đóng
+
+- Ngày 13/10/2026; đã triển khai sau khi `writefault:check` mất khung 5–6. Gói còn trong bộ đệm socket cũ phải trả lỗi `STALE_CONNECTION` cho MQTT.js: `done()` không lỗi khiến MQTT.js xếp PUBACK offline và gửi khi nối lại, broker bỏ tin chưa lưu. Không hủy stream trong nhánh này vì stream hiện tại có thể đã là kết nối mới.
+- Hệ quả chấp nhận: lỗi ghi một thiết bị chặn ingest mọi thiết bị cho tới khi DB ghi lại được (đúng "không ACK khi chưa lưu", DEC-025).
+
+## DEC-037 — Kiểm thử phần 2 M16
+
+- `reservations:check` thêm nhóm khu đệm đầy (T17): đánh dấu tạm slot khu đệm `occupied` với `occupancy_source='reservation'` và trả lại đúng các slot đó; không dùng giữ chỗ vì giữ chỗ không bao giờ vào khu đệm.
+- `writefault:check` (T24): lỗi ghi thật bằng khóa dòng `device_current` từ kết nối runtime thứ hai, không dừng MySQL, không làm đầy đĩa. "DB đầy" theo dung lượng chưa thử.
+- T26 đo bằng trình duyệt tích hợp và JS (tràn ngang, viền focus, nhãn), chưa thành test tự động trong repo (chưa thêm Playwright).
+- `demo:warehouse` tự nối lại khi broker dừng: mỗi lần gửi có giới hạn 5 s, nối lại cùng boot, session mới như thiết bị thật.

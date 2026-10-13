@@ -601,7 +601,7 @@ SIGINT/SIGTERM         → đóng WS, HTTP, MQTT, pool; quá 5 s thì thoát cư
 - Khi `connect`: đợi DB sẵn sàng rồi subscribe 4 topic QoS 1; broker phải cấp đủ 4 grant QoS 1, nếu không thử lại sau 1 s. Chỉ khi đó `ingestReady=true`.
 - **Backpressure**: ghi đè `client.handleMessage` để xử lý **từng gói một**; `done()` (→ PUBACK) chỉ gọi **sau khi** ingest commit xong.
 - **Ingest lỗi** (DB rớt…): không PUBACK, hủy kết nối → broker giữ tin trong phiên bền và giao lại khi nối lại. Đây là cách "không mất tin khi DB lỗi" (DEC-025).
-- `generation` tăng mỗi lần mất kết nối: kết quả của tin thuộc kết nối cũ bị bỏ qua.
+- `generation` tăng mỗi lần mất kết nối. Gói còn trong bộ đệm của kết nối cũ **không** được PUBACK (trả `STALE_CONNECTION`): nếu ACK, MQTT.js sẽ gửi PUBACK sau khi nối lại và broker bỏ tin chưa lưu (DEC-036).
 
 ### 10.4 Ingest — `telemetry-store.mjs`
 
@@ -627,7 +627,7 @@ flowchart TD
 
 **Vì sao cần "ứng viên phiên" (candidate)?** Telemetry chỉ được nhận khi phiên `(boot_id, session_id)` đã được xác nhận bằng tin `status: online` của **chính kết nối hiện tại** (hoặc là phiên đang hiện hành trong DB). Điều này chặn tin retained cũ hoặc phiên giả từ quá khứ "sống lại".
 
-**`telemetryDecision`** ([server/telemetry.mjs](server/telemetry.mjs)) theo thứ tự: retained → `retained`; phiên đã retired → `retired_session`; phiên chưa xác nhận → `unconfirmed`; đồng hồ (nếu có) lệch tương lai hoặc cũ > 10 s → `invalid_time`; cùng boot mà `seq` không tăng → `old_sequence`; `uptime_ms` hoặc `controller_revision` lùi → `regression`; còn lại `accepted` (rồi kiểm trùng `(device, boot, seq)` → `duplicate`).
+**`telemetryDecision`** ([server/telemetry.mjs](server/telemetry.mjs)) theo thứ tự: retained → `retained`; phiên đã retired → `retired_session`; phiên không phải ứng viên và cũng không phải phiên hiện hành trong DB → `unconfirmed`; đồng hồ (nếu có) lệch tương lai hoặc cũ > 10 s → `invalid_time`; cùng boot mà `seq` không tăng → `old_sequence`; `uptime_ms` hoặc `controller_revision` lùi → `regression`; còn lại `accepted` nếu phiên đã xác nhận trong kết nối này, hoặc **`backlog`** nếu chỉ trùng phiên hiện hành trong DB (rồi kiểm trùng `(device, boot, seq)` → `duplicate`). `backlog` xảy ra khi broker giao lại khung tồn đọng sau lỗi DB/khởi động lại: chỉ ghi bảng `telemetry`, không đổi trạng thái hiện hành, cảnh báo hay độ tươi (DEC-035).
 
 **Freshness trong bộ nhớ.** `live` là tập phiên đã có telemetry được commit trên kết nối MQTT hiện tại. Mất MQTT hoặc lỗi DB → xóa `live` → mọi thiết bị thành `stale` cho tới khi telemetry mới tới. Thiết bị là `fresh` khi: có tin, `state=online`, MQTT đang nối, phiên trong `live`, nhận ≤ 10 s trước (và `sent_at` ≤ 10 s nếu có đồng hồ).
 
@@ -1046,7 +1046,7 @@ Ca ngày 06:00–18:00, ca đêm 18:00–06:00 (khoảng `[start, end)`), giờ 
 | --- | --- |
 | Broker chết | ESP-C01 vẫn chạy quy tắc + output; event xếp hàng (≤ 32, quá thì gap). Backend: `/api/ready` 503, thiết bị thành `stale`, lệnh trả 503 `BROKER_UNAVAILABLE`. Broker sống lại: tự nối, phiên mới |
 | Backend tắt | Broker giữ tin QoS 1 cho phiên bền của backend (≤ 1000 tin, 1 ngày); khởi động lại thì nhận bù, chống trùng ở DB |
-| MySQL lỗi | Ingest không PUBACK → tin được giao lại; API dữ liệu 503; health vẫn 200 |
+| MySQL lỗi / không ghi được | Ingest không PUBACK → tin được giao lại; API dữ liệu 503; health vẫn 200; thiết bị không còn `fresh`. Ghi được lại: khung tồn đọng lưu đúng một lần làm lịch sử (`backlog`), khung live kế tiếp cập nhật trạng thái. Trong lúc lỗi, ingest mọi thiết bị dừng (head-of-line) |
 | Thiết bị reboot | `boot_id` mới; phiên cũ retired; số người *chưa xác minh* tới khi mmWave thông và không thẻ nào trong |
 | Thiết bị rớt mạng | Last Will `offline` → `state=offline`, cảnh báo `DEVICE_OFFLINE`; giá trị cuối giữ để tra cứu, không coi là an toàn |
 | Tin retained cũ | Telemetry retained bị bỏ; `online` retained không làm thiết bị "sống" nếu chưa có telemetry phiên đó |
@@ -1115,6 +1115,7 @@ Ca ngày 06:00–18:00, ca đêm 18:00–06:00 (khoảng `[start, end)`), giờ 
 | | `load-run.mjs` | Đo tải |
 | Kiểm tra | `check-mqtt`, `check-mysql`, `check-tls`, `check-secret-files` | Hạ tầng |
 | | `check-backend`, `check-telemetry`, `check-events`, `check-control`, `check-auth`, `check-reservations`, `check-recovery`, `check-reports` | Tích hợp theo mốc |
+| | `check-write-fault.mjs` (`writefault:check`) | T24: khóa dòng MySQL để gây lỗi ghi thật, kiểm không lưu giả và phục hồi đúng một lần |
 | | `check-firmware.mjs`, `firmware-observation.mjs` | Quan sát telemetry ESP32 thật |
 | | `wokwi-acceptance.mjs` | Nghiệm thu bán tự động trên Wokwi (RFID, presence, liên động, rèm quang, panic, T08, lệnh trùng/cũ, timer cửa mở, mắc kẹt) |
 | | `verify-all.mjs` | Chạy toàn bộ theo đúng thứ tự phụ thuộc |
@@ -1129,8 +1130,7 @@ Ca ngày 06:00–18:00, ca đêm 18:00–06:00 (khoảng `[start, end)`), giờ 
 
 - **Mô phỏng**: không có phần cứng; mmWave, rèm quang, contact, panic là công tắc; RFID là dòng Serial; CO₂, ảnh nhiệt, AI không được triển khai.
 - **Nghiệm thu Wokwi**: RFID, mmWave, liên động, đảo chiều, panic, T08, lệnh trùng/cũ và timer đã đạt trên firmware thật ([bằng chứng](docs/evidence/WOKWI-2026-10-13.md)). Chưa thử trên thiết bị: T06 (unknown/stale), reboot → số người chưa xác minh, CA sai phía firmware.
-- **M16 chưa đóng**: T17 (khu đệm đầy, integration), T24 (DB đầy/lỗi ghi), T26 (825/1440 px, bàn phím) mới đạt một phần.
-- **Script mô phỏng** `demo:warehouse` thoát khi broker dừng (không tự nối lại).
+- **M16 chưa đóng**: T17, T24, T26 đã đạt nhưng chưa chạy lại `verify:all` sau khi sửa ingest (DEC-035/036). "DB hết dung lượng đĩa" chưa thử.
 - **Không có NTP ở edge**: TTL lệnh 10 s do backend đánh dấu; edge bảo vệ bằng phiên + revision (DEC-020).
 - **Chỉ localhost**: cookie chưa `Secure`; muốn ra mạng phải có HTTPS, `Secure`, và xem lại Origin/Host.
 - **Một bộ điều khiển thật**: chỉ ESP-C01 nhận lệnh; cửa của SIM không điều khiển được.
