@@ -84,6 +84,22 @@ Tên file giữ theo yêu cầu người dùng. Đây là sổ quyết định: 
 - Hệ quả: thêm một terminal gateway khi chạy demo. Upstream còn forward HTTP cổng 9080 trên mọi interface và không hỗ trợ tắt bằng --forward=; firmware hiện không có HTTP server. Không cấp quyền Firewall rộng; dừng gateway sau demo. Cần giới hạn ingress trước khi thêm HTTP server hoặc chạy ở môi trường khác.
 - Script kiểm tra cổng chỉ bind loopback. Người dùng đã yêu cầu hoàn tác lần nhấn Allow nhầm: gỡ đúng hai quyền PowerShell Public qua UAC do người dùng xác nhận, người dùng Cancel hộp thoại Firewall; đã đọc lại thấy Block/Public. Không đổi Firewall toàn cục hay quyền của ứng dụng khác.
 
+## DEC-012 — Backend HTTP cục bộ và readiness tách liveness
+
+- Ngày: 13/10/2026. Trạng thái: **đã triển khai và kiểm thử M04**.
+- Dùng node:http có sẵn cho hai route, mysql2 pool và MQTT.js hiện có. Chưa thêm Express/ws/ORM vì M04 chưa có nghiệp vụ, ingest hay WebSocket; giữ một manifest/lockfile gốc.
+- Health chỉ xác nhận HTTP process sống. Ready kiểm tra DB đúng ownership/migration/seed và MQTT connected; lỗi trả 503, health vẫn 200. Không dùng ready để xác nhận dữ liệu cảm biến mới hoặc an toàn cửa.
+- Config chỉ localhost/schema/account dự án; backend dùng runtime, migration dùng migration account, không cần admin. Thiếu credential báo tên biến nhưng không báo giá trị. Host/request/header/socket có kiểm tra/giới hạn; chưa mở CORS hoặc endpoint điều khiển.
+- Pool 4 connection, không queue vô hạn, connect/query có timeout; connection lỗi bị loại. MQTT reconnect nền, chưa subscribe. Hệ quả: M05 mới ingest, M06 mới nối giao diện; ngoài localhost cần HTTPS/auth/phân quyền theo các mốc sau.
+
+## DEC-013 — Journal migration và seed bảo toàn inventory
+
+- Ngày: 13/10/2026. Trạng thái: **đã áp dụng trên MySQL và kiểm thử chạy lại**.
+- Migration 001_inventory tạo warehouses/zones/devices/doors; foreign key device+zone giữ ownership cửa. ID/mapping theo contracts/devices.json, nhãn theo seed JSON; không đưa snapshot cảm biến giả vào DB như dữ liệu thật.
+- Xác minh setup ID/server UUID M02 trước ghi, lock theo schema, checksum SQL chuẩn hóa LF. Journal applying/complete vì MySQL DDL implicit commit; migration dở/checksum đổi/collision bị từ chối, không reset tự động.
+- Seed transaction kèm checksum marker; chạy lại giữ dữ liệu đã có. Thay registry/seed đã áp dụng phải có migration mới. Runtime không tự migration khi start.
+- Hệ quả: cần chạy db:migrate trước khi ready 200; migration/seed lặp lại no-op. Có SQL rollback thủ công sau backup/ownership check, chưa chạy; rollback DDL không khôi phục dữ liệu mất. 9 integration check đã thử lỗi journal, lock, FK và transport bằng proxy localhost, không dừng dịch vụ dùng chung.
+
 ## Cách cập nhật
 
 Mỗi quyết định mới thêm DEC-xxx với ngày, trạng thái, lý do và hệ quả. Khi thay đổi, thêm mục mới tham chiếu mục bị thay thế; giữ lịch sử. Chỉ ghi “đã triển khai” khi có công việc/test tương ứng trong `QUA_TRINH.md`.

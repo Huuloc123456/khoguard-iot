@@ -43,4 +43,15 @@ Xem [infra/README.md](infra/README.md) để setup/start và kiểm tra MQTT, My
 
 ## Firmware mô phỏng M03
 
-[firmware/README.md](firmware/README.md) hướng dẫn build PlatformIO và chạy ESP32/DHT22 trong Wokwi. Telemetry ESP-C01 tới broker thật; reconnect qua gateway native và đổi nhiệt độ đã đạt. Các tín hiệu cửa/occupancy vẫn unknown và dashboard vẫn dùng dữ liệu mẫu. Tiếp theo M04: backend/MySQL. [Bằng chứng](docs/evidence/M03-2026-10-12.md).
+[firmware/README.md](firmware/README.md) hướng dẫn build PlatformIO và chạy ESP32/DHT22 trong Wokwi. Telemetry ESP-C01 tới broker thật; reconnect qua gateway native và đổi nhiệt độ đã đạt. Các tín hiệu cửa/occupancy vẫn unknown và dashboard vẫn dùng dữ liệu mẫu. [Bằng chứng](docs/evidence/M03-2026-10-12.md).
+
+## Backend và inventory M04
+
+Đã có backend HTTP localhost:3001, pool MySQL, migration/seed 4 khu–12 cửa–5 thiết bị. Health/readiness đã kiểm tra kết nối thật và mất/phục hồi DB/MQTT. Backend chưa subscribe/lưu telemetry; tiếp theo M05 rồi M06 mới nối dashboard.
+
+```powershell
+npm run db:migrate
+npm run backend:start
+```
+
+Broker dự án cần chạy ở terminal riêng. [server/README.md](server/README.md) có đầy đủ lệnh và API; `npm run backend:check` chạy 9 integration check. [Bằng chứng M04](docs/evidence/M04-2026-10-13.md).

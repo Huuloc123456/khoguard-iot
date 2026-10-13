@@ -4,7 +4,7 @@ Cập nhật: **13/10/2026**. Phạm vi: đồ án **mô phỏng**, lập trình
 
 ## 1. Sau giao diện, làm gì trước?
 
-**M01–M03 đã đạt ngày 12/10/2026. ESP32 Wokwi gửi telemetry thật và reconnect sau khi broker khởi động lại qua gateway native. Tiếp theo M04–M06: backend → MySQL → API → dashboard.** Chỉ khi luồng này hoạt động mới bổ sung RFID, liên động cửa, sức chứa và lịch làm việc.
+**M01–M03 đã đạt ngày 12/10/2026; M04 đạt ngày 13/10/2026. Có backend HTTP, pool MySQL, inventory và health/readiness đã thử lỗi/kết nối lại. Tiếp theo M05 lưu telemetry, M06 nối API/dashboard.** Chỉ khi luồng này hoạt động mới bổ sung RFID, liên động cửa, sức chứa và lịch làm việc.
 
 Quyết định: [DESITION.md](DESITION.md). Công việc và kết quả thực tế: [QUA_TRINH.md](QUA_TRINH.md). Hợp đồng M01: [contracts/README.md](contracts/README.md). Người dùng đã chốt **giữ MySQL**; không chuyển MongoDB.
 
@@ -28,8 +28,9 @@ Nội dung tài liệu Word là yêu cầu tham khảo cho mô hình. Các thi�
 | Kiểm tra trình duyệt | Các màn hình và kịch bản đã được kiểm tra; bố cục ở chiều rộng 320, 390, 825 và 1440 px |
 | Firmware | Probe ESP-C01/DHT22 ở firmware/, build PlatformIO đạt; telemetry và reconnect qua gateway native đã đạt |
 | MQTT | Broker dự án 127.0.0.1:18884, 7 account/ACL riêng; ESP32 đã publish. Dashboard/backend chưa nối; TLS chưa cấu hình |
-| MySQL | Đã tạo khoguard_demo/infra_meta, runtime/migration account riêng; 6 kiểm tra DB thật đạt. Chưa bảng/dữ liệu nghiệp vụ |
-| Chưa có | Backend/API/WebSocket dữ liệu thật, xác thực ứng dụng, TLS, lưu telemetry nghiệp vụ, WMS, liên động edge, kiểm thử Wokwi các kịch bản cửa/end-to-end |
+| MySQL | khoguard_demo/infra_meta, account riêng; M04 có journal/inventory, 1 kho–4 khu–5 thiết bị–12 cửa; chưa lịch sử telemetry |
+| Backend | HTTP 127.0.0.1:3001, pool runtime, health/readiness; 9 integration check M04 đạt |
+| Chưa có | MQTT ingest/API snapshot/WebSocket dữ liệu thật, xác thực ứng dụng, TLS, lưu telemetry nghiệp vụ, WMS, liên động edge, kiểm thử Wokwi các kịch bản cửa/end-to-end |
 
 Các kịch bản hiện tại tạo lại snapshot mẫu, không phải chuỗi sự kiện từ firmware. Nút tiếp nhận chỉ đánh dấu đã xem, không xóa điều kiện nguy hiểm. Test panic hiện tại có cửa mẫu vốn đang mở; cần test riêng chuyển trạng thái **đóng → nhấn panic → mở** khi xây bộ điều khiển.
 
@@ -56,7 +57,7 @@ Phiên bản dưới đây là kết quả kiểm tra môi trường trong phiê
 | WSL2 / Ubuntu | Đã có | Tùy chọn; ưu tiên chạy native Windows đang có |
 | Arduino IDE 2.3.10 | Đã cài | Không cần cho luồng PlatformIO |
 
-**Các công cụ hệ thống chính đã đủ; M03 bổ sung gateway native riêng và thư viện/toolchain qua PlatformIO.** M01 có Ajv/ajv-formats dev dependency; M02 có mqtt/mysql2 ở manifest gốc cho kết nối. Express/ws chưa có, bổ sung ở mốc backend. .npmrc chặn install lifecycle scripts, clean install đã kiểm chứng. Validator dùng runtime phải có dependency runtime tương ứng. MQTT firmware 2.5.3 đã thử QoS1/reconnect; TLS còn phải nghiệm thu ở M12.
+**Các công cụ hệ thống chính đã đủ; M03 bổ sung gateway native riêng và thư viện/toolchain qua PlatformIO.** M01 có Ajv/ajv-formats dev dependency; M02 có mqtt/mysql2 ở manifest gốc cho kết nối. M04 dùng node:http có sẵn; chưa cần Express/ws/ORM. WebSocket và dependency runtime của validator bổ sung khi M05–M06 thực sự dùng. .npmrc chặn install lifecycle scripts, clean install đã kiểm chứng. MQTT firmware 2.5.3 đã thử QoS1/reconnect; TLS còn phải nghiệm thu ở M12.
 
 Kiểm thử dùng `node:test` đã có. Kiểm thử firmware thuần logic dùng PlatformIO/native khi toolchain tương ứng khả dụng; adapter ESP32 vẫn phải build và chạy Wokwi. Chỉ thêm Playwright vào dev dependency khi viết kiểm thử trình duyệt có thể chạy lại. Không cần Redis, Kubernetes, Node-RED, driver USB hay phần mềm PLC cho phạm vi mô phỏng.
 
@@ -272,10 +273,11 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 
 ### M04 — Backend nền tảng và migration
 
-- [ ] Tạo server HTTP, config validation, pool DB, migration/seed khu–cửa–thiết bị và health/readiness.
-- [ ] Tạo kiểm thử lỗi cấu hình, DB mất kết nối và migration lặp lại.
+- [x] Tạo server HTTP, config validation, pool DB, migration/seed khu–cửa–thiết bị và health/readiness.
+- [x] Tạo kiểm thử lỗi cấu hình, DB mất kết nối và migration lặp lại.
 - Phụ thuộc: M02. Phạm vi: `server/`, `db/migrations/`, `db/seeds/`.
 - Nghiệm thu: thiếu secret thì fail rõ ràng; query có parameter; DB lỗi không trả dữ liệu thành công giả; không có endpoint điều khiển mở công khai.
+- Kết quả 13/10/2026: **46/46 test**, 9 integration check, build frontend và audit 0 vulnerability đạt. Migration/seed lần hai no-op; checksum/applying/lock/FK được kiểm tra. Mất transport DB/MQTT: ready 503, health 200, phục hồi ready 200; không dừng dịch vụ thật. [Hướng dẫn backend](server/README.md), [bằng chứng M04](docs/evidence/M04-2026-10-13.md).
 
 ### M05 — Luồng môi trường đầu tiên đến DB/API
 
@@ -480,4 +482,4 @@ Còn thiếu: điều kiện chưa xác minh; bước tiếp theo
 | Linh kiện mmWave/CO₂/thermal không có trong Wokwi | Dùng input giả lập được ghi nguồn | Không chặn kiểm thử logic; không chứng minh độ chính xác cảm biến |
 | Log khi nguồn/DB mất và giới hạn replay | Chốt application ack/gap policy, thử T24 | Chặn tuyên bố lưu trữ đầy đủ khi mất kết nối |
 
-**Việc tiếp theo cụ thể:** M04 — backend HTTP, validation cấu hình, pool MySQL, migration/seed khu–cửa–thiết bị và health/readiness. M05 lưu telemetry, M06 mới nối dashboard. MySQL được giữ nguyên.
+**Việc tiếp theo cụ thể:** M05 — subscribe MQTT, validate/dedupe, lưu telemetry vào MySQL và API snapshot/lịch sử; M06 nối dashboard. MySQL được giữ nguyên; M04 readiness chưa chứng minh ingest.

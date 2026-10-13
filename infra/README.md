@@ -2,6 +2,8 @@
 
 Đã kiểm tra ngày 12/10/2026 trên Windows: Mosquitto 2.1.2, MySQL 26.7.0, Node 24.19. M02 có broker/schema/account thật; dashboard vẫn dùng dữ liệu mẫu, chưa có backend ingest hoặc firmware.
 
+Tiến độ sau M02: [firmware M03](../firmware/README.md) đã gửi telemetry; [backend M04](../server/README.md) có inventory/pool/health/readiness. MQTT ingest và dashboard dữ liệu thật thuộc M05–M06.
+
 ## Chuẩn bị và khởi động
 
 ```powershell

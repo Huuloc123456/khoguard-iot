@@ -126,9 +126,36 @@ Kết quả:
 
 Chưa kiểm tra: MQTTX GUI, Last Will riêng, mất WiFi riêng, cảm biến lỗi vật lý, TLS/NTP/command, backend/DB/UI dữ liệu thật. Không suy các phần này đã đạt từ test M03.
 
+## 07 — Triển khai M04: backend và migration inventory
+
+Ngày: 13/10/2026. Nhánh: codex/m04-backend-foundation. Trạng thái: **đã đạt M04**; giữ MySQL.
+
+Đã làm:
+
+- Tạo server/config.mjs, http.mjs, database.mjs, mqtt.mjs, start.mjs: localhost:3001, pool runtime, health/readiness, cấu hình fail closed, timeout/cleanup và lỗi không lộ secret.
+- Tạo 001_inventory, seed từ registry: 1 kho, 4 khu, 5 thiết bị, 12 cửa; journal/checksum/ownership lock, seed transaction không ghi đè khi chạy lại. Có rollback SQL thủ công, chưa chạy.
+- Thêm db:migrate, backend:start, backend:check; dùng thư viện sẵn có và node:http, không cài dependency mới hoặc tạo manifest server riêng.
+- Tạo 6 test mới cho config/HTTP/readiness/migration/seed; integration probe sử dụng account riêng và proxy loopback để thử mất DB/MQTT mà không dừng dịch vụ.
+- Tạo server/README.md, cập nhật kế hoạch/root README và DEC-012/DEC-013.
+
+Kiểm tra và lỗi đã xử lý:
+
+1. RED: test server và migration thất bại vì module chưa có, trước implementation. Test Host ban đầu dùng fetch không gửi Host override; đổi sang node:http.get để thật sự thử Host lạ, giữ yêu cầu HTTP 400.
+2. db:migrate lần đầu applied/seed created, lần hai already complete/seed preserved. Không dùng admin, không drop/reset hoặc thay grant/schema khác.
+3. backend:check: **9 kiểm tra thực tế đạt** — số lượng inventory, migration no-op, applying/checksum sai bị chặn và rollback, lock đồng thời bị chặn, seed giữ tên/Unicode prepared query, FK từ chối device khác khu, backend 200, DB loss/recover, MQTT loss/recover.
+4. Mất transport của client test: ready 503, health 200; nối lại ready 200. Proxy chỉ ngắt socket test, MySQL/Mosquitto thật vẫn chạy.
+5. Thiếu DB/MQTT password và HTTP_HOST LAN: child process exit 1 trước listen, không lộ secret. Start lần hai ở cổng 3001 bị chiếm: EADDRINUSE/exit 1, process hiện có vẫn chạy.
+6. npm test: **46/46 pass**, 0 skipped. Frontend build đạt, 20 module/JS gzip 76,47 kB; npm audit: **0 vulnerability**. Không thêm dependency; firmware/UI không thay đổi.
+7. infra:secrets:check: 7 file Git ignore, 8 HTTP URL 403. Backend 127.0.0.1:3001, broker riêng 18884, Vite 5173 đang chạy; MySQL 3306/service Mosquitto cũ 1883 không bị dừng.
+8. Rà soát cuối: 78 file tracked/new không có credential local đã đối chiếu; git diff --check đạt. Startup nêu đúng tên biến thiếu, không nêu giá trị.
+
+Bằng chứng: [M04-2026-10-13.md](docs/evidence/M04-2026-10-13.md). Save point: 976e83c — config/HTTP/unit test; a2f4449 — migration/inventory/runtime và integration check; các sổ/bằng chứng ở commit tài liệu kế tiếp. Không push/merge.
+
+Chưa làm: subscribe/validate/dedupe/lưu telemetry, API snapshot/history, WebSocket, nối dashboard, auth/TLS, browser/E2E mới hoặc chạy rollback DDL. Đây là M05 trở đi, không suy là đã đạt từ readiness 200.
+
 ## Bước kế tiếp
 
-M04: backend HTTP/config validation/pool MySQL, migration/seed khu–cửa–thiết bị, health/readiness và kiểm thử cấu hình/DB/migration. Sau đó M05 ingest/lưu telemetry, M06 nối dashboard. Giữ MySQL.
+M05: MQTT ingest, validate/dedupe theo boot/session/seq, lưu telemetry vào MySQL, API snapshot và lịch sử có giới hạn; sau đó M06 nối dashboard. Giữ MySQL, bắt đầu với luồng môi trường đầu tiên.
 
 ## Mẫu ghi thêm ở mỗi bước
 
