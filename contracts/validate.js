@@ -54,7 +54,7 @@ export function validateSnapshot(value) {
   if (![value.zones, value.doors, value.devices, value.alerts].every(uniqueIds)) return failure('INVALID_SNAPSHOT', 'Duplicate ID');
   if (value.zones.length !== registry.zones.length || value.doors.length !== registry.devices.reduce((total, device) => total + device.doors.length, 0)
     || value.devices.length !== registry.devices.length) return failure('INVALID_SNAPSHOT', 'Snapshot must include the entire configured warehouse');
-  if (value.zones.some(zone => zone.occupied + zone.reserved > zone.capacity || zone.range[0] > zone.range[1])) {
+  if (value.zones.some(zone => (zone.occupied !== null && zone.reserved !== null && zone.occupied + zone.reserved > zone.capacity) || zone.range[0] > zone.range[1])) {
     return failure('INVALID_SNAPSHOT', 'Invalid capacity or temperature range');
   }
   const zoneIds = new Set(value.zones.map(zone => zone.id));

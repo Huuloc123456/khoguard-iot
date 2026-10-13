@@ -29,8 +29,8 @@
         "name": { "$ref": "#/definitions/text" },
         "range": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number", "minimum": -100, "maximum": 100 } },
         "capacity": { "type": "integer", "minimum": 0, "maximum": 100000 },
-        "occupied": { "type": "integer", "minimum": 0, "maximum": 100000 },
-        "reserved": { "type": "integer", "minimum": 0, "maximum": 100000 },
+        "occupied": { "type": ["integer", "null"], "minimum": 0, "maximum": 100000 },
+        "reserved": { "type": ["integer", "null"], "minimum": 0, "maximum": 100000 },
         "environment": { "$ref": "urn:khoguard:mqtt:v1#/definitions/environment" },
         "occupancy": { "$ref": "urn:khoguard:mqtt:v1#/definitions/occupancy" }
       }
