@@ -13,7 +13,7 @@ test('firmware gets only its own device credential and the private gateway endpo
 });
 
 test('malformed secrets cannot inject C++ into the generated header', () => {
-  for (const password of [undefined, '', ['a'.repeat(48)], 'a'.repeat(47), 'A'.repeat(48), '";\n#error injected']) {
+  for (const password of [undefined, '', ['a'.repeat(48)], 'abc', 'a'.repeat(129), 'pass word', '";\n#error injected']) {
     assert.throws(() => firmwareSecrets(password), /credential/);
   }
 });

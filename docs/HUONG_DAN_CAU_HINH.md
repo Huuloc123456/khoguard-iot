@@ -261,7 +261,9 @@ Get-Content .local\dashboard-users.json
 | `operator` | Xem, gửi lệnh cửa, tiếp nhận cảnh báo, nhận hàng, xem nhật ký ra vào |
 | `admin` | Như operator, thêm nhật ký đăng nhập |
 
-Muốn đổi mật khẩu: sửa giá trị trong `dashboard-users.json` (≥ 12 ký tự), chạy lại `npm run auth:setup`; phiên cũ của tài khoản đó bị thu hồi.
+Muốn đổi mật khẩu: sửa giá trị trong `dashboard-users.json` (4–128 chữ/số), chạy lại `npm run auth:setup`; phiên cũ của tài khoản đó bị thu hồi.
+
+> Danh sách tài khoản: [TAI_KHOAN.md](TAI_KHOAN.md). Máy demo hiện đặt **mọi** mật khẩu dự án là `1234` (dashboard, MQTT, MySQL runtime/migration — DEC-041). Đổi mật khẩu MQTT: sửa `.local/mosquitto/accounts.json` và `MQTT_PASSWORD` trong `runtime.env`, xóa `.local/mosquitto/passwords`, chạy `node scripts/setup-mqtt.mjs`, khởi động lại broker/backend và `npm run firmware:build`. Đổi mật khẩu MySQL: `ALTER USER` cho đúng tài khoản rồi sửa `mysql-users.json` và `runtime.env`.
 
 ## 9. Khởi động backend
 

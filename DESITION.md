@@ -240,3 +240,28 @@ Mỗi quyết định mới thêm DEC-xxx với ngày, trạng thái, lý do và
 - `writefault:check` (T24): lỗi ghi thật bằng khóa dòng `device_current` từ kết nối runtime thứ hai, không dừng MySQL, không làm đầy đĩa. "DB đầy" theo dung lượng chưa thử.
 - T26 đo bằng trình duyệt tích hợp và JS (tràn ngang, viền focus, nhãn), chưa thành test tự động trong repo (chưa thêm Playwright).
 - `demo:warehouse` tự nối lại khi broker dừng: mỗi lần gửi có giới hạn 5 s, nối lại cùng boot, session mới như thiết bị thật.
+
+## DEC-038 — Hồi quy sau Claude và giới hạn nghiệm thu
+
+- Ngày 13/10/2026. Giữ hai sửa mất dữ liệu DEC-035/036; kiểm tra lại bằng toàn bộ runner, gồm bài lỗi ghi MySQL mới. Readiness phải có assertion thất bại trong lúc không ghi được, không chỉ in số lần probe.
+- Probe MQTT chỉ nhận marker live đúng lượt, loại retained/traffic khác; có test hồi quy chứng minh receiver cũ sai. Không nới ACL/schema để làm bài test đạt.
+- `verify:all` bỏ qua C++ nếu PATH Windows thiếu g++; hai bộ được chạy riêng bằng WSL và ghi bằng chứng riêng. WebSocket latency không được gọi là DOM latency; test C++/Node không được đổi tên thành nghiệm thu Wokwi.
+- Collection Postman chia phần xem dữ liệu và phần vận hành; password trống trong file. Bản source sạch chỉ cài/test/build web, không mang secret/firmware nhúng secret sang gói bàn giao. [Báo cáo](docs/evidence/REVIEW-CLAUDE-2026-10-13.md).
+
+## DEC-039 — Fault injection Wokwi nằm trong firmware kiểm thử riêng
+
+- Ngày 13/10/2026. T06/reboot/T20 chạy trên ESP32 Wokwi với `controller.h` nguyên byte. Adapter riêng tạo input unknown, presence HIGH lúc reboot, pause telemetry; không thêm cổng điều khiển thử vào firmware demo.
+- CA sai dùng CA thử khác; hostname sai dùng cùng endpoint và CA đúng nhưng hostname xác minh khác qua API WiFiClientSecure. Không đổi certificate/broker hay bỏ xác minh TLS. Workspace test có bin bên trong phạm vi watcher; chỉ chạy một Simulator trên Serial 4000.
+- Script tự phục hồi bin/ELF ban đầu, kiểm tra SHA-256 và 5 thiết bị fresh; credential và ảnh firmware chỉ nằm trong `.local`. [9 nhóm đạt](docs/evidence/WOKWI-REMAINING-2026-10-13.md).
+
+## DEC-040 — Từ chối nghiệp vụ không được xóa phiên MQTT toàn kho
+
+- Ca stale phát hiện `DEVICE_NOT_LIVE` trong transaction gây rollback/destroy/reset như lỗi MySQL. Chuyển quyết định từ chối thành null trong transaction đọc; trả lỗi 409 sau commit. Các phiên không bị tác động, dữ liệu mới phục hồi bình thường.
+- Lỗi DB thật vẫn rollback, destroy và xóa xác nhận phiên. Test hồi quy RED → GREEN, 109 unit và write-fault thật đạt; không sửa quy tắc backlog thành live để che lỗi.
+
+## DEC-041 — Mật khẩu demo thống nhất 1234
+
+- Ngày 13/10/2026; người dùng yêu cầu, đã áp dụng trên máy này. Đặt `1234` cho 3 tài khoản dashboard, 7 tài khoản MQTT (backend, observer, 5 thiết bị) và 2 tài khoản MySQL của dự án (`khoguard_runtime`, `khoguard_migrate`), để gõ nhanh khi demo. Thay một phần DEC-009 (mật khẩu ngẫu nhiên) và DEC-026 (dashboard ≥ 12 ký tự).
+- Kiểm tra định dạng đổi từ "48 ký tự hex" / "≥ 12 ký tự" thành `SECRET_PATTERN` = 4–128 chữ/số (`server/config.mjs`). Vẫn chỉ chữ/số vì mật khẩu được ghi vào `kg_secrets.h` (C++) và câu SQL; test chống chèn C++/SQL giữ nguyên.
+- MySQL: mỗi tài khoản dự án tự `ALTER USER CURRENT_USER()` bằng mật khẩu cũ, không dùng tài khoản admin (`mysql-admin.env` để trống). **Không** đổi tài khoản admin MySQL hay service Mosquitto 1883 vì dùng chung với ứng dụng khác (DEC-007).
+- Cài mới vẫn sinh mật khẩu ngẫu nhiên; `1234` chỉ là giá trị đang dùng trong `.local` của máy demo. Hệ quả: ai trên máy này đọc được tài liệu là đăng nhập được broker/DB/dashboard; chấp nhận vì mọi dịch vụ chỉ nghe 127.0.0.1. Đưa ra mạng phải đổi lại mật khẩu dài ngẫu nhiên.

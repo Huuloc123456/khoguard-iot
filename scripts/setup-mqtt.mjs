@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { registry, local, readJson, buildAcl, buildBrokerConfig } from './local-config.mjs';
+import { SECRET_PATTERN } from '../server/config.mjs';
 
 if (!existsSync(local) || lstatSync(local).isSymbolicLink()) throw new Error('Run setup-local.ps1 to create protected .local first');
 const directory = join(local, 'mosquitto');
@@ -12,7 +13,7 @@ const users = ['khoguard-backend', 'khoguard-observer', ...registry.devices.map(
 let accounts;
 if (existsSync(accountsFile)) {
   accounts = readJson(accountsFile);
-  if (users.some(user => !/^[a-f0-9]{48}$/.test(accounts[user] ?? '')) || Object.keys(accounts).length !== users.length) {
+  if (users.some(user => !SECRET_PATTERN.test(accounts[user] ?? '')) || Object.keys(accounts).length !== users.length) {
     throw new Error('Existing account file does not match registry; do not overwrite credentials');
   }
 } else {

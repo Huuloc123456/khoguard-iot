@@ -1,3 +1,7 @@
+// DEC-041: demo passwords may be short (e.g. 1234). Letters/digits only, because the same values are
+// written into C++ (kg_secrets.h) and SQL literals; that restriction is what keeps them injection-safe.
+export const SECRET_PATTERN = /^[A-Za-z0-9]{4,128}$/;
+
 export function readConfig(env, { migration = false } = {}) {
   const fail = key => { throw Object.assign(new Error(`Missing or invalid ${key}`),{code:'CONFIG'}); };
   const fixed = (key, value) => { if (env[key] !== value) fail(key); return value; };
@@ -7,7 +11,7 @@ export function readConfig(env, { migration = false } = {}) {
     return Number(value);
   };
   const secret = key => {
-    if (typeof env[key] !== 'string' || !/^[a-f0-9]{48}$/.test(env[key])) fail(key);
+    if (typeof env[key] !== 'string' || !SECRET_PATTERN.test(env[key])) fail(key);
     return env[key];
   };
   if (env.HTTP_HOST !== undefined && env.HTTP_HOST !== '127.0.0.1') fail('HTTP_HOST');

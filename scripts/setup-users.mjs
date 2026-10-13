@@ -17,7 +17,7 @@ try {
     writeFileSync(file, JSON.stringify(users, null, 2) + '\n', { flag: 'wx' });
   }
   const users = readJson(file);
-  if (DEMO_USERS.some(([name]) => typeof users[name] !== 'string' || users[name].length < 12)) throw new Error('dashboard-users.json is incomplete; fix it, do not overwrite');
+  if (DEMO_USERS.some(([name]) => typeof users[name] !== 'string' || users[name].length < 4)) throw new Error('dashboard-users.json is incomplete; fix it, do not overwrite');
   pool = createDbPool(readConfig(process.env).db);
   for (const [username, role] of DEMO_USERS) {
     const [rows] = await pool.execute('SELECT id,password_hash FROM users WHERE username = ?', [username]);

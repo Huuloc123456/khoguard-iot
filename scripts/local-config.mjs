@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parseEnv } from 'node:util';
+import { SECRET_PATTERN } from '../server/config.mjs';
 
 export const root = fileURLToPath(new URL('../', import.meta.url));
 export const local = fileURLToPath(new URL('../.local/', import.meta.url));
@@ -9,7 +10,7 @@ export const registry = readJson(new URL('../contracts/devices.json', import.met
 
 const PEM = /^-----BEGIN CERTIFICATE-----\n(?:[A-Za-z0-9+/=]{1,64}\n)+-----END CERTIFICATE-----\n?$/;
 export function firmwareSecrets(password, caPem) {
-  if (typeof password !== 'string' || !/^[a-f0-9]{48}$/.test(password)) throw new Error('Invalid ESP-C01 credential');
+  if (typeof password !== 'string' || !SECRET_PATTERN.test(password)) throw new Error('Invalid ESP-C01 credential');
   if (caPem !== undefined && (typeof caPem !== 'string' || !PEM.test(caPem.replaceAll('\r\n', '\n')))) throw new Error('Invalid CA certificate');
   // With the demo CA the edge uses MQTT/TLS 18885 and verifies hostname + CA; without it, the localhost-only 18884 demo port.
   return '#pragma once\n'
@@ -60,7 +61,7 @@ export function readAdminConfig(text) {
 }
 
 export function provisionSql(runtimePassword, migrationPassword) {
-  if (![runtimePassword, migrationPassword].every(value => /^[a-f0-9]{48}$/.test(value))) throw new Error('Invalid generated password');
+  if (![runtimePassword, migrationPassword].every(value => SECRET_PATTERN.test(value))) throw new Error('Invalid generated password');
   return readFileSync(new URL('../db/bootstrap.sql', import.meta.url), 'utf8')
     .replaceAll('@RUNTIME_PASSWORD@', runtimePassword).replaceAll('@MIGRATION_PASSWORD@', migrationPassword);
 }
