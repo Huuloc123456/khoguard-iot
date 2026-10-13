@@ -28,8 +28,17 @@ $FRAMES = @{
 function RGB([string]$hex) { [int]('0x' + $hex.Substring(4,2)) * 65536 + [int]('0x' + $hex.Substring(2,2)) * 256 + [int]('0x' + $hex.Substring(0,2)) }
 $C_BLUE = RGB '0070C0'; $C_NAVY = RGB '034EA2'; $C_COVER = RGB '00529C'; $C_RED = RGB 'ED1C24'; $C_ORANGE = RGB 'F27121'
 $C_INK = RGB '1F2328'; $C_PANEL = RGB 'F2F2F2'; $C_RULE = RGB 'D0D5DA'; $C_WHITE = RGB 'FFFFFF'; $C_ROW = RGB 'F5F7F9'
-$FONT = 'Arial'; $CODE = 'Consolas'
-$X0 = 53; $W = 1334; $BODY_TOP = 196; $BODY_BOTTOM = 752
+$FONT = 'Montserrat'; $CODE = 'Consolas'
+$X0 = 53; $W = 1334; $BODY_TOP = 168; $BODY_BOTTOM = 752
+
+# Long headings break once, at the space nearest the middle, so the two lines are even (PowerPoint does not balance).
+function Balance-Title([string]$text, [int]$max) {
+  if ($text.Length -le $max) { return $text }
+  $mid = [int]($text.Length / 2); $best = -1
+  for ($i = 0; $i -lt $text.Length; $i++) { if ($text[$i] -eq ' ' -and ($best -lt 0 -or [Math]::Abs($i - $mid) -lt [Math]::Abs($best - $mid))) { $best = $i } }
+  if ($best -lt 0) { return $text }
+  $text.Substring(0, $best) + [char]11 + $text.Substring($best + 1)
+}
 
 # Inline **bold** and `code` become runs; returns plain text plus the character spans to format.
 function Parse-Rich([string]$text) {
@@ -67,13 +76,12 @@ function Add-Text($slide, $x, $y, $w, $h, [string[]]$paragraphs, $size, $color, 
   $tf.TextRange.ParagraphFormat.Alignment = $align
   $box
 }
+# Points are separated by paragraph space rather than bullet dots; ordered lists keep their numbers.
 function Format-List($range, [bool]$ordered, [int]$size) {
-  $range.ParagraphFormat.LineRuleAfter = 0; $range.ParagraphFormat.SpaceAfter = [Math]::Round($size * 0.55)
-  $range.ParagraphFormat.LineRuleWithin = -1; $range.ParagraphFormat.SpaceWithin = 1.08
+  $range.ParagraphFormat.LineRuleAfter = 0; $range.ParagraphFormat.SpaceAfter = [Math]::Round($size * 0.85)
+  $range.ParagraphFormat.LineRuleWithin = -1; $range.ParagraphFormat.SpaceWithin = 1.1
   $b = $range.ParagraphFormat.Bullet
-  $b.Visible = -1
-  if ($ordered) { $b.Type = 2; $b.Style = 3 } else { $b.Type = 1; $b.Character = 8226 }
-  $b.Font.Color.RGB = $C_BLUE; $b.RelativeSize = 1
+  if ($ordered) { $b.Visible = -1; $b.Type = 2; $b.Style = 3; $b.Font.Color.RGB = $C_BLUE; $b.RelativeSize = 1 } else { $b.Visible = 0 }
 }
 # Grey rounded panel holding a bulleted list; measured to its text, then stretched to $minHeight.
 function Add-Panel($slide, $x, $y, $w, [string[]]$items, [bool]$ordered, $minHeight, $size = 20) {
@@ -86,7 +94,8 @@ function Add-Panel($slide, $x, $y, $w, [string[]]$items, [bool]$ordered, $minHei
   Set-Rich $tf.TextRange $items $size $C_INK
   $tf.TextRange.ParagraphFormat.Alignment = 1
   Format-List $tf.TextRange $ordered $size
-  $tf.Ruler.Levels(1).FirstMargin = 0; $tf.Ruler.Levels(1).LeftMargin = [Math]::Round($size * 1.3)
+  [single]$hang = 0; if ($ordered) { $hang = [Math]::Round($size * 1.4) }
+  $tf.Ruler.Levels(1).FirstMargin = 0; $tf.Ruler.Levels(1).LeftMargin = $hang
   $tf.AutoSize = 1; $natural = $panel.Height; $tf.AutoSize = 0
   # Stretched to sit level with its picture, the list is centred rather than leaving a blank lower half.
   if ($minHeight -gt $natural) { $panel.Height = $minHeight; $tf.VerticalAnchor = 3 }
@@ -139,8 +148,7 @@ function Add-PageNumber($slide, $n, $color) {
   $box = Add-Text $slide 1330 757 70 24 @("$n") 18 $color $false 3 'Slide Number'
 }
 function Add-Heading($slide, $spec) {
-  [void](Add-Text $slide $X0 90 $W 54 @($spec.title) 38 $C_BLUE $true 1 'Title')
-  if ($spec.chapter) { [void](Add-Text $slide $X0 146 $W 28 @("$($TXT.chapterLabel) $($spec.chapter.number) $([char]0x00B7) $($spec.chapter.title)") 18 $C_INK $true 1 'Subtitle') }
+  [void](Add-Text $slide $X0 96 $W 50 @($spec.title) 34 $C_BLUE $true 1 'Title')
 }
 function Set-Notes($slide, [string]$text) {
   $slide.NotesPage.Shapes.Placeholders.Item(2).TextFrame.TextRange.Text = ((Parse-Rich $text).text)
@@ -164,7 +172,7 @@ try {
     if ($Limit -and $n -gt $Limit) { break }
     if ($spec.kind -eq 'section') {
       $s = New-Frame $pres 'section'
-      [void](Add-Text $s 110 270 1220 200 @("$($spec.chapter.number). $($spec.chapter.title)") 48 $C_NAVY $true 2 'Title')
+      [void](Add-Text $s 110 270 1220 200 @((Balance-Title "$($spec.chapter.number). $($spec.chapter.title)" 36)) 44 $C_BLUE $true 2 'Title')
       $s.Shapes.Item('Title').TextFrame.VerticalAnchor = 3
       Add-PageNumber $s $n $C_INK
       Set-Notes $s ''
@@ -185,14 +193,13 @@ try {
         $s = New-Frame $pres 'agenda'
         $y = 286
         $i = 0
-        foreach ($item in $spec.items) { $i++; [void](Add-Text $s 168 $y 720 44 @("$i. $($item.TrimEnd('.'))") 26 $C_INK $true 1 "Chapter $i"); $y += 88 }
-        [void](Add-Image $s $img[0].path 900 300 410 400 $false $img[0].alt 'middle')
+        foreach ($item in $spec.items) { $i++; [void](Add-Text $s 168 $y 840 44 @("$i. $($item.TrimEnd('.'))") 24 $C_INK $true 1 "Chapter $i"); $y += 88 }
         Add-PageNumber $s $n $C_BLUE
         Set-Notes $s $spec.notes
       }
       'end' {
         $s = New-Frame $pres 'ending'
-        [void](Add-Text $s 100 268 1240 60 @($TXT.thanks) 44 $C_INK $true 2 'Thanks')
+        [void](Add-Text $s 100 268 1240 60 @($TXT.thanks) 40 $C_INK $true 2 'Thanks')
         [void](Add-Text $s 100 346 1240 36 @($spec.items[1].TrimEnd('.')) 26 $C_BLUE $true 2 'Team')
         $p = Add-Panel $s 300 420 840 @($spec.items[2], $spec.items[3]) $false 0 20
         Set-Notes $s $spec.notes
@@ -204,17 +211,27 @@ try {
         $frameShot = { param($p) $p -like '*.png' }
         # Diagrams carry small labels, so they get the wider column; screenshots and text split evenly.
         $gap = 24
-        $imgW = if ($img.Count -and $img[0].path -like '*.svg') { 830 } else { 664 }
+        $imgW = if ($img.Count -and $img[0].path -like '*.svg') { 860 } else { 664 }
         $textW = $W - $imgW - $gap
         switch ($spec.layout) {
+          { $_ -in 'text-img', 'img-text' -and $img[0].path -like '*.svg' } {
+            # Diagrams are ~2.4:1, so beside text they stay short and leave the lower third empty.
+            # Stack them instead: the points in two columns along the bottom, the diagram filling the rest.
+            $half = [Math]::Ceiling($spec.items.Count / 2)
+            $colW = ($W - $gap) / 2
+            $left = Add-Panel $s $X0 $BODY_TOP $colW @($spec.items[0..($half - 1)]) $spec.ordered 0 19
+            $right = Add-Panel $s ($X0 + $colW + $gap) $BODY_TOP $colW @($spec.items[$half..($spec.items.Count - 1)]) $spec.ordered 0 19
+            if ($spec.ordered) { $right.TextFrame.TextRange.ParagraphFormat.Bullet.StartValue = $half + 1 }
+            $ph = [Math]::Max($left.Height, $right.Height); $left.Height = $ph; $right.Height = $ph
+            $top = $BODY_BOTTOM - $ph; $left.Top = $top; $right.Top = $top
+            [void](Add-Image $s $img[0].path $X0 $BODY_TOP $W ($top - $BODY_TOP - $gap) $false $img[0].alt 'middle')
+            break
+          }
           { $_ -in 'text-img', 'img-text' } {
             $imgX = if ($spec.layout -eq 'text-img') { $X0 + $textW + $gap } else { $X0 }
             $textX = if ($spec.layout -eq 'text-img') { $X0 } else { $X0 + $imgW + $gap }
             $pic = Add-Image $s $img[0].path $imgX $BODY_TOP $imgW $bodyH (& $frameShot $img[0].path) $img[0].alt
             $panel = Add-Panel $s $textX $BODY_TOP $textW $spec.items $spec.ordered $pic.Height
-            # A wide diagram leaves the row short; centre the row in the body instead of leaving the lower half empty.
-            $offset = ($bodyH - [Math]::Max($pic.Height, $panel.Height)) / 2
-            if ($offset -gt 0) { $pic.Top = $pic.Top + $offset; $panel.Top = $panel.Top + $offset }
           }
           'table-img' {
             $tw = 790
@@ -256,7 +273,11 @@ try {
     }
   }
   for ($i = 1; $i -le $templateCount; $i++) { $pres.Slides.Item(1).Delete() }
-  $pres.SaveAs($Out, 24)
+  # Anything added must stay between the header band and the footer strip.
+  $k = 0
+  foreach ($slide in $pres.Slides) { $k++; foreach ($sh in $slide.Shapes) { if ($sh.Name -in 'Title','Panel','Picture','Table','Tier','Text','Thanks','Team','Tagline','Advisor','Members','Course','Product' -and ($sh.Top + $sh.Height -gt 790 -or $sh.Left + $sh.Width -gt 1400)) { Write-Warning "slide ${k}: $($sh.Name) ends at $([int]($sh.Top + $sh.Height)) x $([int]($sh.Left + $sh.Width))" } } }
+  # Embed the fonts used (Montserrat must be installed here) so the deck renders the same on the presentation PC.
+  $pres.SaveAs($Out, 24, -1)
   "Built $($pres.Slides.Count) slides -> $Out"
 } finally {
   $pres.Close(); $pp.Quit()
