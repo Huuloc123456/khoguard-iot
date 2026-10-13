@@ -4,6 +4,8 @@ import { once } from 'node:events';
 import { get } from 'node:http';
 import { readConfig } from '../server/config.mjs';
 import { createApp } from '../server/http.mjs';
+import { databaseReady } from '../server/database.mjs';
+import { inventoryMigration, seedChecksum } from '../db/migrate.mjs';
 
 const env = { DB_HOST:'127.0.0.1', DB_PORT:'3306', DB_NAME:'khoguard_demo', DB_USER:'khoguard_runtime', DB_PASSWORD:'a'.repeat(48), DB_MIGRATION_USER:'khoguard_migrate', DB_MIGRATION_PASSWORD:'b'.repeat(48), MQTT_HOST:'127.0.0.1', MQTT_PORT:'18884', MQTT_USERNAME:'khoguard-backend', MQTT_PASSWORD:'c'.repeat(48) };
 test('configuration fails closed without secrets and cannot select another schema/account or LAN bind', () => {
@@ -13,7 +15,7 @@ test('configuration fails closed without secrets and cannot select another schem
   assert.equal(config.db.user, 'khoguard_runtime');
   assert.equal('migrationPassword' in config.db, false);
   for (const [key,value] of Object.entries({DB_PASSWORD:'', MQTT_PASSWORD:'', DB_NAME:'mysql', DB_USER:'root', HTTP_HOST:'0.0.0.0', HTTP_PORT:'3x', DB_PORT:'65536', MQTT_PORT:'1883', MQTT_HOST:'example.com'})) {
-    assert.throws(() => readConfig({...env,[key]:value}), new RegExp(key));
+    assert.throws(() => readConfig({...env,[key]:value}), error=>error.code==='CONFIG' && error.message.includes(key));
   }
   assert.equal(readConfig({...env,MQTT_PASSWORD:undefined,DB_PASSWORD:undefined},{migration:true}).db.user,'khoguard_migrate');
   assert.throws(() => readConfig({...env,DB_MIGRATION_PASSWORD:''},{migration:true}), /DB_MIGRATION_PASSWORD/);
@@ -55,4 +57,20 @@ test('readiness exceptions do not leak credentials and no mutation route is expo
     get(`${base}/api/health`,{headers:{host:'attacker.example'}},res=>{res.resume();resolve(res.statusCode);}).on('error',reject);
   });
   assert.equal(invalidHostStatus,400);
+});
+test('database readiness requires ownership, completed schema and seed; a failed connection is discarded', async () => {
+  const state={server_uuid:'server',setup_id:'setup'};
+  const row={...state,checksum:inventoryMigration.checksum,seed_checksum:seedChecksum};
+  let released=0,destroyed=0;
+  const connection={query:async()=>[[row]],release:()=>released++,destroy:()=>destroyed++};
+  const pool={getConnection:async()=>connection};
+  assert.equal(await databaseReady(pool,state),true);
+  row.setup_id='another setup';
+  assert.equal(await databaseReady(pool,state),false);
+  row.setup_id=state.setup_id; row.checksum=null;
+  assert.equal(await databaseReady(pool,state),false);
+  connection.query=async()=>{throw new Error('disconnected');};
+  assert.equal(await databaseReady(pool,state),false);
+  assert.equal(destroyed,1);
+  assert.equal(released,4);
 });

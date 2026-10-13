@@ -18,7 +18,10 @@
     "firmware:build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-firmware.ps1",
     "firmware:check": "node scripts/check-firmware.mjs",
     "firmware:gateway:setup": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-wokwi.ps1",
-    "firmware:gateway:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-wokwi.ps1"
+    "firmware:gateway:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-wokwi.ps1",
+    "db:migrate": "node --env-file=.local/runtime.env scripts/migrate-db.mjs",
+    "backend:start": "node --env-file=.local/runtime.env server/start.mjs",
+    "backend:check": "node --env-file=.local/runtime.env scripts/check-backend.mjs"
   },
   "dependencies": {
     "mqtt": "^5.16.0",
