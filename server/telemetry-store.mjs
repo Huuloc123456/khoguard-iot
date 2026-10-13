@@ -8,21 +8,22 @@ export function createTelemetryStore(pool) {
   let generation=0;
   const resetConnection=()=>{generation++;candidates.clear();live.clear();};
   async function transaction(work) {
-    const connection=await pool.getConnection();
-    // Includes pool commands/commit in the deadline; a destroyed connection rolls back on MySQL.
-    const deadline=setTimeout(()=>connection.destroy(),5000);
+    let connection,deadline;
     try {
+      connection=await pool.getConnection();
+      // Includes pool commands/commit in the deadline; a destroyed connection rolls back on MySQL.
+      deadline=setTimeout(()=>connection.destroy(),5000);
       await connection.query({sql:'SET SESSION innodb_lock_wait_timeout = 1',timeout:1500});
       await connection.beginTransaction();
       const result=await work(connection);
       await connection.commit();
       return result;
     } catch(error) {
-      await connection.rollback().catch(()=>{});
-      connection.destroy();
+      await connection?.rollback().catch(()=>{});
+      connection?.destroy();
       resetConnection();
       throw error;
-    } finally {clearTimeout(deadline);connection.release();}
+    } finally {clearTimeout(deadline);connection?.release();}
   }
   async function ingest(packet) {
     const started=generation;
@@ -42,8 +43,11 @@ export function createTelemetryStore(pool) {
       if (retired) return 'retired_session';
       if (m.kind==='status') {
         if (m.payload.state==='online') return 'status_online';
+        const pending=candidates.get(m.device_id);
+        const currentMatches=current.boot_id===m.boot_id && current.session_id===m.session_id;
+        if (!currentMatches && (pending?.boot_id!==m.boot_id || pending?.session_id!==m.session_id)) return 'old_status';
         await execute(connection,'INSERT INTO device_sessions (device_id,boot_id,session_id,retired) VALUES (?,?,?,TRUE) ON DUPLICATE KEY UPDATE retired = TRUE',[m.device_id,m.boot_id,m.session_id]);
-        if (current.boot_id!==m.boot_id || current.session_id!==m.session_id) return 'old_status';
+        if (!currentMatches) return 'old_status';
         if (current.state!=='offline') {
           await execute(connection,"UPDATE device_current SET state = 'offline' WHERE device_id = ?",[m.device_id]);
           await execute(connection,"UPDATE warehouse_stream SET revision = revision + 1 WHERE warehouse_id = 'WH01'");

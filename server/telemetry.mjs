@@ -44,7 +44,8 @@ export function buildSnapshot(zones,rows,revision,now,connections,live) {
     const row=byId.get(device.id), message=row?.message;
     const last=row?.received_at ? new Date(row.received_at) : null;
     const age=last ? now-last : null;
-    const fresh=message && row.state==='online' && connections.mqtt && live.has(sessionKey({...row,device_id:device.id})) && age>=0 && age<=10000;
+    const sentAge=message?.clock_synced ? now-Date.parse(message.sent_at) : age;
+    const fresh=message && row.state==='online' && connections.mqtt && live.has(sessionKey({...row,device_id:device.id})) && age>=0 && age<=10000 && sentAge>=0 && sentAge<=10000;
     return {id:device.id,zone:device.zone_id,source:device.source,state:connections.mqtt && live.has(sessionKey({...row,device_id:device.id})) ? row.state : row?.state==='offline' ? 'offline' : 'unknown',
       freshness:fresh ? 'fresh' : message ? 'stale' : 'unknown',last_seen_at:last?.toISOString() ?? null,
       boot_id:row?.boot_id ?? null,session_id:row?.session_id ?? null,controller_revision:message?.payload.controller_revision ?? null};

@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { telemetryDecision, parseHistoryQuery, buildSnapshot } from '../server/telemetry.mjs';
 import { registry, validateSnapshot } from '../contracts/validate.js';
+import { validateMqttMessage } from '../contracts/validate.js';
+import { environmentMessage } from '../scripts/environment-message.mjs';
 
 const now = Date.parse('2026-10-13T01:00:00Z');
 const message = {device_id:'SIM-A01',boot_id:'boot1',session_id:'session1',seq:10,uptime_ms:20000,
@@ -9,6 +11,15 @@ const message = {device_id:'SIM-A01',boot_id:'boot1',session_id:'session1',seq:1
 const current = {boot_id:'boot1',session_id:'session1',seq:9,uptime_ms:19000,controller_revision:2};
 const candidate = {boot_id:'boot1',session_id:'session1'};
 const decide = (m=message,c=current,options={}) => telemetryDecision(c,candidate,m,{retain:false},now,options.retired ?? false);
+
+test('node environment simulator uses its own device and leaves unimplemented safety inputs unknown', () => {
+  const m=environmentMessage({boot:'b',session:'s',seq:0,uptime:0});
+  assert.equal(validateMqttMessage('khoguard/v1/WH01/devices/SIM-A01/telemetry',JSON.stringify(m)).ok,true);
+  assert.equal(m.payload.occupancy.current_occupants,null);
+  assert.ok(m.payload.doors.every(d=>d.state==='unknown' && !d.local_inputs_healthy));
+  m.payload.environment.temperature_c=101;
+  assert.equal(validateMqttMessage('khoguard/v1/WH01/devices/SIM-A01/telemetry',JSON.stringify(m)).ok,false);
+});
 
 test('telemetry needs a confirmed session and live data; retained and old clocks never refresh state', () => {
   assert.equal(decide(),'accepted');
@@ -52,5 +63,10 @@ test('snapshot includes offline inventory, unknown WMS and signals, then marks s
   assert.equal(buildSnapshot(...args,live).devices[0].freshness,'stale');
   assert.equal(buildSnapshot(...args,live).zones[0].occupancy.current_occupants,1);
   args[4]={database:true,mqtt:true}; args[3]=new Date(now+10001);
+  assert.equal(buildSnapshot(...args,live).devices[0].freshness,'stale');
+  args[3]=new Date(now);
+  row.message.clock_synced=true; row.message.sent_at=new Date(now-9000).toISOString();
+  assert.equal(buildSnapshot(...args,live).devices[0].freshness,'fresh');
+  args[3]=new Date(now+1001);
   assert.equal(buildSnapshot(...args,live).devices[0].freshness,'stale');
 });

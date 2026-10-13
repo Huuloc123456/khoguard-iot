@@ -21,7 +21,9 @@
     "firmware:gateway:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-wokwi.ps1",
     "db:migrate": "node --env-file=.local/runtime.env scripts/migrate-db.mjs",
     "backend:start": "node --env-file=.local/runtime.env server/start.mjs",
-    "backend:check": "node --env-file=.local/runtime.env scripts/check-backend.mjs"
+    "backend:check": "node --env-file=.local/runtime.env scripts/check-backend.mjs",
+    "telemetry:check": "node --env-file=.local/runtime.env scripts/check-telemetry.mjs",
+    "demo:environment": "node --env-file=.local/runtime.env scripts/simulate-environment.mjs"
   },
   "dependencies": {
     "ajv": "^8.20.0",

@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { createServer, connect } from 'node:net';
 import { once } from 'node:events';
 import { setTimeout as delay } from 'node:timers/promises';
 import { writeFileSync } from 'node:fs';
@@ -11,26 +10,7 @@ import { createApp } from '../server/http.mjs';
 import { createDbPool, loadOwnership, databaseReady } from '../server/database.mjs';
 import { connectBroker } from '../server/mqtt.mjs';
 import { applyInventory, inventoryMigration, verifyOwnership } from '../db/migrate.mjs';
-
-// Test-only loopback gates disconnect our clients, leaving the real MySQL/Mosquitto services running.
-async function gate(targetPort) {
-  let blocked = false;
-  const sockets = new Set();
-  const server = createServer(incoming=>{
-    if (blocked) return incoming.destroy();
-    const outgoing = connect(targetPort,'127.0.0.1');
-    for (const socket of [incoming,outgoing]) {
-      sockets.add(socket);
-      socket.on('error',()=>{incoming.destroy();outgoing.destroy();});
-      socket.on('close',()=>{sockets.delete(socket);incoming.destroy();outgoing.destroy();});
-    }
-    incoming.pipe(outgoing).pipe(incoming);
-  });
-  server.listen(0,'127.0.0.1');
-  await once(server,'listening');
-  const setBlocked = value=>{blocked=value;if (value) for (const socket of sockets) socket.destroy();};
-  return {port:server.address().port,setBlocked,stop:async()=>{setBlocked(true);await new Promise(resolve=>server.close(resolve));}};
-}
+import { gate } from './loopback-gate.mjs';
 
 let runtime,migration,pool,broker,app,dbGate,mqttGate;
 let stage = 'configuration';

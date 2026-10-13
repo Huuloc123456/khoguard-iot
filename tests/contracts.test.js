@@ -10,6 +10,16 @@ const copy = value => structuredClone(value);
 const validate = message => validateMqttMessage(telemetry.topic, JSON.stringify(message));
 const code = result => result.error?.code;
 
+test('unknown WMS totals stay null but any known portion still cannot exceed capacity', () => {
+  const value=copy(snapshot);
+  value.zones[0].occupied=null;value.zones[0].reserved=null;
+  assert.equal(validateSnapshot(value).ok,true);
+  value.zones[0].occupied=value.zones[0].capacity+1;
+  assert.equal(validateSnapshot(value).ok,false);
+  value.zones[0].occupied=null;value.zones[0].reserved=value.zones[0].capacity+1;
+  assert.equal(validateSnapshot(value).ok,false);
+});
+
 test('all MQTT examples satisfy the contract without changing input', () => {
   for (const example of examples) {
     const raw = JSON.stringify(example.message);
