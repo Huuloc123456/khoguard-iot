@@ -1116,7 +1116,7 @@ Ca ngày 06:00–18:00, ca đêm 18:00–06:00 (khoảng `[start, end)`), giờ 
 | Kiểm tra | `check-mqtt`, `check-mysql`, `check-tls`, `check-secret-files` | Hạ tầng |
 | | `check-backend`, `check-telemetry`, `check-events`, `check-control`, `check-auth`, `check-reservations`, `check-recovery`, `check-reports` | Tích hợp theo mốc |
 | | `check-firmware.mjs`, `firmware-observation.mjs` | Quan sát telemetry ESP32 thật |
-| | `wokwi-acceptance.mjs` | Nghiệm thu bán tự động trên Wokwi (RFID, presence, liên động, rèm quang, panic, T08) |
+| | `wokwi-acceptance.mjs` | Nghiệm thu bán tự động trên Wokwi (RFID, presence, liên động, rèm quang, panic, T08, lệnh trùng/cũ, timer cửa mở, mắc kẹt) |
 | | `verify-all.mjs` | Chạy toàn bộ theo đúng thứ tự phụ thuộc |
 | Tiện ích | `local-config.mjs` | Đường dẫn `.local`, sinh ACL/config/firmware secret |
 | | `check-session.mjs` | Đăng nhập như dashboard cho script |
@@ -1128,7 +1128,9 @@ Ca ngày 06:00–18:00, ca đêm 18:00–06:00 (khoảng `[start, end)`), giờ 
 ## 19. Giới hạn đã biết
 
 - **Mô phỏng**: không có phần cứng; mmWave, rèm quang, contact, panic là công tắc; RFID là dòng Serial; CO₂, ảnh nhiệt, AI không được triển khai.
-- **Nghiệm thu Wokwi chưa đủ**: RFID, presence, panic, đảo chiều, timer và T08 đã đạt ở unit/integration (FakeEdge) nhưng **chưa** chạy đầy đủ trên firmware Wokwi; M07, M08, M10, M11, M12, M16 vì vậy chưa đánh dấu hoàn tất. Harness `npm run wokwi:acceptance` đã sẵn sàng.
+- **Nghiệm thu Wokwi**: RFID, mmWave, liên động, đảo chiều, panic, T08, lệnh trùng/cũ và timer đã đạt trên firmware thật ([bằng chứng](docs/evidence/WOKWI-2026-10-13.md)). Chưa thử trên thiết bị: T06 (unknown/stale), reboot → số người chưa xác minh, CA sai phía firmware.
+- **M16 chưa đóng**: T17 (khu đệm đầy, integration), T24 (DB đầy/lỗi ghi), T26 (825/1440 px, bàn phím) mới đạt một phần.
+- **Script mô phỏng** `demo:warehouse` thoát khi broker dừng (không tự nối lại).
 - **Không có NTP ở edge**: TTL lệnh 10 s do backend đánh dấu; edge bảo vệ bằng phiên + revision (DEC-020).
 - **Chỉ localhost**: cookie chưa `Secure`; muốn ra mạng phải có HTTPS, `Secure`, và xem lại Origin/Host.
 - **Một bộ điều khiển thật**: chỉ ESP-C01 nhận lệnh; cửa của SIM không điều khiển được.

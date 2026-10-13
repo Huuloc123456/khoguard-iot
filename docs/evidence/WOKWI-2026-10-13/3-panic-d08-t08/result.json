@@ -1,0 +1,103 @@
+{
+  "started_at": "2026-10-13T12:34:58.232Z",
+  "finished_at": "2026-10-13T12:38:05.462Z",
+  "boot_id": "6ea1bcd410540bbcd9e57fa1c7f18595",
+  "from": "S5a",
+  "results": [
+    {
+      "id": "S0",
+      "test": "chuẩn bị",
+      "title": "Backend sẵn sàng, Serial RFC2217 và telemetry ESP-C01 từ Wokwi",
+      "pass": true,
+      "ms": 20623,
+      "detail": {
+        "boot_id": "6ea1bcd410540bbcd9e57fa1c7f18595",
+        "boot_correlated": false,
+        "transport": "chưa thấy dòng boot"
+      }
+    },
+    {
+      "id": "S0b",
+      "test": "chuẩn bị",
+      "title": "Trạng thái nền: hai cửa đóng/khóa, count đã xác minh = 0",
+      "pass": true,
+      "ms": 0,
+      "detail": "baseline ok"
+    },
+    {
+      "id": "S5a",
+      "test": "T11",
+      "title": "Panic D08 khi D07 đang mở: thoát hiểm thắng liên động",
+      "pass": true,
+      "ms": 38173,
+      "detail": "OUTPUTS ms=1333882 lock=00 motor07=00 motor08=10 light=1 buzzer=1 heater=1 fan=0"
+    },
+    {
+      "id": "S5b",
+      "test": "T07",
+      "title": "Nhả hai nút, đặt lại từng cửa bằng lệnh có quyền",
+      "pass": true,
+      "ms": 30018,
+      "detail": {
+        "D07": "applied",
+        "D08": "applied"
+      }
+    },
+    {
+      "id": "S5c",
+      "test": "chuẩn bị",
+      "title": "Đóng cả hai cửa",
+      "pass": true,
+      "ms": 24823,
+      "detail": "baseline"
+    },
+    {
+      "id": "S6a",
+      "test": "T08",
+      "title": "Dừng broker dự án",
+      "pass": true,
+      "ms": 5671,
+      "detail": {
+        "stopped_pid": 8148,
+        "backend_broker": "disconnected"
+      }
+    },
+    {
+      "id": "S6b",
+      "test": "T08",
+      "title": "Panic khi broker dừng: output an toàn cục bộ vẫn áp dụng",
+      "pass": true,
+      "ms": 11864,
+      "detail": {
+        "serial": [
+          "INPUT_EVENT door=D07 panic=1 open=0 revision=284",
+          "OUTPUTS ms=1401089 lock=00 motor07=10 motor08=00 light=1 buzzer=1 heater=1 fan=0"
+        ],
+        "broker_down": true
+      }
+    },
+    {
+      "id": "S6c",
+      "test": "T08/T22",
+      "title": "Bật lại broker: ESP nối phiên mới, event panic lúc mất mạng tới MySQL",
+      "pass": true,
+      "ms": 15958,
+      "detail": {
+        "broker_pid": 27452,
+        "serial": "MQTT_ONLINE boot=6ea1bcd410540bbcd9e57fa1c7f18595 session=16a41cf9ce059fd22dbe53adb931f702",
+        "session_changed": true,
+        "event_id": "6ea1bcd410540bbcd9e57fa1c7f18595:137",
+        "event_uptime_ms": 1401090,
+        "stored_id": 173
+      }
+    },
+    {
+      "id": "S6d",
+      "test": "T08",
+      "title": "Dọn: nhả nút, đặt lại, đóng cửa",
+      "pass": true,
+      "ms": 40079,
+      "detail": "applied"
+    }
+  ]
+}

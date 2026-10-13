@@ -294,3 +294,11 @@ Còn thiếu / bước tiếp theo:
 - Sửa test TLS nhận nhầm retained, observer còn giả định M03 và nguồn D09 ghi nhầm Wokwi. Thêm hai test hồi quy.
 - Chưa nghiệm thu đủ RFID/presence/panic/T08 trên Wokwi vì thao tác công tắc chưa làm thay đổi input quan sát được. Diagram thử đã khôi phục, M16 chưa đánh dấu hoàn tất.
 - [Báo cáo và ảnh kiểm thử](docs/evidence/CHECK-WINDOWS-2026-10-13.md). Quyết định: DEC-033, giới hạn TTL theo DEC-020.
+
+## 13/10/2026 — Nghiệm thu firmware ESP-C01 trên Wokwi (M07, M08, M10–M12, phần Wokwi của M16)
+
+- Thêm `scripts/wokwi-acceptance.mjs` (`npm run wokwi:acceptance`), Serial RFC2217 127.0.0.1:4000 trong `firmware/wokwi.toml`, dòng Serial `OUTPUTS` trong firmware; build PlatformIO đạt (RAM 14,3 %, flash 69,8 %). Viết lại README và thêm ARCHITECTURE.md.
+- Kết quả 4 lượt trên cùng boot: **26/27 bước kiểm thử đạt trực tiếp**, S9 đạt phần kiểm thử và phần dọn được đối chiếu bằng MySQL. RFID (vào/ra/lặp/thu hồi/lạ/sai định dạng, MySQL + access audit), mmWave chặn đóng, liên động, đảo chiều khi chắn rèm quang, panic từ cửa đóng, tiếp nhận không xóa chốt, đặt lại chỉ khi nhả nút, thoát hiểm vượt liên động, **T08** (panic khi broker dừng → output tại chỗ; nối lại session mới, event vào MySQL), lệnh trùng không chạy lại, lệnh phiên cũ COMMAND_EXPIRED, timer cửa mở 30 005 / 60 002 ms khi broker dừng, mắc kẹt ~300 s. Firmware kết nối 18885 TLSv1.2.
+- Lỗi đã gặp: (1) máy khởi động lại giữa phiên, phải bật lại broker/backend/Vite/gateway/mô phỏng; (2) PowerShell chặn `npm.ps1`, dùng `npm.cmd`; (3) nhiều lần gạt nhầm công tắc làm S3c, S5a hết giờ — S5a chạy lại đạt sau khi harness tự yêu cầu mở D07 trước; (4) `demo:warehouse` thoát khi broker dừng (MQTT.js `reconnectPeriod: 0`), phải chạy lại sau T08/S8 — cần sửa; (5) lần đầu cập nhật ma trận M16 dùng regex không xử lý CRLF làm hỏng file, đã khôi phục từ Git và sửa lại theo dòng.
+- Đánh dấu M07, M08, M10, M11, M12 và ô thứ nhất của M16; Checkpoint B đạt. Chưa thử trên Wokwi: T06, reboot → count chưa xác minh, CA sai phía firmware.
+- Còn lại: T17, T24, T26 để đóng M16; M17. Quyết định: DEC-034. [Bằng chứng](docs/evidence/WOKWI-2026-10-13.md).

@@ -4,7 +4,7 @@ Cập nhật: **13/10/2026**. Phạm vi: đồ án **mô phỏng**, lập trình
 
 ## 1. Sau giao diện, làm gì trước?
 
-**M01–M03 đã đạt ngày 12/10/2026; M04–M05 đạt ngày 13/10/2026. Đã nạp bản ZIP M06–M16 và kiểm tra trên máy Windows: 102/102 test JavaScript, hai bộ C++, build web/ESP32 và các kiểm tra tích hợp đạt. Wokwi gửi telemetry live và phản hồi lệnh đóng D07 từ web. Còn nghiệm thu đầy đủ các tình huống an toàn trên Wokwi trước khi đánh dấu M16 hoàn tất. [Báo cáo kiểm tra](docs/evidence/CHECK-WINDOWS-2026-10-13.md).**
+**M01–M03 đã đạt ngày 12/10/2026; M04–M05 đạt ngày 13/10/2026. Đã nạp bản ZIP M06–M16 và kiểm tra trên máy Windows: 102/102 test JavaScript, hai bộ C++, build web/ESP32 và các kiểm tra tích hợp đạt. Nghiệm thu firmware thật trên Wokwi (RFID, mmWave, liên động, rèm quang, panic, T08 mất broker, lệnh trùng/cũ, timer) đạt cùng ngày nên M07, M08, M10–M12 đã đánh dấu. Còn T17/T24/T26 một phần (M16) và M17. [Báo cáo kiểm tra](docs/evidence/CHECK-WINDOWS-2026-10-13.md), [nghiệm thu Wokwi](docs/evidence/WOKWI-2026-10-13.md).**
 
 Quyết định: [DESITION.md](DESITION.md). Công việc và kết quả thực tế: [QUA_TRINH.md](QUA_TRINH.md). Hợp đồng M01: [contracts/README.md](contracts/README.md). Người dùng đã chốt **giữ MySQL**; không chuyển MongoDB.
 
@@ -300,19 +300,19 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 
 ### M07 — Firmware đọc input và đưa trạng thái cửa
 
-- [ ] Nối input mô phỏng beam, door contact, presence, panic và cảm biến môi trường; gán chân/input trong sơ đồ.
-- [ ] Tách hàm quyết định thuần khỏi GPIO/MQTT, publish snapshot và event đúng schema.
+- [x] Nối input mô phỏng beam, door contact, presence, panic và cảm biến môi trường; gán chân/input trong sơ đồ.
+- [x] Tách hàm quyết định thuần khỏi GPIO/MQTT, publish snapshot và event đúng schema.
 - Phụ thuộc: M03, M05. Phạm vi: adapter firmware, pin config, sơ đồ, test mapping.
 - Nghiệm thu: từng input chỉ ảnh hưởng thiết bị được gán; debounce đúng; ngắt broker vẫn đọc input và xử lý loop.
-- Trạng thái 13/10/2026: code, test C++ và test ánh xạ chân đạt; **chưa build PlatformIO/chạy Wokwi** nên chưa đánh dấu. [Bằng chứng M07](docs/evidence/M07-2026-10-13.md).
+- Trạng thái 13/10/2026: code, test C++ và test ánh xạ chân đạt. **Đạt trên Wokwi 13/10/2026**: contact, beam, panic, mmWave từng công tắc chỉ đổi đúng tín hiệu được gán; broker dừng vẫn đọc input, xử lý loop và áp output (T08). [Bằng chứng M07](docs/evidence/M07-2026-10-13.md), [Nghiệm thu Wokwi](docs/evidence/WOKWI-2026-10-13.md).
 
 ### M08 — RFID và số người
 
-- [ ] Xử lý thẻ giả lập với hướng vào/ra, whitelist, chống lặp và sự kiện bị từ chối.
-- [ ] Số người không âm; reboot/lost events chuyển count sang chưa xác minh khi cần.
+- [x] Xử lý thẻ giả lập với hướng vào/ra, whitelist, chống lặp và sự kiện bị từ chối.
+- [x] Số người không âm; reboot/lost events chuyển count sang chưa xác minh khi cần.
 - Phụ thuộc: M07. Phạm vi: occupancy rule, firmware adapter, event ingest, test.
 - Nghiệm thu: một lượt vào tăng một, ra giảm một; đọc lặp không tăng thêm; thẻ trái phép không cấp quyền; count 0 + presence vẫn chặn đóng.
-- Trạng thái 13/10/2026: quy tắc edge (test C++), contract, event ingest MySQL, `/api/events`, Nhật ký UI đạt (`events:check` 5 nhóm); **chưa chạy Wokwi** nên chưa đánh dấu. [Bằng chứng M08](docs/evidence/M08-2026-10-13.md).
+- Trạng thái 13/10/2026: quy tắc edge (test C++), contract, event ingest MySQL, `/api/events`, Nhật ký UI đạt (`events:check` 5 nhóm). **Đạt trên Wokwi 13/10/2026**: RFID qua Serial vào/ra/đọc lặp/thẻ thu hồi/thẻ lạ/sai định dạng, count không âm, count 0 + mmWave chặn đóng; MySQL và access audit khớp. [Bằng chứng M08](docs/evidence/M08-2026-10-13.md), [Nghiệm thu Wokwi](docs/evidence/WOKWI-2026-10-13.md).
 
 ### M09 — Bộ quy tắc an toàn cục bộ
 
@@ -324,29 +324,29 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 
 ### M10 — Gắn quy tắc vào Wokwi và lệnh có ack
 
-- [ ] Adapter áp dụng output giả lập khóa/đèn/còi/sưởi/quạt; backend gửi command có ID, TTL và expected revision.
-- [ ] UI hiển thị pending/applied/rejected/expired, reason code; edge từ chối lệnh không an toàn/hết hạn.
+- [x] Adapter áp dụng output giả lập khóa/đèn/còi/sưởi/quạt; backend gửi command có ID, TTL và expected revision.
+- [x] UI hiển thị pending/applied/rejected/expired, reason code; edge từ chối lệnh không an toàn/hết hạn.
 - Phụ thuộc: M06, M09. Phạm vi: firmware adapter, command service, UI trạng thái lệnh, integration test.
 - Nghiệm thu: gửi lệnh không tự đổi cửa trên UI; lệnh trùng không thực hiện lại; lệnh cũ không chạy sau reconnect; panic hoạt động khi backend/broker dừng.
-- Trạng thái 13/10/2026: test C++, `control:check` 7 nhóm và E2E trình duyệt (ESP-C01 giả lập) đạt; **chưa build PlatformIO/chạy Wokwi** nên chưa đánh dấu. [Bằng chứng M10](docs/evidence/M10-2026-10-13.md).
+- Trạng thái 13/10/2026: test C++, `control:check` 7 nhóm và E2E trình duyệt (ESP-C01 giả lập) đạt. **Đạt trên Wokwi 13/10/2026**: lệnh bị edge từ chối OCCUPIED/PRESENCE_DETECTED/INTERLOCK_ACTIVE/PANIC_ACTIVE, lệnh trùng không chạy lại, lệnh phiên cũ COMMAND_EXPIRED, panic chạy khi broker dừng. [Bằng chứng M10](docs/evidence/M10-2026-10-13.md), [Nghiệm thu Wokwi](docs/evidence/WOKWI-2026-10-13.md).
 
 ### M11 — Cảnh báo, timer và tiếp nhận
 
-- [ ] Timer cửa mở, trapped-person, môi trường/hysteresis; trạng thái active/acknowledged/resolved riêng.
-- [ ] Lưu audit tiếp nhận và hiển thị cùng điều kiện tại khu/cửa; giới hạn phát cảnh báo lặp.
+- [x] Timer cửa mở, trapped-person, môi trường/hysteresis; trạng thái active/acknowledged/resolved riêng.
+- [x] Lưu audit tiếp nhận và hiển thị cùng điều kiện tại khu/cửa; giới hạn phát cảnh báo lặp.
 - Phụ thuộc: M07, M09, M10. Phạm vi: rule timer, alerts DB/API, adapter UI, test.
 - Nghiệm thu: đúng ranh giới 30 s, >60 s, >5 phút; tiếp nhận không xóa nguy hiểm; điều kiện hết thì resolve đúng; timer local vẫn chạy khi mất mạng.
-- Trạng thái 13/10/2026: ranh giới timer (C++), vòng đời cảnh báo/tiếp nhận (`control:check`) và UI đạt; timer khi mất mạng **chưa thử trên Wokwi** nên chưa đánh dấu. [Bằng chứng M11](docs/evidence/M11-2026-10-13.md).
+- Trạng thái 13/10/2026: ranh giới timer (C++), vòng đời cảnh báo/tiếp nhận (`control:check`) và UI đạt; **đạt trên Wokwi 13/10/2026**: broker dừng, đèn sau 30 005 ms, còi sau 60 002 ms theo đồng hồ thiết bị; mắc kẹt ~300 s; tiếp nhận không xóa panic; cảnh báo tự hết. [Bằng chứng M11](docs/evidence/M11-2026-10-13.md), [Nghiệm thu Wokwi](docs/evidence/WOKWI-2026-10-13.md).
 
 ### M12 — TLS, offline và phục hồi
 
-- [ ] Hoàn thiện TLS, ACL và lỗi CA/hostname; last will, heartbeat, stale, restart/reconnect.
-- [ ] Giới hạn queue/retry; xác định dữ liệu nào replay được, phát hiện gap và ứng xử khi DB không ghi được.
+- [x] Hoàn thiện TLS, ACL và lỗi CA/hostname; last will, heartbeat, stale, restart/reconnect.
+- [x] Giới hạn queue/retry; xác định dữ liệu nào replay được, phát hiện gap và ứng xử khi DB không ghi được.
 - Phụ thuộc: M05, M10, M11. Phạm vi: cấu hình TLS, MQTT session, firmware reconnect, fault test.
 - Nghiệm thu: sai CA/quyền bị từ chối; retained cũ không thành online; reboot không tự count 0; phục hồi không áp dụng lệnh hết hạn hay nhân đôi RFID.
-- Trạng thái 13/10/2026: `infra:tls:check` 6 nhóm và `recovery:check` 5 nhóm đạt (ESP-C01 giả lập); firmware TLS **chưa build PlatformIO/chạy Wokwi** nên chưa đánh dấu. [Bằng chứng M12](docs/evidence/M12-2026-10-13.md).
+- Trạng thái 13/10/2026: `infra:tls:check` 6 nhóm và `recovery:check` 5 nhóm đạt (ESP-C01 giả lập). **Đạt trên Wokwi 13/10/2026**: firmware TLSv1.2 với CA demo trên 18885, mất/nối lại broker cùng boot sang session mới, event lúc mất mạng lưu đúng một lần. CA sai/hostname sai phía thiết bị và reboot → count chưa xác minh mới thử ở client Node/test C++. [Bằng chứng M12](docs/evidence/M12-2026-10-13.md), [Nghiệm thu Wokwi](docs/evidence/WOKWI-2026-10-13.md).
 
-**Checkpoint B:** demo bảo vệ người trong Wokwi với broker bật/tắt, các trạng thái unknown và bằng chứng panic đóng → mở. Chưa đạt checkpoint này thì không trình bày như đã hoàn thành bảo vệ cục bộ.
+**Checkpoint B:** demo bảo vệ người trong Wokwi với broker bật/tắt, các trạng thái unknown và bằng chứng panic đóng → mở. Chưa đạt checkpoint này thì không trình bày như đã hoàn thành bảo vệ cục bộ. **Đạt 13/10/2026** trên Wokwi: panic từ cửa đóng → nhả khóa/mở, có và không có broker; [Nghiệm thu Wokwi](docs/evidence/WOKWI-2026-10-13.md).
 
 ### M13 — Phiên đăng nhập, quyền, ca và an ninh
 
@@ -374,11 +374,11 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 
 ### M16 — Tích hợp toàn kho, tải và lỗi
 
-- [ ] Script tái hiện 12 cửa/4 khu và mở rộng 50 node; kịch bản quyết định được với seed/clock rõ ràng.
+- [x] Script tái hiện 12 cửa/4 khu và mở rộng 50 node; kịch bản quyết định được với seed/clock rõ ràng.
 - [ ] Chạy ma trận mục 10, kiểm tra UI responsive, quyền, reboot, broker/DB/backend lỗi và tài nguyên.
 - Phụ thuộc: M12–M15; M03 phải đạt trước khi đánh dấu tích hợp Wokwi hoàn thành.
 - Nghiệm thu: bốn demo đi qua nguồn MQTT/DB; không chỉ thay mảng frontend; kết quả tải/lỗi có số liệu và bằng chứng.
-- Trạng thái 13/10/2026: script đã có và **đạt trong sandbox với ESP-C01 giả lập** — `demo:scenarios` 4 kịch bản/20 bước, `load:test` P95 publish → WebSocket 186 ms, mất 0/2.000, `verify:all` 16 bước đạt/1 bỏ qua; ma trận T01–T27 trong bằng chứng. Chưa đánh dấu: cần chạy bốn kịch bản với Wokwi (firmware TLS) và T08. [Bằng chứng M16](docs/evidence/M16-2026-10-13.md).
+- Trạng thái 13/10/2026: script đã có và **đạt trong sandbox với ESP-C01 giả lập** — `demo:scenarios` 4 kịch bản/20 bước, `load:test` P95 publish → WebSocket 186 ms, mất 0/2.000, `verify:all` 16 bước đạt/1 bỏ qua; ma trận T01–T27 trong bằng chứng. Bốn kịch bản và T08 **đạt trên Wokwi 13/10/2026** ([Nghiệm thu Wokwi](docs/evidence/WOKWI-2026-10-13.md)). Ô thứ hai chưa đánh dấu: T17 (khu đệm đầy, integration), T24 (DB đầy/lỗi ghi), T26 (825/1440 px, bàn phím) mới đạt một phần. [Bằng chứng M16](docs/evidence/M16-2026-10-13.md).
 
 ### M17 — Đóng gói và bàn giao đồ án
 
@@ -499,4 +499,4 @@ Còn thiếu: điều kiện chưa xác minh; bước tiếp theo
 | Linh kiện mmWave/CO₂/thermal không có trong Wokwi | Dùng input giả lập được ghi nguồn | Không chặn kiểm thử logic; không chứng minh độ chính xác cảm biến |
 | Log khi nguồn/DB mất và giới hạn replay | Chốt application ack/gap policy, thử T24 | Chặn tuyên bố lưu trữ đầy đủ khi mất kết nối |
 
-**Việc tiếp theo cụ thể (13/10/2026):** chạy Wokwi trên máy dự án cho M07, M08, M10–M12 và bốn kịch bản M16; sau đó M17. Giữ MySQL, giao diện trắng và nguồn Wokwi/script có nhãn rõ.
+**Việc tiếp theo cụ thể (13/10/2026):** hoàn tất T17 (khu đệm đầy, integration), T24 (DB đầy/lỗi ghi), T26 (825/1440 px, bàn phím) để đóng M16; sửa `demo:warehouse` tự nối lại khi broker dừng; sau đó M17. Giữ MySQL, giao diện trắng và nguồn Wokwi/script có nhãn rõ.

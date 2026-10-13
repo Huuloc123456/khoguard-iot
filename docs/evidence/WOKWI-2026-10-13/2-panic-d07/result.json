@@ -1,0 +1,81 @@
+{
+  "started_at": "2026-10-13T12:26:37.577Z",
+  "finished_at": "2026-10-13T12:28:23.620Z",
+  "boot_id": "6ea1bcd410540bbcd9e57fa1c7f18595",
+  "from": "S4a",
+  "results": [
+    {
+      "id": "S0",
+      "test": "chuẩn bị",
+      "title": "Backend sẵn sàng, Serial RFC2217 và telemetry ESP-C01 từ Wokwi",
+      "pass": true,
+      "ms": 21489,
+      "detail": {
+        "boot_id": "6ea1bcd410540bbcd9e57fa1c7f18595",
+        "boot_correlated": false,
+        "transport": "chưa thấy dòng boot"
+      }
+    },
+    {
+      "id": "S0b",
+      "test": "chuẩn bị",
+      "title": "Trạng thái nền: hai cửa đóng/khóa, count đã xác minh = 0",
+      "pass": true,
+      "ms": 1,
+      "detail": "baseline ok"
+    },
+    {
+      "id": "S4a",
+      "test": "T07/KB3",
+      "title": "Panic D07 từ trạng thái đóng: chốt, nhả khóa, mở, output khẩn cấp",
+      "pass": true,
+      "ms": 25205,
+      "detail": {
+        "event_id": "6ea1bcd410540bbcd9e57fa1c7f18595:50",
+        "serial": [
+          "INPUT_EVENT door=D07 panic=1 open=0 revision=105",
+          "OUTPUTS ms=853199 lock=00 motor07=10 motor08=00 light=1 buzzer=1 heater=1 fan=0"
+        ]
+      }
+    },
+    {
+      "id": "S4b",
+      "test": "T09",
+      "title": "Tiếp nhận cảnh báo không reset chốt",
+      "pass": true,
+      "ms": 4052,
+      "detail": {
+        "alert": "AL-30",
+        "state": "active",
+        "acknowledged": true
+      }
+    },
+    {
+      "id": "S4c",
+      "test": "T07",
+      "title": "Đặt lại khi nút còn giữ bị từ chối",
+      "pass": true,
+      "ms": 9106,
+      "detail": "PANIC_ACTIVE"
+    },
+    {
+      "id": "S4d",
+      "test": "T07",
+      "title": "Cửa mở hẳn; nhả nút vẫn chốt; lệnh đóng bị PANIC_ACTIVE",
+      "pass": true,
+      "ms": 33762,
+      "detail": {
+        "latched_after_release": true,
+        "close": "PANIC_ACTIVE"
+      }
+    },
+    {
+      "id": "S5a",
+      "test": "T11",
+      "title": "Panic D08 khi D07 đang mở: thoát hiểm thắng liên động",
+      "pass": false,
+      "ms": 12411,
+      "error": "Hết giờ chờ D08 chốt"
+    }
+  ]
+}

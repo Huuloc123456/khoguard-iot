@@ -1,0 +1,187 @@
+{
+  "started_at": "2026-10-13T12:18:04.813Z",
+  "finished_at": "2026-10-13T12:25:46.460Z",
+  "boot_id": "6ea1bcd410540bbcd9e57fa1c7f18595",
+  "from": "S0",
+  "results": [
+    {
+      "id": "S0",
+      "test": "chuẩn bị",
+      "title": "Backend sẵn sàng, Serial RFC2217 và telemetry ESP-C01 từ Wokwi",
+      "pass": true,
+      "ms": 20604,
+      "detail": {
+        "boot_id": "6ea1bcd410540bbcd9e57fa1c7f18595",
+        "boot_correlated": false,
+        "transport": "chưa thấy dòng boot"
+      }
+    },
+    {
+      "id": "S0b",
+      "test": "chuẩn bị",
+      "title": "Trạng thái nền: hai cửa đóng/khóa, count đã xác minh = 0",
+      "pass": true,
+      "ms": 1,
+      "detail": "baseline ok"
+    },
+    {
+      "id": "S1a",
+      "test": "T04",
+      "title": "RFID DEMO-017 vào D07 → count 1",
+      "pass": true,
+      "ms": 2062,
+      "detail": {
+        "serial": "RFID_EVENT door=D07 card=DEMO-017 dir=in result=0 count=1 verified=1",
+        "event_id": "6ea1bcd410540bbcd9e57fa1c7f18595:11"
+      }
+    },
+    {
+      "id": "S1b",
+      "test": "T05/KB1",
+      "title": "Còn 1 người: lệnh đóng D07 bị edge từ chối OCCUPIED",
+      "pass": true,
+      "ms": 4870,
+      "detail": {
+        "command_id": "cmd-97465229-8629-449e-b1e7-5d591f2f8023",
+        "door_id": "D07",
+        "action": "close",
+        "status": "rejected",
+        "reason": "OCCUPIED",
+        "late_ack": null,
+        "created_at": "2026-10-13T12:18:32.078Z",
+        "expires_at": "2026-10-13T12:18:42.078Z",
+        "acked_at": "2026-10-13T12:18:32.184Z"
+      }
+    },
+    {
+      "id": "S1c",
+      "test": "T04",
+      "title": "Đọc lặp DEMO-017 IN không tăng count",
+      "pass": true,
+      "ms": 1491,
+      "detail": {
+        "serial": "RFID_EVENT door=D07 card=DEMO-017 dir=in result=1 count=1 verified=1",
+        "event_id": "6ea1bcd410540bbcd9e57fa1c7f18595:12"
+      }
+    },
+    {
+      "id": "S1d",
+      "test": "T19",
+      "title": "Thẻ đã thu hồi DEMO-999 bị từ chối",
+      "pass": true,
+      "ms": 2228,
+      "detail": {
+        "serial": "RFID_EVENT door=D08 card=DEMO-999 dir=in result=2 count=1 verified=1",
+        "event_id": "6ea1bcd410540bbcd9e57fa1c7f18595:13"
+      }
+    },
+    {
+      "id": "S1e",
+      "test": "T19",
+      "title": "Thẻ lạ DEMO-404 bị từ chối",
+      "pass": true,
+      "ms": 2069,
+      "detail": {
+        "serial": "RFID_EVENT door=D08 card=DEMO-404 dir=in result=2 count=1 verified=1",
+        "event_id": "6ea1bcd410540bbcd9e57fa1c7f18595:14"
+      }
+    },
+    {
+      "id": "S1f",
+      "test": "T04",
+      "title": "DEMO-017 ra → count 0",
+      "pass": true,
+      "ms": 2243,
+      "detail": {
+        "serial": "RFID_EVENT door=D07 card=DEMO-017 dir=out result=0 count=0 verified=1",
+        "event_id": "6ea1bcd410540bbcd9e57fa1c7f18595:15"
+      }
+    },
+    {
+      "id": "S1g",
+      "test": "T04",
+      "title": "Ra lần nữa khi count 0: duplicate, không âm",
+      "pass": true,
+      "ms": 2135,
+      "detail": {
+        "serial": "RFID_EVENT door=D07 card=DEMO-017 dir=out result=1 count=0 verified=1",
+        "event_id": "6ea1bcd410540bbcd9e57fa1c7f18595:16"
+      }
+    },
+    {
+      "id": "S1h",
+      "test": "T04",
+      "title": "Dòng sai định dạng không tạo event",
+      "pass": true,
+      "ms": 3131,
+      "detail": "RFID_FORMAT"
+    },
+    {
+      "id": "S1i",
+      "test": "T04/T19",
+      "title": "MySQL: device_events và access_audit khớp edge",
+      "pass": true,
+      "ms": 34,
+      "detail": {
+        "events": 6,
+        "shift": "NIGHT",
+        "decisions": [
+          "out_of_shift",
+          "duplicate",
+          "edge_rejected",
+          "edge_rejected",
+          "exit",
+          "duplicate"
+        ]
+      }
+    },
+    {
+      "id": "S2a",
+      "test": "T05/KB2",
+      "title": "RFID 0 nhưng mmWave còn người: chặn đóng + cảnh báo",
+      "pass": true,
+      "ms": 52255,
+      "detail": {
+        "command": "PRESENCE_DETECTED",
+        "alert": "AL-26"
+      }
+    },
+    {
+      "id": "S2b",
+      "test": "T05/KB2",
+      "title": "Hết hiện diện: cảnh báo tự hết, đóng được",
+      "pass": true,
+      "ms": 130574,
+      "detail": {
+        "command": "applied"
+      }
+    },
+    {
+      "id": "S3a",
+      "test": "T11",
+      "title": "Liên động: D07 mở thì lệnh mở D08 bị từ chối",
+      "pass": true,
+      "ms": 39985,
+      "detail": "INTERLOCK_ACTIVE"
+    },
+    {
+      "id": "S3b",
+      "test": "T10",
+      "title": "Rèm quang bị chặn khi đang đóng → đảo chiều",
+      "pass": true,
+      "ms": 17868,
+      "detail": {
+        "serial": "SAFETY_EVENT door=D07 closing reversed BEAM_BLOCKED",
+        "event_state": "opening"
+      }
+    },
+    {
+      "id": "S3c",
+      "test": "T10",
+      "title": "Trả rèm quang và đóng D07 bằng tay",
+      "pass": false,
+      "ms": 180071,
+      "error": "Hết giờ chờ trạng thái nền an toàn"
+    }
+  ]
+}

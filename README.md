@@ -66,19 +66,19 @@ Cập nhật 13/10/2026. Chi tiết và bằng chứng từng mốc ở [Agent.m
 | M04 | Backend HTTP, migration, health/readiness | ✅ Đạt |
 | M05 | MQTT → MySQL → snapshot/lịch sử | ✅ Đạt |
 | M06 | Dashboard nhận dữ liệu backend (REST + WebSocket) | ✅ Đạt (nguồn script) |
-| M07 | Firmware đọc input cửa/rèm quang/panic/mmWave | 🟡 Code + test đạt, chờ nghiệm thu Wokwi |
-| M08 | RFID, số người, event ingest | 🟡 Code + test đạt, chờ nghiệm thu Wokwi |
+| M07 | Firmware đọc input cửa/rèm quang/panic/mmWave | ✅ Đạt (Wokwi) |
+| M08 | RFID, số người, event ingest | ✅ Đạt (Wokwi) |
 | M09 | Quy tắc an toàn cục bộ (cổng đóng, panic, liên động) | ✅ Đạt (test C++) |
-| M10 | Lệnh cửa có ack, output mô phỏng | 🟡 Đạt E2E; đã thử *Đóng D07* thật trên Wokwi; chờ đủ tình huống |
-| M11 | Cảnh báo, timer, tiếp nhận | 🟡 Đạt unit/integration, chờ Wokwi |
-| M12 | TLS, offline, phục hồi | 🟡 Đạt integration; firmware TLS đã gửi telemetry thật; chờ T08 |
+| M10 | Lệnh cửa có ack, output mô phỏng | ✅ Đạt (Wokwi) |
+| M11 | Cảnh báo, timer, tiếp nhận | ✅ Đạt (Wokwi: 30 s / 60 s khi mất broker, mắc kẹt 5 phút) |
+| M12 | TLS, offline, phục hồi | ✅ Đạt (Wokwi TLS, T08 mất broker) |
 | M13 | Đăng nhập, vai trò, ca làm việc | ✅ Đạt |
 | M14 | Giữ chỗ và điều kiện nhận hàng | ✅ Đạt |
 | M15 | Lịch sử, báo cáo, CSV | ✅ Đạt |
-| M16 | Toàn kho, 4 kịch bản, đo tải | 🟡 Đạt với ESP32 giả lập (P95 186–242 ms, mất 0/2000); chờ 4 kịch bản trên Wokwi |
+| M16 | Toàn kho, 4 kịch bản, đo tải | 🟡 4 kịch bản + T08 đạt trên Wokwi, tải P95 186–242 ms; còn T17/T24/T26 một phần |
 | M17 | Đóng gói, bàn giao | ⬜ Chưa làm |
 
-**Việc còn lại:** chạy `npm run wokwi:acceptance` với simulator đang mở để nghiệm thu RFID, mmWave, liên động, rèm quang, panic và T08 (panic khi broker dừng) trên firmware thật — xem [mục Wokwi](#nghiệm-thu-bán-tự-động-trên-wokwi).
+**Nghiệm thu Wokwi đã xong** (13/10/2026, [bằng chứng](docs/evidence/WOKWI-2026-10-13.md)): RFID, mmWave, liên động, rèm quang, panic, T08 (panic khi broker dừng), lệnh trùng/cũ, timer. **Việc còn lại:** T17 (khu đệm đầy, integration), T24 (DB đầy/lỗi ghi), T26 (825/1440 px, bàn phím) để đóng M16; sửa `demo:warehouse` tự nối lại khi broker dừng; M17 (Postman, checklist demo, chạy thử từ bản clone sạch).
 
 ---
 
@@ -325,7 +325,7 @@ Bảng đầy đủ: [docs/HUONG_DAN_CAU_HINH.md §17](docs/HUONG_DAN_CAU_HINH.m
 - Chỉ ESP-C01 (cửa D07, D08) nhận lệnh; cửa các khu khác là dữ liệu mô phỏng.
 - Số liệu chứa hàng là dữ liệu demo, chưa nối WMS.
 - Chỉ chạy localhost (cookie chưa `Secure`).
-- Nghiệm thu đầy đủ trên Wokwi còn dang dở (xem [Trạng thái](#trạng-thái-hiện-tại)).
+- `demo:warehouse` thoát khi broker dừng; chạy lại sau khi broker bật.
 
 ---
 

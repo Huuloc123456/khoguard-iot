@@ -1,0 +1,79 @@
+2026-10-13T12:18:04.815Z 
+=== S0 [chuẩn bị] Backend sẵn sàng, Serial RFC2217 và telemetry ESP-C01 từ Wokwi
+2026-10-13T12:18:25.420Z   ĐẠT — {"boot_id":"6ea1bcd410540bbcd9e57fa1c7f18595","boot_correlated":false,"transport":"chưa thấy dòng boot"}
+2026-10-13T12:18:25.421Z 
+=== S0b [chuẩn bị] Trạng thái nền: hai cửa đóng/khóa, count đã xác minh = 0
+2026-10-13T12:18:25.423Z   ĐẠT — baseline ok
+2026-10-13T12:18:25.423Z 
+=== S1a [T04] RFID DEMO-017 vào D07 → count 1
+2026-10-13T12:18:27.486Z   ĐẠT — {"serial":"RFID_EVENT door=D07 card=DEMO-017 dir=in result=0 count=1 verified=1","event_id":"6ea1bcd410540bbcd9e57fa1c7f18595:11"}
+2026-10-13T12:18:27.487Z 
+=== S1b [T05/KB1] Còn 1 người: lệnh đóng D07 bị edge từ chối OCCUPIED
+2026-10-13T12:18:32.359Z   ĐẠT — {"command_id":"cmd-97465229-8629-449e-b1e7-5d591f2f8023","door_id":"D07","action":"close","status":"rejected","reason":"OCCUPIED","late_ack":null,"created_at":"2026-10-13T12:18:32.078Z","expires_at":"2026-10-13T12:18:42.078Z","acked_at":"2026-10-13T12:18:32.184Z"}
+2026-10-13T12:18:32.359Z 
+=== S1c [T04] Đọc lặp DEMO-017 IN không tăng count
+2026-10-13T12:18:33.850Z   ĐẠT — {"serial":"RFID_EVENT door=D07 card=DEMO-017 dir=in result=1 count=1 verified=1","event_id":"6ea1bcd410540bbcd9e57fa1c7f18595:12"}
+2026-10-13T12:18:33.851Z 
+=== S1d [T19] Thẻ đã thu hồi DEMO-999 bị từ chối
+2026-10-13T12:18:36.079Z   ĐẠT — {"serial":"RFID_EVENT door=D08 card=DEMO-999 dir=in result=2 count=1 verified=1","event_id":"6ea1bcd410540bbcd9e57fa1c7f18595:13"}
+2026-10-13T12:18:36.080Z 
+=== S1e [T19] Thẻ lạ DEMO-404 bị từ chối
+2026-10-13T12:18:38.149Z   ĐẠT — {"serial":"RFID_EVENT door=D08 card=DEMO-404 dir=in result=2 count=1 verified=1","event_id":"6ea1bcd410540bbcd9e57fa1c7f18595:14"}
+2026-10-13T12:18:38.150Z 
+=== S1f [T04] DEMO-017 ra → count 0
+2026-10-13T12:18:40.393Z   ĐẠT — {"serial":"RFID_EVENT door=D07 card=DEMO-017 dir=out result=0 count=0 verified=1","event_id":"6ea1bcd410540bbcd9e57fa1c7f18595:15"}
+2026-10-13T12:18:40.394Z 
+=== S1g [T04] Ra lần nữa khi count 0: duplicate, không âm
+2026-10-13T12:18:42.530Z   ĐẠT — {"serial":"RFID_EVENT door=D07 card=DEMO-017 dir=out result=1 count=0 verified=1","event_id":"6ea1bcd410540bbcd9e57fa1c7f18595:16"}
+2026-10-13T12:18:42.531Z 
+=== S1h [T04] Dòng sai định dạng không tạo event
+2026-10-13T12:18:45.663Z   ĐẠT — RFID_FORMAT
+2026-10-13T12:18:45.663Z 
+=== S1i [T04/T19] MySQL: device_events và access_audit khớp edge
+2026-10-13T12:18:45.698Z   ĐẠT — {"events":6,"shift":"NIGHT","decisions":["out_of_shift","duplicate","edge_rejected","edge_rejected","exit","duplicate"]}
+2026-10-13T12:18:45.700Z 
+=== S2a [T05/KB2] RFID 0 nhưng mmWave còn người: chặn đóng + cảnh báo
+2026-10-13T12:18:45.701Z 
+>>> THAO TÁC: Gạt công tắc PRESENCE sang HIGH (có người).
+
+2026-10-13T12:19:15.759Z    … vẫn đang chờ: presence = true
+2026-10-13T12:19:37.955Z   ĐẠT — {"command":"PRESENCE_DETECTED","alert":"AL-26"}
+2026-10-13T12:19:37.955Z 
+=== S2b [T05/KB2] Hết hiện diện: cảnh báo tự hết, đóng được
+2026-10-13T12:19:37.956Z 
+>>> THAO TÁC: Gạt PRESENCE về LOW.
+
+2026-10-13T12:20:07.972Z    … vẫn đang chờ: presence = false
+2026-10-13T12:20:38.014Z    … vẫn đang chờ: presence = false
+2026-10-13T12:21:08.088Z    … vẫn đang chờ: presence = false
+2026-10-13T12:21:38.173Z    … vẫn đang chờ: presence = false
+2026-10-13T12:21:48.530Z   ĐẠT — {"command":"applied"}
+2026-10-13T12:21:48.531Z 
+=== S3a [T11] Liên động: D07 mở thì lệnh mở D08 bị từ chối
+2026-10-13T12:21:48.531Z 
+>>> THAO TÁC: Gạt CONTACT07 sang HIGH (cửa D07 mở).
+
+2026-10-13T12:22:18.632Z    … vẫn đang chờ: D07 mở
+2026-10-13T12:22:28.516Z   ĐẠT — INTERLOCK_ACTIVE
+2026-10-13T12:22:28.517Z 
+=== S3b [T10] Rèm quang bị chặn khi đang đóng → đảo chiều
+2026-10-13T12:22:32.321Z   Harness sẽ gửi lệnh ĐÓNG D07 sau 5 giây. Khi LED cam "D07 motor đóng" sáng, gạt BEAM07 sang LOW trong vòng 8 giây.
+2026-10-13T12:22:37.379Z 
+>>> GẠT BEAM07 SANG LOW NGAY.
+2026-10-13T12:22:46.386Z   ĐẠT — {"serial":"SAFETY_EVENT door=D07 closing reversed BEAM_BLOCKED","event_state":"opening"}
+2026-10-13T12:22:46.387Z 
+=== S3c [T10] Trả rèm quang và đóng D07 bằng tay
+2026-10-13T12:22:46.387Z 
+>>> THAO TÁC: Gạt BEAM07 về HIGH rồi CONTACT07 về LOW (cửa đóng).
+
+2026-10-13T12:22:46.388Z 
+>>> THAO TÁC: Trả về trạng thái nền: D07/D08 đóng (contact LOW), beam HIGH, panic LOW, presence LOW.
+
+2026-10-13T12:23:16.404Z    … vẫn đang chờ: trạng thái nền an toàn
+2026-10-13T12:23:46.479Z    … vẫn đang chờ: trạng thái nền an toàn
+2026-10-13T12:24:16.523Z    … vẫn đang chờ: trạng thái nền an toàn
+2026-10-13T12:24:46.601Z    … vẫn đang chờ: trạng thái nền an toàn
+2026-10-13T12:25:16.692Z    … vẫn đang chờ: trạng thái nền an toàn
+2026-10-13T12:25:46.458Z   KHÔNG ĐẠT — Hết giờ chờ trạng thái nền an toàn
+2026-10-13T12:25:46.461Z 
+Kết quả: 15/16 bước đạt. Bằng chứng: D:\huit\iot\source\khoguard-iot\.local\wokwi-acceptance\runs\2026-10-13T12-18-04-725Z

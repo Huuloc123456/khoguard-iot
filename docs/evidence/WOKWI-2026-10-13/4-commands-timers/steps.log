@@ -1,0 +1,73 @@
+2026-10-13T12:40:23.394Z 
+=== S0 [chuẩn bị] Backend sẵn sàng, Serial RFC2217 và telemetry ESP-C01 từ Wokwi
+2026-10-13T12:40:44.643Z   ĐẠT — {"boot_id":"6ea1bcd410540bbcd9e57fa1c7f18595","boot_correlated":false,"transport":"chưa thấy dòng boot"}
+2026-10-13T12:40:44.643Z 
+=== S0b [chuẩn bị] Trạng thái nền: hai cửa đóng/khóa, count đã xác minh = 0
+2026-10-13T12:40:44.644Z   ĐẠT — baseline ok
+2026-10-13T12:40:44.644Z [bỏ qua] S1a RFID DEMO-017 vào D07 → count 1
+2026-10-13T12:40:44.645Z [bỏ qua] S1b Còn 1 người: lệnh đóng D07 bị edge từ chối OCCUPIED
+2026-10-13T12:40:44.645Z [bỏ qua] S1c Đọc lặp DEMO-017 IN không tăng count
+2026-10-13T12:40:44.646Z [bỏ qua] S1d Thẻ đã thu hồi DEMO-999 bị từ chối
+2026-10-13T12:40:44.647Z [bỏ qua] S1e Thẻ lạ DEMO-404 bị từ chối
+2026-10-13T12:40:44.648Z [bỏ qua] S1f DEMO-017 ra → count 0
+2026-10-13T12:40:44.648Z [bỏ qua] S1g Ra lần nữa khi count 0: duplicate, không âm
+2026-10-13T12:40:44.649Z [bỏ qua] S1h Dòng sai định dạng không tạo event
+2026-10-13T12:40:44.649Z [bỏ qua] S1i MySQL: device_events và access_audit khớp edge
+2026-10-13T12:40:44.650Z [bỏ qua] S2a RFID 0 nhưng mmWave còn người: chặn đóng + cảnh báo
+2026-10-13T12:40:44.650Z [bỏ qua] S2b Hết hiện diện: cảnh báo tự hết, đóng được
+2026-10-13T12:40:44.651Z [bỏ qua] S3a Liên động: D07 mở thì lệnh mở D08 bị từ chối
+2026-10-13T12:40:44.651Z [bỏ qua] S3b Rèm quang bị chặn khi đang đóng → đảo chiều
+2026-10-13T12:40:44.651Z [bỏ qua] S3c Trả rèm quang và đóng D07 bằng tay
+2026-10-13T12:40:44.652Z [bỏ qua] S4a Panic D07 từ trạng thái đóng: chốt, nhả khóa, mở, output khẩn cấp
+2026-10-13T12:40:44.652Z [bỏ qua] S4b Tiếp nhận cảnh báo không reset chốt
+2026-10-13T12:40:44.653Z [bỏ qua] S4c Đặt lại khi nút còn giữ bị từ chối
+2026-10-13T12:40:44.653Z [bỏ qua] S4d Cửa mở hẳn; nhả nút vẫn chốt; lệnh đóng bị PANIC_ACTIVE
+2026-10-13T12:40:44.653Z [bỏ qua] S5a Panic D08 khi D07 đang mở: thoát hiểm thắng liên động
+2026-10-13T12:40:44.654Z [bỏ qua] S5b Nhả hai nút, đặt lại từng cửa bằng lệnh có quyền
+2026-10-13T12:40:44.654Z [bỏ qua] S5c Đóng cả hai cửa
+2026-10-13T12:40:44.654Z [bỏ qua] S6a Dừng broker dự án
+2026-10-13T12:40:44.655Z [bỏ qua] S6b Panic khi broker dừng: output an toàn cục bộ vẫn áp dụng
+2026-10-13T12:40:44.655Z [bỏ qua] S6c Bật lại broker: ESP nối phiên mới, event panic lúc mất mạng tới MySQL
+2026-10-13T12:40:44.656Z [bỏ qua] S6d Dọn: nhả nút, đặt lại, đóng cửa
+2026-10-13T12:40:44.656Z 
+=== S7a [T23] Lệnh trùng ID chỉ chạy một lần tại edge
+2026-10-13T12:40:49.569Z   ĐẠT — {"serial":["COMMAND accept-dup-e8180484 D07 close -> applied","COMMAND accept-dup-e8180484 D07 close -> applied (duplicate, not re-run)"]}
+2026-10-13T12:40:49.570Z 
+=== S7b [T23] Lệnh của phiên cũ bị edge từ chối COMMAND_EXPIRED
+2026-10-13T12:40:53.785Z   ĐẠT — COMMAND accept-old-2d0ec6b7 D07 close -> COMMAND_EXPIRED
+2026-10-13T12:40:53.785Z 
+=== S8 [T12/M11] Timer cửa mở 30 s / >60 s chạy tại edge khi broker dừng
+2026-10-13T12:40:53.786Z 
+>>> THAO TÁC: Gạt CONTACT07 sang HIGH (cửa D07 mở) và để nguyên khoảng 70 giây.
+
+2026-10-13T12:42:06.160Z    Broker dừng (PID 29552); chờ timer tại thiết bị…
+2026-10-13T12:43:17.132Z 
+>>> THAO TÁC: Gạt CONTACT07 về LOW (đóng D07).
+
+2026-10-13T12:43:17.133Z 
+>>> THAO TÁC: Trả về trạng thái nền: D07/D08 đóng (contact LOW), beam HIGH, panic LOW, presence LOW.
+
+2026-10-13T12:43:47.208Z    … vẫn đang chờ: trạng thái nền an toàn
+2026-10-13T12:43:57.977Z   ĐẠT — {"light_after_ms":30005,"buzzer_after_ms":60002,"open_ms_reported":65204,"alert":"AL-36"}
+2026-10-13T12:43:57.978Z 
+=== S9 [T12/M11] Người mắc kẹt: presence liên tục khi hai cửa đóng >5 phút
+2026-10-13T12:43:57.979Z 
+>>> THAO TÁC: Gạt PRESENCE sang HIGH và để nguyên khoảng 5 phút 10 giây (hai cửa vẫn đóng).
+
+2026-10-13T12:44:28.037Z    … vẫn đang chờ: presence = true
+2026-10-13T12:44:58.059Z    … vẫn đang chờ: presence = true
+2026-10-13T12:45:24.068Z    Đang chờ 5 phút theo đồng hồ thiết bị…
+2026-10-13T12:50:33.826Z 
+>>> THAO TÁC: Gạt PRESENCE về LOW.
+
+2026-10-13T12:50:33.827Z 
+>>> THAO TÁC: Trả về trạng thái nền: D07/D08 đóng (contact LOW), beam HIGH, panic LOW, presence LOW.
+
+2026-10-13T12:51:03.912Z    … vẫn đang chờ: trạng thái nền an toàn
+2026-10-13T12:51:34.014Z    … vẫn đang chờ: trạng thái nền an toàn
+2026-10-13T12:52:04.046Z    … vẫn đang chờ: trạng thái nền an toàn
+2026-10-13T12:52:34.075Z    … vẫn đang chờ: trạng thái nền an toàn
+2026-10-13T12:53:04.127Z    … vẫn đang chờ: trạng thái nền an toàn
+2026-10-13T12:53:33.922Z   KHÔNG ĐẠT — Hết giờ chờ trạng thái nền an toàn
+2026-10-13T12:53:33.924Z 
+Kết quả: 5/6 bước đạt. Bằng chứng: D:\huit\iot\source\khoguard-iot\.local\wokwi-acceptance\runs\2026-10-13T12-40-23-317Z

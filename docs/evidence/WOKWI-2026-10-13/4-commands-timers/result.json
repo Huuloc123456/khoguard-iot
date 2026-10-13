@@ -1,0 +1,70 @@
+{
+  "started_at": "2026-10-13T12:40:23.393Z",
+  "finished_at": "2026-10-13T12:53:33.923Z",
+  "boot_id": "6ea1bcd410540bbcd9e57fa1c7f18595",
+  "from": "S7a",
+  "results": [
+    {
+      "id": "S0",
+      "test": "chuẩn bị",
+      "title": "Backend sẵn sàng, Serial RFC2217 và telemetry ESP-C01 từ Wokwi",
+      "pass": true,
+      "ms": 21247,
+      "detail": {
+        "boot_id": "6ea1bcd410540bbcd9e57fa1c7f18595",
+        "boot_correlated": false,
+        "transport": "chưa thấy dòng boot"
+      }
+    },
+    {
+      "id": "S0b",
+      "test": "chuẩn bị",
+      "title": "Trạng thái nền: hai cửa đóng/khóa, count đã xác minh = 0",
+      "pass": true,
+      "ms": 1,
+      "detail": "baseline ok"
+    },
+    {
+      "id": "S7a",
+      "test": "T23",
+      "title": "Lệnh trùng ID chỉ chạy một lần tại edge",
+      "pass": true,
+      "ms": 4912,
+      "detail": {
+        "serial": [
+          "COMMAND accept-dup-e8180484 D07 close -> applied",
+          "COMMAND accept-dup-e8180484 D07 close -> applied (duplicate, not re-run)"
+        ]
+      }
+    },
+    {
+      "id": "S7b",
+      "test": "T23",
+      "title": "Lệnh của phiên cũ bị edge từ chối COMMAND_EXPIRED",
+      "pass": true,
+      "ms": 4214,
+      "detail": "COMMAND accept-old-2d0ec6b7 D07 close -> COMMAND_EXPIRED"
+    },
+    {
+      "id": "S8",
+      "test": "T12/M11",
+      "title": "Timer cửa mở 30 s / >60 s chạy tại edge khi broker dừng",
+      "pass": true,
+      "ms": 184192,
+      "detail": {
+        "light_after_ms": 30005,
+        "buzzer_after_ms": 60002,
+        "open_ms_reported": 65204,
+        "alert": "AL-36"
+      }
+    },
+    {
+      "id": "S9",
+      "test": "T12/M11",
+      "title": "Người mắc kẹt: presence liên tục khi hai cửa đóng >5 phút",
+      "pass": false,
+      "ms": 575944,
+      "error": "Hết giờ chờ trạng thái nền an toàn"
+    }
+  ]
+}

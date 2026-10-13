@@ -1,0 +1,50 @@
+2026-10-13T12:26:37.579Z 
+=== S0 [chuẩn bị] Backend sẵn sàng, Serial RFC2217 và telemetry ESP-C01 từ Wokwi
+2026-10-13T12:26:59.068Z   ĐẠT — {"boot_id":"6ea1bcd410540bbcd9e57fa1c7f18595","boot_correlated":false,"transport":"chưa thấy dòng boot"}
+2026-10-13T12:26:59.069Z 
+=== S0b [chuẩn bị] Trạng thái nền: hai cửa đóng/khóa, count đã xác minh = 0
+2026-10-13T12:26:59.070Z   ĐẠT — baseline ok
+2026-10-13T12:26:59.071Z [bỏ qua] S1a RFID DEMO-017 vào D07 → count 1
+2026-10-13T12:26:59.071Z [bỏ qua] S1b Còn 1 người: lệnh đóng D07 bị edge từ chối OCCUPIED
+2026-10-13T12:26:59.072Z [bỏ qua] S1c Đọc lặp DEMO-017 IN không tăng count
+2026-10-13T12:26:59.072Z [bỏ qua] S1d Thẻ đã thu hồi DEMO-999 bị từ chối
+2026-10-13T12:26:59.073Z [bỏ qua] S1e Thẻ lạ DEMO-404 bị từ chối
+2026-10-13T12:26:59.073Z [bỏ qua] S1f DEMO-017 ra → count 0
+2026-10-13T12:26:59.074Z [bỏ qua] S1g Ra lần nữa khi count 0: duplicate, không âm
+2026-10-13T12:26:59.074Z [bỏ qua] S1h Dòng sai định dạng không tạo event
+2026-10-13T12:26:59.075Z [bỏ qua] S1i MySQL: device_events và access_audit khớp edge
+2026-10-13T12:26:59.075Z [bỏ qua] S2a RFID 0 nhưng mmWave còn người: chặn đóng + cảnh báo
+2026-10-13T12:26:59.075Z [bỏ qua] S2b Hết hiện diện: cảnh báo tự hết, đóng được
+2026-10-13T12:26:59.076Z [bỏ qua] S3a Liên động: D07 mở thì lệnh mở D08 bị từ chối
+2026-10-13T12:26:59.076Z [bỏ qua] S3b Rèm quang bị chặn khi đang đóng → đảo chiều
+2026-10-13T12:26:59.077Z [bỏ qua] S3c Trả rèm quang và đóng D07 bằng tay
+2026-10-13T12:26:59.077Z 
+=== S4a [T07/KB3] Panic D07 từ trạng thái đóng: chốt, nhả khóa, mở, output khẩn cấp
+2026-10-13T12:26:59.078Z 
+>>> THAO TÁC: Gạt PANIC07 sang HIGH.
+
+2026-10-13T12:27:24.282Z   ĐẠT — {"event_id":"6ea1bcd410540bbcd9e57fa1c7f18595:50","serial":["INPUT_EVENT door=D07 panic=1 open=0 revision=105","OUTPUTS ms=853199 lock=00 motor07=10 motor08=00 light=1 buzzer=1 heater=1 fan=0"]}
+2026-10-13T12:27:24.282Z 
+=== S4b [T09] Tiếp nhận cảnh báo không reset chốt
+2026-10-13T12:27:28.335Z   ĐẠT — {"alert":"AL-30","state":"active","acknowledged":true}
+2026-10-13T12:27:28.336Z 
+=== S4c [T07] Đặt lại khi nút còn giữ bị từ chối
+2026-10-13T12:27:37.443Z   ĐẠT — PANIC_ACTIVE
+2026-10-13T12:27:37.443Z 
+=== S4d [T07] Cửa mở hẳn; nhả nút vẫn chốt; lệnh đóng bị PANIC_ACTIVE
+2026-10-13T12:27:37.444Z 
+>>> THAO TÁC: Gạt CONTACT07 sang HIGH (cửa D07 đã mở hẳn).
+
+2026-10-13T12:27:45.349Z 
+>>> THAO TÁC: Gạt PANIC07 về LOW (nhả nút). Xong thì nhấn Enter.
+
+2026-10-13T12:28:11.207Z   ĐẠT — {"latched_after_release":true,"close":"PANIC_ACTIVE"}
+2026-10-13T12:28:11.207Z 
+=== S5a [T11] Panic D08 khi D07 đang mở: thoát hiểm thắng liên động
+2026-10-13T12:28:11.208Z 
+>>> THAO TÁC: Gạt PANIC08 sang HIGH (D07 vẫn mở).
+
+2026-10-13T12:28:23.619Z   KHÔNG ĐẠT — Hết giờ chờ D08 chốt
+2026-10-13T12:28:23.622Z 
+Kết quả: 6/7 bước đạt. Bằng chứng: D:\huit\iot\source\khoguard-iot\.local\wokwi-acceptance\runs\2026-10-13T12-26-37-437Z
+2026-10-13T12:28:23.626Z Serial RFC2217 đã đóng (simulator dừng?)

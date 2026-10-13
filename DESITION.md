@@ -212,3 +212,12 @@ Mỗi quyết định mới thêm DEC-xxx với ngày, trạng thái, lý do và
 - Bằng chứng trong ZIP và kết quả Windows được ghi riêng. FakeEdge không thay nghiệm thu Wokwi, M16 còn các tình huống an toàn/mất broker cần thử trực tiếp.
 - Test TLS nhận đúng marker live, observer theo schema hiện tại, nguồn cửa theo owner từng cửa. Hai test hồi quy mới và kiểm TLS thật đã đạt.
 - [Kết quả chi tiết](docs/evidence/CHECK-WINDOWS-2026-10-13.md). Giữ giới hạn DEC-020; không mở broker ra LAN hoặc kết nối profile MQTTX bên ngoài đang có.
+
+## DEC-034 — Nghiệm thu Wokwi bán tự động, không FakeEdge
+
+- Ngày 13/10/2026; đã thực hiện. Phần còn lại của M07, M08, M10–M12, M16 chỉ tính khi chạy trên **firmware thật** trong Wokwi. `npm run wokwi:acceptance` tự động hóa phần không cần tay người; công tắc vẫn do người gạt, mỗi bước chỉ đạt khi telemetry/Serial xác nhận.
+- RFID gửi qua Serial RFC2217 của Wokwi (`rfc2217ServerPort = { port = 4000, host = "127.0.0.1" }`); đã đọc mã extension 4.0.0 để chắc object được truyền vào `net.Server.listen`, nên chỉ bind loopback.
+- T08 dừng **chỉ** Mosquitto chạy với `.local\mosquitto\mosquitto.conf` (đúng 1 tiến trình, kiểm theo command line), rồi bật lại tách nền. Không đụng service 1883 hay MySQL.
+- Firmware in `OUTPUTS ms=… lock=… motor07=… motor08=… light=… buzzer=… heater=… fan=…` mỗi khi output đổi: khi broker dừng, telemetry không gửi được nên Serial là bằng chứng duy nhất output an toàn đã áp dụng tại chỗ; `ms` là đồng hồ thiết bị để đo timer chính xác.
+- T23 gửi lệnh thẳng tới thiết bị bằng tài khoản backend (tài khoản duy nhất được ghi `commands`) để thử ID trùng và phiên cũ; lệnh thử không có dòng DB, kết quả đọc từ Serial.
+- [Kết quả](docs/evidence/WOKWI-2026-10-13.md).
