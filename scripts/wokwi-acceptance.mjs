@@ -360,8 +360,13 @@ try {
   });
 
   await step('S5a', 'T11', 'Panic D08 khi D07 đang mở: thoát hiểm thắng liên động', async () => {
+    // Also runnable on its own (--from=S5a): the escape-over-interlock case needs D07 open first.
+    if (door(lastTelemetry().payload, 'D07').state !== 'open') {
+      ask('Gạt CONTACT07 sang HIGH (cửa D07 mở). Chưa gạt PANIC08.');
+      await telemetryWait(p => door(p, 'D07').state === 'open', MANUAL_MS, 'D07 mở');
+    }
     const mark = serialMark();
-    ask('Gạt PANIC08 sang HIGH (D07 vẫn mở).');
+    ask('Chỉ gạt PANIC08 sang HIGH (giữ CONTACT07 ở HIGH).');
     const out = await serialWait(/^OUTPUTS .*motor08=10 /, mark, MANUAL_MS);
     await telemetryWait(p => door(p, 'D08').panic_latched === true && door(p, 'D07').state === 'open', 8000, 'D08 chốt');
     return out.text;
@@ -421,6 +426,89 @@ try {
     ask('Gạt CONTACT07 về LOW.');
     await waitBaseline('Trả về trạng thái nền');
     return r.status;
+  });
+
+  // T23 on the real edge: these frames are published straight to the device with the backend account (the only one
+  // allowed to write commands), so they have no DB row; the outcome is read from the firmware's serial line.
+  const rawCommand = async (sessionId, commandId) => {
+    const t = await settled(), now = Date.now();
+    const message = { schema_version: 1, warehouse_id: 'WH01', device_id: 'ESP-C01', boot_id: t.boot_id, session_id: sessionId, seq: 1, kind: 'commands',
+      clock_synced: true, sent_at: new Date(now).toISOString(), uptime_ms: 0,
+      payload: { zone_id: 'C', door_id: 'D07', command_id: commandId, action: 'close', expires_at: new Date(now + 10000).toISOString(), expected_revision: t.payload.controller_revision } };
+    const raw = JSON.stringify(message);
+    assert.ok(validateMqttMessage(TOPIC + 'commands', raw).ok, 'lệnh thử phải đúng hợp đồng');
+    const sender = mqtt.connect({ ...brokerOptions(config.mqtt), username: config.mqtt.username, password: config.mqtt.password,
+      clientId: `kg-wokwi-acceptance-cmd-${randomUUID()}`, clean: true, reconnectPeriod: 0, connectTimeout: 3000 });
+    sender.on('error', () => {});
+    await new Promise((resolve, reject) => { sender.once('connect', resolve); sender.once('error', reject); });
+    return { publish: () => sender.publishAsync(TOPIC + 'commands', raw, { qos: 1, retain: false }), end: () => sender.endAsync(true), session: t.session_id };
+  };
+  await step('S7a', 'T23', 'Lệnh trùng ID chỉ chạy một lần tại edge', async () => {
+    const id = `accept-dup-${randomUUID().slice(0, 8)}`, mark = serialMark();
+    const c = await rawCommand(lastTelemetry().session_id, id);
+    try {
+      await c.publish();
+      const first = await serialWait(new RegExp(`^COMMAND ${id} D07 close -> applied$`), mark);
+      await c.publish();
+      const second = await serialWait(new RegExp(`^COMMAND ${id} D07 close -> applied \\(duplicate, not re-run\\)$`), mark);
+      return { serial: [first.text, second.text] };
+    } finally { await c.end(); }
+  });
+  await step('S7b', 'T23', 'Lệnh của phiên cũ bị edge từ chối COMMAND_EXPIRED', async () => {
+    const id = `accept-old-${randomUUID().slice(0, 8)}`, mark = serialMark();
+    const c = await rawCommand(`old-${randomUUID().replaceAll('-', '')}`, id);
+    try {
+      await c.publish();
+      const hit = await serialWait(new RegExp(`^COMMAND ${id} D07 close -> COMMAND_EXPIRED$`), mark);
+      return hit.text;
+    } finally { await c.end(); }
+  });
+
+  // T12 + M11 on the device clock (OUTPUTS ms=…), with the broker down so the timers are shown to run locally.
+  const outputsAfter = (mark, regex) => serial.lines.slice(mark).find(l => /^OUTPUTS /.test(l.text) && regex.test(l.text));
+  const msOf = line => Number(line.text.match(/ms=(\d+)/)[1]);
+  await step('S8', 'T12/M11', 'Timer cửa mở 30 s / >60 s chạy tại edge khi broker dừng', async () => {
+    const mark = serialMark();
+    ask('Gạt CONTACT07 sang HIGH (cửa D07 mở) và để nguyên khoảng 70 giây.');
+    const opened = await serialWait(/^OUTPUTS .*lock=0\d .*light=0 buzzer=0/, mark, MANUAL_MS);
+    const pid = await stopBroker();
+    say(`   Broker dừng (PID ${pid}); chờ timer tại thiết bị…`);
+    await serialWait(/^OUTPUTS .*light=1 buzzer=1/, mark, 75000);
+    const light = outputsAfter(mark, /light=1 buzzer=0/), buzzer = outputsAfter(mark, /light=1 buzzer=1/);
+    assert.ok(light && buzzer, 'thiếu dòng OUTPUTS đèn/còi');
+    const warnMs = msOf(light) - msOf(opened), critMs = msOf(buzzer) - msOf(opened);
+    assert.equal(await portOpen(config.mqtt.port), false, 'broker phải còn dừng');
+    // The open moment is when debounce accepted the contact; the first OUTPUTS line follows in the same 10 ms loop.
+    assert.ok(warnMs >= 29990 && warnMs <= 30100, `đèn ở ${warnMs} ms`);
+    assert.ok(critMs > 59990 && critMs <= 60100, `còi ở ${critMs} ms`);
+    startBroker();
+    await serialWait(/^MQTT_ONLINE /, mark, 30000);
+    const t = await telemetryWait(p => (p.alarms ?? []).some(a => a.code === 'DOOR_OPEN_CRITICAL' && a.door_id === 'D07'), 15000, 'alarm cửa mở');
+    await delay(1500);
+    const alert = (await alertsOf('DOOR_OPEN', 'D07')).find(a => a.state === 'active');
+    assert.ok(alert && alert.level === 'danger', 'thiếu cảnh báo DOOR_OPEN mức danger');
+    ask('Gạt CONTACT07 về LOW (đóng D07).');
+    await waitBaseline('Trả về trạng thái nền');
+    await delay(2500);
+    assert.ok(!(await alertsOf('DOOR_OPEN', 'D07')).some(a => a.state === 'active'), 'cảnh báo cửa mở chưa hết');
+    return { light_after_ms: warnMs, buzzer_after_ms: critMs, open_ms_reported: door(t.payload, 'D07').open_ms, alert: alert.id };
+  });
+  await step('S9', 'T12/M11', 'Người mắc kẹt: presence liên tục khi hai cửa đóng >5 phút', async () => {
+    const mark = serialMark();
+    ask('Gạt PRESENCE sang HIGH và để nguyên khoảng 5 phút 10 giây (hai cửa vẫn đóng).');
+    const seen = await telemetryWait(p => p.occupancy.presence === true, MANUAL_MS, 'presence = true');
+    say('   Đang chờ 5 phút theo đồng hồ thiết bị…');
+    const trapped = await serialWait(/^OUTPUTS .*light=1 buzzer=1 heater=1 fan=0/, mark, 320000);
+    // Presence started at most one telemetry period (2 s) before the first frame that reported it.
+    const afterMs = msOf(trapped) - seen.uptime_ms;
+    assert.ok(afterMs > 298000 && afterMs <= 303000, `mắc kẹt sau ${afterMs} ms`);
+    await telemetryWait(p => (p.alarms ?? []).some(a => a.code === 'TRAPPED_PERSON'), 8000, 'alarm TRAPPED_PERSON');
+    await delay(1500);
+    assert.ok((await alertsOf('TRAPPED_PERSON')).some(a => a.state === 'active'), 'thiếu cảnh báo TRAPPED_PERSON');
+    ask('Gạt PRESENCE về LOW.');
+    await waitBaseline('Trả về trạng thái nền');
+    const cleared = await serialWait(/^OUTPUTS .*heater=0 fan=1/, mark, 8000);
+    return { trapped_after_ms: afterMs, serial: [trapped.text, cleared.text] };
   });
 } catch {
   // Recorded in results; stop at the first failure so later steps do not run from an unknown state.
