@@ -1,0 +1,54 @@
+{
+  "checked_at": "2026-10-13T13:42:31.756Z",
+  "machine": {
+    "os": "Windows_NT 10.0.26200",
+    "cpu": "AMD Ryzen 7 H 255 w/ Radeon 780M Graphics",
+    "cores": 16,
+    "memory_gb": 31
+  },
+  "virtual_nodes": 50,
+  "device_identities": 5,
+  "steady": {
+    "seconds": 60,
+    "published": 1500,
+    "rate_per_s": 25,
+    "stored": 1500,
+    "lost": 0,
+    "ingest": {
+      "samples": 1500,
+      "p50_ms": 3,
+      "p95_ms": 4,
+      "max_ms": 10
+    },
+    "publish_to_websocket": {
+      "samples": 244,
+      "p50_ms": 132,
+      "p95_ms": 211,
+      "max_ms": 675,
+      "note": "markers overwritten inside the 1 s broadcast window are not shown, so this is a sample"
+    }
+  },
+  "burst": {
+    "messages": 500,
+    "publish_seconds": 0.2,
+    "drained_seconds": 3.5,
+    "ingest": {
+      "samples": 500,
+      "p50_ms": 1617,
+      "p95_ms": 3050,
+      "max_ms": 3206
+    }
+  },
+  "total": {
+    "published": 2000,
+    "stored": 2000,
+    "lost": 0
+  },
+  "reconnect_all_fresh_seconds": 0.4,
+  "backend_rss_mb": {
+    "start": 92,
+    "end": 88
+  },
+  "target": "P95 publish → display ≤ 2 s (proposed in Agent.md, not changed after measuring)",
+  "pass": true
+}

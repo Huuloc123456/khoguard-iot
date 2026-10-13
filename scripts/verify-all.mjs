@@ -46,7 +46,7 @@ if (spawnSync('g++',['--version']).status===0) {
 for (const name of ['infra:mqtt:check','infra:db:check','infra:tls:check']) await run(name,...script(name));
 await withService(process.execPath,[join(root,'node_modules/vite/bin/vite.js'),'--host','127.0.0.1','--port','5173','--strictPort'],up('http://127.0.0.1:5173/'),()=>run('infra:secrets:check',...script('infra:secrets:check')));
 await withService(process.execPath,['--env-file=.local/runtime.env','server/start.mjs'],up('http://127.0.0.1:3001/api/ready'),async()=>{
-  for (const name of ['backend:check','telemetry:check','events:check','control:check','auth:check','reservations:check','demo:scenarios']) await run(name,...script(name));
+  for (const name of ['backend:check','telemetry:check','events:check','control:check','auth:check','reservations:check','writefault:check','demo:scenarios']) await run(name,...script(name));
 });
 for (const name of ['recovery:check','reports:check','load:test']) await run(name,...script(name));
 const failed=results.filter(r=>r.status==='fail');

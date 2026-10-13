@@ -1,0 +1,106 @@
+{
+  "checked_at": "2026-10-13T13:42:31.836Z",
+  "results": [
+    {
+      "name": "unit (npm test)",
+      "status": "pass",
+      "seconds": 2,
+      "summary": "✔ passwords are salted scrypt hashes and verify in constant time (340.6641ms)"
+    },
+    {
+      "name": "firmware C++ tests",
+      "status": "skipped",
+      "summary": "g++ không có trên PATH"
+    },
+    {
+      "name": "infra:mqtt:check",
+      "status": "pass",
+      "seconds": 2,
+      "summary": "MQTT PASS: 11 checks — valid delivery, passwords, ACL and MQTT 3.1.1."
+    },
+    {
+      "name": "infra:db:check",
+      "status": "pass",
+      "seconds": 1,
+      "summary": "MySQL PASS: 6 checks — runtime DML, migration DDL, rollback and privilege separation."
+    },
+    {
+      "name": "infra:tls:check",
+      "status": "pass",
+      "seconds": 1,
+      "summary": "M12 TLS PASS: 6 groups."
+    },
+    {
+      "name": "infra:secrets:check",
+      "status": "pass",
+      "seconds": 2,
+      "summary": "Secrets PASS: 10 files ignored by Git, 11 HTTP routes denied with 403; no secret contents read."
+    },
+    {
+      "name": "backend:check",
+      "status": "pass",
+      "seconds": 3,
+      "summary": "Backend PASS: 9 checks, seed/idempotency/guards/FK and live DB/MQTT disconnect-recovery; no shared service stopped."
+    },
+    {
+      "name": "telemetry:check",
+      "status": "pass",
+      "seconds": 5,
+      "summary": "M05 telemetry checks passed: 10 groups."
+    },
+    {
+      "name": "events:check",
+      "status": "pass",
+      "seconds": 2,
+      "summary": "M08 event checks passed: 5 groups."
+    },
+    {
+      "name": "control:check",
+      "status": "pass",
+      "seconds": 17,
+      "summary": "M10/M11 control checks passed: 7 groups."
+    },
+    {
+      "name": "auth:check",
+      "status": "pass",
+      "seconds": 10,
+      "summary": "M13 auth checks passed: 5 groups."
+    },
+    {
+      "name": "reservations:check",
+      "status": "pass",
+      "seconds": 3,
+      "summary": "M14 reservation checks passed: 6 groups."
+    },
+    {
+      "name": "writefault:check",
+      "status": "pass",
+      "seconds": 13,
+      "summary": "T24 write-fault checks passed: 3 groups."
+    },
+    {
+      "name": "demo:scenarios",
+      "status": "pass",
+      "seconds": 5,
+      "summary": "M16 demo scenarios passed: 4 scenario(s), 20 steps."
+    },
+    {
+      "name": "recovery:check",
+      "status": "pass",
+      "seconds": 4,
+      "summary": "M12 recovery checks passed: 5 groups."
+    },
+    {
+      "name": "reports:check",
+      "status": "pass",
+      "seconds": 4,
+      "summary": "M15 report checks passed: 4 groups."
+    },
+    {
+      "name": "load:test",
+      "status": "pass",
+      "seconds": 73,
+      "summary": "  \"pass\": true"
+    }
+  ]
+}

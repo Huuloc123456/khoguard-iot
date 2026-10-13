@@ -1,0 +1,43 @@
+{
+  "checked_at": "2026-10-13T14:46:01.582Z",
+  "devices": [
+    {
+      "id": "SIM-A01",
+      "state": "online",
+      "freshness": "fresh"
+    },
+    {
+      "id": "SIM-B01",
+      "state": "online",
+      "freshness": "fresh"
+    },
+    {
+      "id": "ESP-C01",
+      "state": "online",
+      "freshness": "fresh"
+    },
+    {
+      "id": "SIM-C02",
+      "state": "online",
+      "freshness": "fresh"
+    },
+    {
+      "id": "SIM-D01",
+      "state": "online",
+      "freshness": "fresh"
+    }
+  ],
+  "ready": 200,
+  "command": {
+    "command_id": "cmd-bd0f2961-8f81-4ec8-9ec7-4ec5c09292cd",
+    "door_id": "D07",
+    "action": "close",
+    "status": "applied",
+    "reason": null,
+    "late_ack": null,
+    "created_at": "2026-10-13T14:46:01.360Z",
+    "expires_at": "2026-10-13T14:46:11.360Z",
+    "acked_at": "2026-10-13T14:46:01.470Z"
+  },
+  "production_and_active_sha256_equal": true
+}

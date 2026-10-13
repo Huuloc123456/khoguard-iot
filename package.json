@@ -38,7 +38,8 @@
     "demo:scenarios": "node --env-file=.local/runtime.env scripts/demo-scenarios.mjs",
     "load:test": "node --env-file=.local/runtime.env scripts/load-run.mjs",
     "verify:all": "node scripts/verify-all.mjs",
-    "wokwi:acceptance": "node --env-file=.local/runtime.env scripts/wokwi-acceptance.mjs"
+    "wokwi:acceptance": "node --env-file=.local/runtime.env scripts/wokwi-acceptance.mjs",
+    "wokwi:remaining": "node --env-file=.local/runtime.env scripts/wokwi-remaining.mjs"
   },
   "dependencies": {
     "ajv": "^8.20.0",

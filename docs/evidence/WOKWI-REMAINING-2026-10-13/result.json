@@ -1,0 +1,282 @@
+{
+  "checked_at": "2026-10-13T14:44:03.519Z",
+  "pass": true,
+  "restored": true,
+  "checks": [
+    {
+      "case": "reboot",
+      "before_boot": "fcd74e113e0a5cdef61ebd9ce1230783",
+      "after_boot": "0becd4254ed7070b2f20c5c26c28554e",
+      "before_count": 1,
+      "after": {
+        "current_occupants": null,
+        "count_verified": false,
+        "presence": true
+      },
+      "ack": {
+        "command_id": "cmd-dd87d799-2e7c-4936-b0c4-61a4757b2693",
+        "door_id": "D07",
+        "action": "close",
+        "status": "rejected",
+        "reason": "INPUT_UNKNOWN",
+        "late_ack": null,
+        "created_at": "2026-10-13T14:42:21.000Z",
+        "expires_at": "2026-10-13T14:42:31.000Z",
+        "acked_at": "2026-10-13T14:42:21.089Z"
+      }
+    },
+    {
+      "case": "beam unknown",
+      "payload": {
+        "zone_id": "C",
+        "controller_revision": 5,
+        "environment": {
+          "temperature_c": -18.4,
+          "humidity_pct": 55
+        },
+        "occupancy": {
+          "current_occupants": 0,
+          "count_verified": true,
+          "presence": false
+        },
+        "doors": [
+          {
+            "door_id": "D07",
+            "state": "closed",
+            "locked": true,
+            "beam_clear": null,
+            "panic_latched": false,
+            "local_inputs_healthy": false
+          },
+          {
+            "door_id": "D08",
+            "state": "closed",
+            "locked": true,
+            "beam_clear": true,
+            "panic_latched": false,
+            "local_inputs_healthy": true
+          }
+        ],
+        "alarms": [],
+        "outputs": {
+          "light": false,
+          "buzzer": false,
+          "heater": false,
+          "fan": true
+        }
+      },
+      "ack": {
+        "command_id": "cmd-86c24a06-0aee-4ebe-a2b4-d1637af22052",
+        "door_id": "D07",
+        "action": "close",
+        "status": "rejected",
+        "reason": "INPUT_UNKNOWN",
+        "late_ack": null,
+        "created_at": "2026-10-13T14:42:27.019Z",
+        "expires_at": "2026-10-13T14:42:37.019Z",
+        "acked_at": "2026-10-13T14:42:27.157Z"
+      }
+    },
+    {
+      "case": "presence unknown",
+      "payload": {
+        "zone_id": "C",
+        "controller_revision": 9,
+        "environment": {
+          "temperature_c": -18.4,
+          "humidity_pct": 55
+        },
+        "occupancy": {
+          "current_occupants": 0,
+          "count_verified": true,
+          "presence": null
+        },
+        "doors": [
+          {
+            "door_id": "D07",
+            "state": "closed",
+            "locked": true,
+            "beam_clear": true,
+            "panic_latched": false,
+            "local_inputs_healthy": true
+          },
+          {
+            "door_id": "D08",
+            "state": "closed",
+            "locked": true,
+            "beam_clear": true,
+            "panic_latched": false,
+            "local_inputs_healthy": true
+          }
+        ],
+        "alarms": [],
+        "outputs": {
+          "light": false,
+          "buzzer": false,
+          "heater": false,
+          "fan": true
+        }
+      },
+      "ack": {
+        "command_id": "cmd-9aa2ebe4-496a-46aa-b6d1-b5b763c3e071",
+        "door_id": "D07",
+        "action": "close",
+        "status": "rejected",
+        "reason": "INPUT_UNKNOWN",
+        "late_ack": null,
+        "created_at": "2026-10-13T14:42:33.174Z",
+        "expires_at": "2026-10-13T14:42:43.174Z",
+        "acked_at": "2026-10-13T14:42:33.263Z"
+      }
+    },
+    {
+      "case": "contact unknown",
+      "payload": {
+        "zone_id": "C",
+        "controller_revision": 13,
+        "environment": {
+          "temperature_c": -18.4,
+          "humidity_pct": 55
+        },
+        "occupancy": {
+          "current_occupants": 0,
+          "count_verified": true,
+          "presence": false
+        },
+        "doors": [
+          {
+            "door_id": "D07",
+            "state": "unknown",
+            "locked": false,
+            "beam_clear": true,
+            "panic_latched": false,
+            "local_inputs_healthy": false
+          },
+          {
+            "door_id": "D08",
+            "state": "closed",
+            "locked": true,
+            "beam_clear": true,
+            "panic_latched": false,
+            "local_inputs_healthy": true
+          }
+        ],
+        "alarms": [],
+        "outputs": {
+          "light": false,
+          "buzzer": false,
+          "heater": false,
+          "fan": true
+        }
+      },
+      "ack": {
+        "command_id": "cmd-b0891247-a7fa-45db-a920-9d4076917cce",
+        "door_id": "D07",
+        "action": "close",
+        "status": "rejected",
+        "reason": "INPUT_UNKNOWN",
+        "late_ack": null,
+        "created_at": "2026-10-13T14:42:39.205Z",
+        "expires_at": "2026-10-13T14:42:49.205Z",
+        "acked_at": "2026-10-13T14:42:39.330Z"
+      }
+    },
+    {
+      "case": "count unknown after dropped serial line",
+      "occupancy": {
+        "current_occupants": null,
+        "count_verified": false,
+        "presence": false
+      },
+      "ack": {
+        "command_id": "cmd-b0a06a7a-ecfa-46c3-a511-a238f1123e66",
+        "door_id": "D07",
+        "action": "close",
+        "status": "rejected",
+        "reason": "INPUT_UNKNOWN",
+        "late_ack": null,
+        "created_at": "2026-10-13T14:42:47.410Z",
+        "expires_at": "2026-10-13T14:42:57.410Z",
+        "acked_at": "2026-10-13T14:42:47.509Z"
+      }
+    },
+    {
+      "case": "stale telemetry",
+      "device": {
+        "id": "ESP-C01",
+        "zone": "C",
+        "source": "wokwi",
+        "state": "online",
+        "freshness": "stale",
+        "last_seen_at": "2026-10-13T14:42:51.390Z",
+        "boot_id": "0becd4254ed7070b2f20c5c26c28554e",
+        "session_id": "31bb58b5055484969b7924c7293970c5",
+        "controller_revision": 22
+      },
+      "response": {
+        "status": 409,
+        "body": {
+          "error": {
+            "code": "DEVICE_NOT_LIVE"
+          }
+        }
+      },
+      "no_mqtt_command": true
+    },
+    {
+      "case": "wrong-ca",
+      "boot": "5442c1962570d56192362837d8ec6a70",
+      "sha256": "23516c21409f7b1adaf7a3e93cf45209489afcd152b30723af5d080edaeb2735",
+      "tls_failures": [
+        "TLS_REJECT variant=wrong-ca error=-9984 detail=X509 - Certificate verification failed, e.g. CRL, CA or signature check failed",
+        "TLS_REJECT variant=wrong-ca error=-9984 detail=X509 - Certificate verification failed, e.g. CRL, CA or signature check failed"
+      ],
+      "no_live_telemetry": true
+    },
+    {
+      "case": "wrong-hostname",
+      "boot": "dd08d9592aafc2ea701d8cdb5499192c",
+      "sha256": "7abf94198d5e37e0f8c9a140f43f734ecc7ead2c9a4ba847d1a77fc324a58c97",
+      "tls_failures": [
+        "TLS_REJECT variant=wrong-hostname error=-9984 detail=X509 - Certificate verification failed, e.g. CRL, CA or signature check failed",
+        "TLS_REJECT variant=wrong-hostname error=-9984 detail=X509 - Certificate verification failed, e.g. CRL, CA or signature check failed"
+      ],
+      "no_live_telemetry": true
+    },
+    {
+      "case": "restored normal firmware",
+      "sha256": "35d82aa260f387e5649d071829c0dc370ac1c87afb6b5b58bdb203257a1b1dcf",
+      "boot": "50c845cb0927e4096df7283dd6d49471",
+      "devices": [
+        {
+          "id": "SIM-A01",
+          "state": "online",
+          "freshness": "fresh"
+        },
+        {
+          "id": "SIM-B01",
+          "state": "online",
+          "freshness": "fresh"
+        },
+        {
+          "id": "ESP-C01",
+          "state": "online",
+          "freshness": "fresh"
+        },
+        {
+          "id": "SIM-C02",
+          "state": "online",
+          "freshness": "fresh"
+        },
+        {
+          "id": "SIM-D01",
+          "state": "online",
+          "freshness": "fresh"
+        }
+      ],
+      "ready": 200
+    }
+  ],
+  "controller_sha256": "71071e8f5c61d9ac312a84796a5c027407e83e187fcfa62a70736b72042b03f1",
+  "note": "Private acquisition-fault image; production controller.h unchanged. TLS checked by ESP32 mbedTLS, not a Node surrogate."
+}

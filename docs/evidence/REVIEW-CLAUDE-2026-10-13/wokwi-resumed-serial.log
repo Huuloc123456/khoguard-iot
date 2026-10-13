@@ -1,0 +1,7 @@
+SENSOR_HEARTBEAT ms=81945 temperature=-18.4 humidity=55.0
+TELEMETRY_ACK seq=39
+SENSOR_HEARTBEAT ms=83952 temperature=-18.4 humidity=55.0
+TELEMETRY_ACK seq=40
+SENSOR_HEARTBEAT ms=85959 temperature=-18.4 humidity=55.0
+TELEMETRY_ACK seq=41
+COMMAND cmd-e45d3a4d-eda7-41d6-ac67-afff8fe81000 D07 close -> applied

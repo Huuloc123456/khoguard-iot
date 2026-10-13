@@ -1,0 +1,9 @@
+{
+  "server_fingerprint": "F5:4E:1C:B1:BA:29:F0:15:98:18:FE:66:86:19:B4:C8:16:F1:DD:1D:17:33:FB:19:69:CD:61:05:02:46:AE:D1",
+  "ca_fingerprint": "F1:34:13:50:85:7D:3E:40:B5:FD:33:63:E3:FD:81:4C:49:21:E5:22:C4:91:AC:9D:56:9D:15:CC:3B:82:8D:EA",
+  "rogue_ca_fingerprint": "DA:D3:08:8E:17:F4:11:EE:17:50:38:71:00:09:27:06:62:C7:65:59:58:26:90:87:A0:5F:51:FA:96:59:9D:66",
+  "server_signed_by_project_ca": true,
+  "server_signed_by_rogue_ca": false,
+  "valid_hostname": "host.wokwi.internal",
+  "invalid_hostname_matches": null
+}

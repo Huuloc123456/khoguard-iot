@@ -1,0 +1,20 @@
+2026-10-13T14:41:47.018Z Building private good firmware (controller unchanged; secrets stay in .local).
+2026-10-13T14:41:57.741Z Wokwi good boot=fcd74e113e0a5cdef61ebd9ce1230783; SHA256=91c97b59b711d5a55344a2e7185b91afc196169be17884709bb9467e1fc06be2
+2026-10-13T14:42:21.121Z PASS reboot: new boot, count null/unverified with presence HIGH, close rejected INPUT_UNKNOWN.
+2026-10-13T14:42:27.166Z PASS beam unknown: real firmware close rejected INPUT_UNKNOWN.
+2026-10-13T14:42:33.299Z PASS presence unknown: real firmware close rejected INPUT_UNKNOWN.
+2026-10-13T14:42:39.437Z PASS contact unknown: real firmware close rejected INPUT_UNKNOWN.
+2026-10-13T14:42:47.535Z PASS RFID line loss: unknown count, close rejected INPUT_UNKNOWN.
+2026-10-13T14:43:01.924Z PASS stale: 409 DEVICE_NOT_LIVE, no command published.
+2026-10-13T14:43:02.034Z Building private wrong-ca firmware (controller unchanged; secrets stay in .local).
+2026-10-13T14:43:12.898Z Wokwi wrong-ca boot=5442c1962570d56192362837d8ec6a70; SHA256=23516c21409f7b1adaf7a3e93cf45209489afcd152b30723af5d080edaeb2735
+2026-10-13T14:43:20.200Z PASS wrong-ca: ESP32 X509 verification refuses TLS, no MQTT_ONLINE or telemetry.
+2026-10-13T14:43:20.201Z Building private good firmware (controller unchanged; secrets stay in .local).
+2026-10-13T14:43:31.295Z Wokwi good boot=b7bce1167837adce8b7ee1ac3edc301e; SHA256=91c97b59b711d5a55344a2e7185b91afc196169be17884709bb9467e1fc06be2
+2026-10-13T14:43:37.291Z PASS positive control: correct CA connects again.
+2026-10-13T14:43:37.292Z Building private wrong-hostname firmware (controller unchanged; secrets stay in .local).
+2026-10-13T14:43:48.094Z Wokwi wrong-hostname boot=dd08d9592aafc2ea701d8cdb5499192c; SHA256=7abf94198d5e37e0f8c9a140f43f734ecc7ead2c9a4ba847d1a77fc324a58c97
+2026-10-13T14:43:55.417Z PASS wrong-hostname: ESP32 X509 verification refuses TLS, no MQTT_ONLINE or telemetry.
+2026-10-13T14:43:55.426Z Normal firmware restored; waiting for live normal ESP32.
+2026-10-13T14:44:03.519Z PASS restore: original firmware SHA256, all 5 devices fresh.
+2026-10-13T14:44:03.521Z Evidence: D:\huit\iot\source\khoguard-iot\.local\wokwi-remaining\runs\2026-10-13T14-41-44-418Z

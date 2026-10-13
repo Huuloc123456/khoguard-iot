@@ -218,13 +218,15 @@ export function createTelemetryStore(pool,{publish}={}) {
       const age=row?.received_at ? now-new Date(row.received_at).getTime() : Infinity;
       // A command targets exactly one live session; after a reboot/reconnect the edge drops it as COMMAND_EXPIRED.
       if (!row || row.state!=='online' || !live.has(sessionKey(row)) || age<0 || age>10000 || row.controller_revision===null)
-        throw Object.assign(new Error('DEVICE_NOT_LIVE'),{code:'DEVICE_NOT_LIVE'});
+        return null;
       const device={id:row.device_id,boot_id:row.boot_id,session_id:row.session_id,controller_revision:Number(row.controller_revision)};
       const draft=buildCommand({commandId,seq:1,door:request.door,action:request.action,device,now});
       const [inserted]=await execute(connection,'INSERT INTO door_commands (command_id,device_id,door_id,action,boot_id,session_id,expected_revision,requested_by,created_at,expires_at) VALUES (?,?,?,?,?,?,?,?,?,?)',
         [commandId,device.id,request.door,request.action,device.boot_id,device.session_id,device.controller_revision,actor,sqlUtc(new Date(now)),sqlUtc(new Date(draft.payload.expires_at))]);
       return {...draft,seq:inserted.insertId};
     });
+    // An expected business rejection must not enter transaction's DB-failure path and erase every live session.
+    if (!message) throw Object.assign(new Error('DEVICE_NOT_LIVE'),{code:'DEVICE_NOT_LIVE'});
     const raw=JSON.stringify(message);
     try {
       if (!publish || !validateMqttMessage(commandTopic(message.device_id),raw).ok) throw new Error('NOT_SENT');

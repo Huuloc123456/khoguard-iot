@@ -52,6 +52,7 @@ try {
   }
   assert.deepEqual(await stored(device.boot),[1,2,3],'no frame may be stored while writes fail');
   assert.ok(stale>0,'SIM-A01 must not stay fresh while its frames cannot be stored');
+  assert.ok(notReady>0,'readiness must fail while ingest cannot persist frames');
   checks.push(`row lock held 9.5 s: frames 4–6 published (broker PUBACK) but none stored; SIM-A01 not fresh in ${stale}/${samples} snapshots; /api/ready not 200 in ${notReady}/${samples} probes`);
 
   stage='recovery';

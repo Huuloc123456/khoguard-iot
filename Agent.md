@@ -4,7 +4,7 @@ Cập nhật: **13/10/2026**. Phạm vi: đồ án **mô phỏng**, lập trình
 
 ## 1. Sau giao diện, làm gì trước?
 
-**M01–M03 đã đạt ngày 12/10/2026; M04–M05 đạt ngày 13/10/2026. Đã nạp bản ZIP M06–M16 và kiểm tra trên máy Windows: 102/102 test JavaScript, hai bộ C++, build web/ESP32 và các kiểm tra tích hợp đạt. Nghiệm thu firmware thật trên Wokwi (RFID, mmWave, liên động, rèm quang, panic, T08 mất broker, lệnh trùng/cũ, timer) đạt cùng ngày nên M07, M08, M10–M12 đã đánh dấu. T17/T24/T26 đạt sau đó; còn `verify:all` sau khi sửa ingest để đóng M16, và M17. [Báo cáo kiểm tra](docs/evidence/CHECK-WINDOWS-2026-10-13.md), [nghiệm thu Wokwi](docs/evidence/WOKWI-2026-10-13.md).**
+**M01–M15 đã có mã nguồn và bằng chứng. Ngày 13/10/2026, Wokwi bổ sung T06, reboot và T20 CA/hostname sai: 9/9 nhóm đạt; đã sửa lỗi từ chối lệnh làm mất xác nhận phiên của các thiết bị khác, 109/109 JavaScript đạt và kiểm tra lỗi ghi MySQL đạt. Firmware bình thường đã phục hồi, 5/5 thiết bị fresh. Review trước đó có 16 bước runner, C++ qua WSL, build web/ESP32 và tải không mất 2.000 bản tin. M16 còn đo DOM; M17 chờ người nhận chạy lại cấu hình/demo. [Nghiệm thu mới nhất](docs/evidence/WOKWI-REMAINING-2026-10-13.md), [review sau Claude](docs/evidence/REVIEW-CLAUDE-2026-10-13.md).**
 
 Quyết định: [DESITION.md](DESITION.md). Công việc và kết quả thực tế: [QUA_TRINH.md](QUA_TRINH.md). Hợp đồng M01: [contracts/README.md](contracts/README.md). Người dùng đã chốt **giữ MySQL**; không chuyển MongoDB.
 
@@ -344,7 +344,7 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 - [x] Giới hạn queue/retry; xác định dữ liệu nào replay được, phát hiện gap và ứng xử khi DB không ghi được.
 - Phụ thuộc: M05, M10, M11. Phạm vi: cấu hình TLS, MQTT session, firmware reconnect, fault test.
 - Nghiệm thu: sai CA/quyền bị từ chối; retained cũ không thành online; reboot không tự count 0; phục hồi không áp dụng lệnh hết hạn hay nhân đôi RFID.
-- Trạng thái 13/10/2026: `infra:tls:check` 6 nhóm và `recovery:check` 5 nhóm đạt (ESP-C01 giả lập). **Đạt trên Wokwi 13/10/2026**: firmware TLSv1.2 với CA demo trên 18885, mất/nối lại broker cùng boot sang session mới, event lúc mất mạng lưu đúng một lần. CA sai/hostname sai phía thiết bị và reboot → count chưa xác minh mới thử ở client Node/test C++. [Bằng chứng M12](docs/evidence/M12-2026-10-13.md), [Nghiệm thu Wokwi](docs/evidence/WOKWI-2026-10-13.md).
+- Trạng thái 13/10/2026: `infra:tls:check` 6 nhóm và `recovery:check` 5 nhóm đạt (ESP-C01 giả lập). **Đạt trên Wokwi**: TLSv1.2 với CA demo trên 18885, mất/nối lại broker cùng boot sang session mới, event lúc mất mạng lưu đúng một lần. Lượt bổ sung đã nghiệm thu reboot → count chưa xác minh, CA sai và hostname sai bị chính ESP32 từ chối. [Bằng chứng M12](docs/evidence/M12-2026-10-13.md), [Wokwi ban đầu](docs/evidence/WOKWI-2026-10-13.md), [Wokwi bổ sung](docs/evidence/WOKWI-REMAINING-2026-10-13.md).
 
 **Checkpoint B:** demo bảo vệ người trong Wokwi với broker bật/tắt, các trạng thái unknown và bằng chứng panic đóng → mở. Chưa đạt checkpoint này thì không trình bày như đã hoàn thành bảo vệ cục bộ. **Đạt 13/10/2026** trên Wokwi: panic từ cửa đóng → nhả khóa/mở, có và không có broker; [Nghiệm thu Wokwi](docs/evidence/WOKWI-2026-10-13.md).
 
@@ -378,14 +378,15 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 - [ ] Chạy ma trận mục 10, kiểm tra UI responsive, quyền, reboot, broker/DB/backend lỗi và tài nguyên.
 - Phụ thuộc: M12–M15; M03 phải đạt trước khi đánh dấu tích hợp Wokwi hoàn thành.
 - Nghiệm thu: bốn demo đi qua nguồn MQTT/DB; không chỉ thay mảng frontend; kết quả tải/lỗi có số liệu và bằng chứng.
-- Trạng thái 13/10/2026: script đã có và **đạt trong sandbox với ESP-C01 giả lập** — `demo:scenarios` 4 kịch bản/20 bước, `load:test` P95 publish → WebSocket 186 ms, mất 0/2.000, `verify:all` 16 bước đạt/1 bỏ qua; ma trận T01–T27 trong bằng chứng. Bốn kịch bản và T08 **đạt trên Wokwi 13/10/2026** ([Nghiệm thu Wokwi](docs/evidence/WOKWI-2026-10-13.md)). T17, T24, T26 đạt cùng ngày ([phần 2](docs/evidence/M16-PART2-2026-10-13.md)); T24 tìm ra và sửa hai lỗi mất dữ liệu (DEC-035, DEC-036). Ô thứ hai chưa đánh dấu: cần chạy lại `verify:all` (tắt Wokwi) sau khi sửa ingest. [Bằng chứng M16](docs/evidence/M16-2026-10-13.md).
+- Trạng thái 13/10/2026: script đã có và **đạt trong sandbox với ESP-C01 giả lập** — `demo:scenarios` 4 kịch bản/20 bước, `load:test` P95 publish → WebSocket 186 ms, mất 0/2.000, `verify:all` 16 bước đạt/1 bỏ qua; ma trận T01–T27 trong bằng chứng. Bốn kịch bản và T08 **đạt trên Wokwi** ([lượt đầu](docs/evidence/WOKWI-2026-10-13.md)). T17, T24, T26 đạt ([phần 2](docs/evidence/M16-PART2-2026-10-13.md)); T24 tìm ra và sửa hai lỗi mất dữ liệu (DEC-035, DEC-036). Review trước lượt bổ sung có 107 unit, 16 bước runner và hai bộ C++ chạy riêng đạt ([review](docs/evidence/REVIEW-CLAUDE-2026-10-13.md)). Lượt mới: T06/reboot/T20 phía firmware **9/9 nhóm đạt**, sửa DEC-040, **109/109 unit**, lỗi ghi MySQL đạt và 5/5 thiết bị fresh ([bằng chứng bổ sung](docs/evidence/WOKWI-REMAINING-2026-10-13.md)). Ô thứ hai chưa đánh dấu vì còn phép đo DOM. [Bằng chứng M16](docs/evidence/M16-2026-10-13.md).
 
 ### M17 — Đóng gói và bàn giao đồ án
 
-- [ ] README hướng dẫn từ máy sạch đã đủ công cụ: cấu hình secret, migration, start, build firmware, Wokwi, reset demo, test và xử lý lỗi.
-- [ ] Lưu collection Postman không secret; sơ đồ/topic/bảng dữ liệu, checklist demo và evidence; khóa dependency đã thử.
+- [x] README hướng dẫn từ máy sạch đã đủ công cụ: cấu hình secret, migration, start, build firmware, Wokwi, reset demo, test và xử lý lỗi.
+- [x] Lưu collection Postman không secret; sơ đồ/topic/bảng dữ liệu, checklist demo và evidence; khóa dependency đã thử.
 - Phụ thuộc: M16. Phạm vi: README, docs, mẫu config và kết quả thực tế.
 - Nghiệm thu: người khác chạy lại bốn demo theo hướng dẫn; clean checkout build/test được; hạn chế mô phỏng được nêu; mọi ô hoàn thành có bằng chứng.
+- Chuẩn bị ngày 13/10/2026: [checklist](docs/CHECKLIST_DEMO.md), [Postman](docs/postman/khoguard.postman_collection.json), [source sạch 107 test/build và 9 request GET tại lượt review](docs/evidence/REVIEW-CLAUDE-2026-10-13.md). Chưa nghiệm thu toàn M17: người nhận chưa chạy lại cấu hình/demo và M16 còn phép đo DOM.
 
 ## 10. Ma trận kiểm thử bắt buộc
 
@@ -499,4 +500,4 @@ Còn thiếu: điều kiện chưa xác minh; bước tiếp theo
 | Linh kiện mmWave/CO₂/thermal không có trong Wokwi | Dùng input giả lập được ghi nguồn | Không chặn kiểm thử logic; không chứng minh độ chính xác cảm biến |
 | Log khi nguồn/DB mất và giới hạn replay | Chốt application ack/gap policy, thử T24 | Chặn tuyên bố lưu trữ đầy đủ khi mất kết nối |
 
-**Việc tiếp theo cụ thể (13/10/2026):** tắt Wokwi, chạy `verify:all` để xác nhận hồi quy sau DEC-035/036 rồi đánh dấu M16; sau đó M17. Giữ MySQL, giao diện trắng và nguồn Wokwi/script có nhãn rõ.
+**Việc tiếp theo cụ thể (13/10/2026):** đo publish → hiển thị DOM, rồi người nhận chạy lại cấu hình và demo theo checklist M17. Wokwi T06/reboot/T20 đã đạt 9/9 nhóm; sau DEC-040 có 109/109 unit và kiểm tra lỗi ghi MySQL đạt. Firmware bình thường đã phục hồi, 5/5 thiết bị fresh và D07 có ACK thật ([bằng chứng](docs/evidence/WOKWI-REMAINING-2026-10-13.md)). Không đánh dấu toàn ma trận từ kết quả tự động. Giữ MySQL, giao diện trắng và nguồn Wokwi/script có nhãn rõ.

@@ -1,0 +1,9 @@
+{
+  "checked_at": "2026-10-13T14:44:59.492Z",
+  "boot": "t24-95e343e3-ec84-4ec9-b694-57167845a451",
+  "checks": [
+    "baseline: SIM-A01 frames 1–3 stored, device fresh",
+    "row lock held 9.5 s: frames 4–6 published (broker PUBACK) but none stored; SIM-A01 not fresh in 31/31 snapshots; /api/ready not 200 in 31/31 probes",
+    "lock released: broker redelivered frames 4–6 on the backend's persistent session, stored once as history within 418 ms without moving current state; next live frame 7 → current, SIM-A01 fresh, ready 200"
+  ]
+}

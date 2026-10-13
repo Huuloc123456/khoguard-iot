@@ -1,0 +1,35 @@
+{
+  "checked_at": "2026-10-13T13:49:44.924Z",
+  "connections": {
+    "broker": "connected",
+    "database": "connected"
+  },
+  "devices": [
+    {
+      "id": "SIM-A01",
+      "state": "online",
+      "freshness": "fresh"
+    },
+    {
+      "id": "SIM-B01",
+      "state": "online",
+      "freshness": "fresh"
+    },
+    {
+      "id": "ESP-C01",
+      "state": "offline",
+      "freshness": "stale"
+    },
+    {
+      "id": "SIM-C02",
+      "state": "online",
+      "freshness": "fresh"
+    },
+    {
+      "id": "SIM-D01",
+      "state": "online",
+      "freshness": "fresh"
+    }
+  ],
+  "doors": 12
+}

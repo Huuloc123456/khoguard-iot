@@ -75,10 +75,10 @@ Cập nhật 13/10/2026. Chi tiết và bằng chứng từng mốc ở [Agent.m
 | M13 | Đăng nhập, vai trò, ca làm việc | ✅ Đạt |
 | M14 | Giữ chỗ và điều kiện nhận hàng | ✅ Đạt |
 | M15 | Lịch sử, báo cáo, CSV | ✅ Đạt |
-| M16 | Toàn kho, 4 kịch bản, đo tải | 🟡 4 kịch bản + T08 trên Wokwi, T17/T24/T26 đạt; chờ chạy lại `verify:all` sau khi sửa ingest |
-| M17 | Đóng gói, bàn giao | ⬜ Chưa làm |
+| M16 | Toàn kho, 4 kịch bản, đo tải | 🟡 T06/reboot/T20 trên Wokwi đạt; còn đo DOM |
+| M17 | Đóng gói, bàn giao | 🟡 README, Postman, checklist và source sạch test/build đã có; chờ người nhận chạy lại |
 
-**Nghiệm thu Wokwi đã xong** (13/10/2026, [bằng chứng](docs/evidence/WOKWI-2026-10-13.md)): RFID, mmWave, liên động, rèm quang, panic, T08 (panic khi broker dừng), lệnh trùng/cũ, timer. T17, T24, T26 đạt cùng ngày; T24 tìm và sửa hai lỗi mất dữ liệu ở ingest ([bằng chứng](docs/evidence/M16-PART2-2026-10-13.md)). **Việc còn lại:** tắt Wokwi và chạy `verify:all` để đóng M16; M17 (Postman, checklist demo, chạy thử từ bản clone sạch).
+**Các kịch bản Wokwi đã chạy** (13/10/2026): RFID, mmWave, liên động, rèm quang, panic, T08, lệnh trùng/cũ và timer ([lượt đầu](docs/evidence/WOKWI-2026-10-13.md)). Lượt bổ sung nghiệm thu **T06, reboot, CA sai và hostname sai: 9/9 nhóm đạt**; đã sửa lỗi từ chối lệnh làm mất xác nhận phiên, **109/109 unit** và kiểm tra lỗi ghi MySQL đạt; firmware bình thường phục hồi, 5/5 thiết bị fresh ([bằng chứng mới nhất](docs/evidence/WOKWI-REMAINING-2026-10-13.md)). T17, T24, T26 đạt ([phần 2](docs/evidence/M16-PART2-2026-10-13.md)). Review trước lượt bổ sung có 16 bước runner, hai bộ C++ và source sạch cài/test/build đạt ([review sau Claude](docs/evidence/REVIEW-CLAUDE-2026-10-13.md)). Còn đo latency DOM và người nhận chạy lại cấu hình/demo theo [checklist bàn giao](docs/CHECKLIST_DEMO.md).
 
 ---
 
@@ -216,7 +216,7 @@ Tất cả chạy bằng `npm run <lệnh>` tại thư mục gốc.
 | --- | --- |
 | `dev` | Vite dev server `127.0.0.1:5173` (proxy `/api`, `/ws` → 3001) |
 | `build` / `preview` | Build production vào `dist/` / xem bản build |
-| `test` | 102 unit test (`node --test`) |
+| `test` | 109 unit test (`node --test`) |
 
 ### Hạ tầng (chạy một lần hoặc khi cần)
 
@@ -230,6 +230,7 @@ Tất cả chạy bằng `npm run <lệnh>` tại thư mục gốc.
 | `infra:mqtt:start` | Chạy broker dự án |
 | `firmware:prepare` / `firmware:build` | Sinh `kg_secrets.h` / build firmware ESP32 |
 | `firmware:gateway:setup` / `firmware:gateway:start` | Tải / chạy gateway Wokwi |
+| `wokwi:remaining` | Nghiệm thu unknown/stale, reboot và TLS sai; cần Simulator đang hiển thị trong workspace riêng. Chuẩn bị bằng `-- --prepare`; xem [hướng dẫn](docs/evidence/WOKWI-REMAINING-2026-10-13.md#chạy-lại) |
 
 ### Chạy và mô phỏng
 
@@ -262,7 +263,7 @@ Tất cả chạy bằng `npm run <lệnh>` tại thư mục gốc.
 
 ```text
 contracts/   Hợp đồng dữ liệu: registry thiết bị, JSON Schema MQTT/snapshot, validator dùng chung
-firmware/    ESP32: controller.h (quy tắc an toàn thuần C++), main.cpp (GPIO/MQTT/TLS), test C++, mạch Wokwi
+firmware/    ESP32: controller.h (quy tắc an toàn thuần C++), lib/khoguard (GPIO/MQTT/TLS, main.cpp chỉ gọi), test C++, mạch Wokwi
 server/      Backend Node: ingest MQTT, snapshot, cảnh báo, lệnh, HTTP API, WebSocket, đăng nhập, giữ chỗ, báo cáo
 db/          Migration SQL 001–006, rollback, bộ chạy migration có journal/checksum
 src/         Dashboard React
@@ -280,12 +281,12 @@ Mô tả từng file: [ARCHITECTURE.md §5](ARCHITECTURE.md#5-cấu-trúc-thư-m
 ## Kiểm thử
 
 ```powershell
-npm test         # 102 unit test
+npm test         # 109 unit test
 npm run build    # build dashboard
 npm run verify:all   # toàn bộ (broker + MySQL bật; backend, Vite, Wokwi tắt)
 ```
 
-Kết quả gần nhất trên máy Windows dự án (13/10/2026): 102/102 unit test; hai bộ test C++; build web và ESP32; 14 script kiểm tra tích hợp; 4 kịch bản/20 bước; tải 2000/2000 tin, P95 publish → WebSocket 242 ms. Xem [docs/evidence/CHECK-WINDOWS-2026-10-13.md](docs/evidence/CHECK-WINDOWS-2026-10-13.md). Ma trận 27 trường hợp T01–T27: [Agent.md §10](Agent.md).
+Kết quả mới nhất (13/10/2026): **109/109 unit**, Wokwi bổ sung **9/9 nhóm**, lỗi ghi MySQL **3 nhóm đạt** và firmware bình thường phục hồi, 5/5 thiết bị fresh ([nghiệm thu bổ sung](docs/evidence/WOKWI-REMAINING-2026-10-13.md)). Review trước DEC-040: `verify:all` 16 bước đạt / 1 C++ bỏ qua do PATH, hai bộ C++ qua WSL đạt; build web/ESP32; 4 kịch bản/20 bước; tải 2000/2000 tin, P95 publish → WebSocket 211 ms ([review sau Claude](docs/evidence/REVIEW-CLAUDE-2026-10-13.md)). Đây chưa là phép đo hiển thị DOM. Ma trận T01–T27: [Agent.md §10](Agent.md).
 
 ---
 
@@ -311,6 +312,7 @@ Chi tiết các lớp bảo vệ: [ARCHITECTURE.md §15](ARCHITECTURE.md#15-bả
 | `/api/ready` → `database: unavailable` | MySQL service dừng hoặc chưa `db:migrate` |
 | Dashboard báo *Mất kết nối backend* | Backend (T2) chưa chạy; dashboard tự nối lại khi backend lên |
 | ESP-C01 *chưa có dữ liệu* | Gateway (T5) chưa chạy hoặc simulator chưa Start; xem Serial Monitor có `MQTT_ONLINE` |
+| Gateway đã bật lại, Serial chỉ có `SENSOR_HEARTBEAT`, ESP-C01 vẫn stale | Đóng hẳn tab Wokwi rồi F1 → **Wokwi: Start Simulator**. Extension 4.0.0 có thể giữ object gateway đã đóng khi chỉ restart mô phỏng; không chỉ nhấn nút restart |
 | Lệnh cửa *DEVICE_NOT_LIVE* | ESP-C01 không gửi dữ liệu trong 10 s |
 | Lệnh bị *REVISION_MISMATCH* | Trạng thái vừa đổi; xem lại rồi gửi lại |
 | `infra:mqtt:start` báo cổng bị chiếm | Broker dự án đã chạy ở cửa sổ khác |
@@ -337,7 +339,9 @@ Bảng đầy đủ: [docs/HUONG_DAN_CAU_HINH.md §17](docs/HUONG_DAN_CAU_HINH.m
 | [docs/HUONG_DAN_CAU_HINH.md](docs/HUONG_DAN_CAU_HINH.md) | Cài đặt và vận hành từng bước trên Windows |
 | [docs/architecture/](docs/architecture/README.md) | Sơ đồ kiến trúc tổng thể và luồng lệnh cửa (HTML/PNG) |
 | [Agent.md](Agent.md) | Kế hoạch M00–M17, quy tắc nghiệp vụ, ma trận kiểm thử T01–T27, bốn kịch bản demo |
-| [DESITION.md](DESITION.md) | Các quyết định DEC-001…DEC-033 và lý do |
+| [DESITION.md](DESITION.md) | Các quyết định DEC-001…DEC-040 và lý do |
+| [docs/CHECKLIST_DEMO.md](docs/CHECKLIST_DEMO.md) | Demo, Postman, kiểm tra và bàn giao không secret |
+| [docs/postman/khoguard.postman_collection.json](docs/postman/khoguard.postman_collection.json) | Collection API, mật khẩu mặc định trống |
 | [QUA_TRINH.md](QUA_TRINH.md) | Nhật ký thực hiện, kết quả kiểm tra, lỗi đã gặp |
 | [contracts/README.md](contracts/README.md) | Hợp đồng MQTT/API chi tiết |
 | [server/README.md](server/README.md) | API backend, migration, kiểm thử |

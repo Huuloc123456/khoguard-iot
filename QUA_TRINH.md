@@ -313,3 +313,31 @@ Còn thiếu / bước tiếp theo:
 - Lỗi phụ: script tạm mất dấu `\` trong heredoc làm bộ lọc tiến trình broker không khớp; đổi mẫu không cần escape.
 - Quyết định: DEC-035, DEC-036, DEC-037. [Bằng chứng](docs/evidence/M16-PART2-2026-10-13.md).
 - Còn lại: `verify:all` (tắt Wokwi), rồi đánh dấu M16; M17.
+
+## 13/10/2026 — Codex kiểm tra lại sau Claude
+
+- Giữ các commit Claude; đọc các nhánh ingest, telemetry backlog, simulator reconnect và bằng chứng Wokwi. Không ghi đè ZIP đầu vào hay cấu hình secret.
+- Ngắt riêng gateway dự án, dừng backend/Vite trong lúc chạy hồi quy; không dừng MySQL 3306 hay Mosquitto service 1883. Lượt đầu toàn bộ chỉ lỗi probe MQTT. Sửa receiver nhận nhầm retained/traffic cùng topic; regression với receiver cũ lỗi, bản mới 2/2 đạt.
+- Bổ sung `writefault:check` vào runner và assert readiness. Lượt cuối `verify:all`: **16 đạt / 1 C++ bỏ qua**; hai bộ C++ đã chạy riêng qua WSL g++ 15.2 với cảnh báo thành lỗi và đều đạt.
+- Bản source sạch từ Git cộng các sửa review, không secret/dependency/build cũ: `npm.cmd ci` đạt, audit 0 vulnerability, **107/107** test, build web đạt. Build firmware workspace đạt (RAM 14,3%, flash 69,8%). Tải **2.000/2.000**, P95 publish → WebSocket **211 ms**, burst ingest P95 3.050 ms.
+- Bổ sung collection Postman không secret và checklist demo/bàn giao. 9 URL GET của collection kiểm tra bằng API trả 200; chưa import bằng UI Postman.
+- Bật lại backend, Vite, gateway và 4 Node simulator. Snapshot: 12 cửa, 4 SIM-* fresh, ESP-C01 offline/stale; đã hỏi người dùng Stop/Start Wokwi. Phiên này không có công cụ điều khiển cửa sổ/trình duyệt.
+- M16 tự động đã đạt; còn Wokwi T06/reboot/T20 phía firmware, đo DOM nếu cần xác nhận đúng mục tiêu. M17 tài liệu và clean source test/build đã chuẩn bị, chưa có người nhận chạy lại.
+- Quyết định DEC-038; [bằng chứng](docs/evidence/REVIEW-CLAUDE-2026-10-13.md).
+
+## 13/10/2026 — Phục hồi ESP-C01 sau lượt review
+
+- Người dùng báo Simulator chạy, nhưng snapshot ESP-C01 vẫn offline/stale. Đọc Serial RFC2217: sensor heartbeat vẫn tăng, không có MQTT; không có socket VS Code tới gateway 9011. Gateway vượt qua probe WebSocket.
+- Kiểm tra mã extension Wokwi 4.0.0: WebSocket gateway không tự reconnect sau close; restart mô phỏng có thể giữ object đã đóng. Người dùng đóng hẳn tab và F1 → Start Simulator; kết nối phục hồi. Không sửa extension hay tắt TLS.
+- `firmware:check`: 3 frame live seq 9–11 đạt. Kiểm tra nối tiếp: seq 39–41 khớp Serial TELEMETRY_ACK; mẫu MySQL lưu đúng một lần. **5/5 online/fresh**, readiness 200; khu C −18,4 °C / 55 %, count 0 verified; D07/D08 closed/locked.
+- Gửi đóng D07 (cửa đã đóng) bằng operator: HTTP 202, ACK `applied` sau khoảng 90 ms; lệnh lưu trong DB. Không gọi đây là thử hành trình motor.
+- Bằng chứng: `docs/evidence/REVIEW-CLAUDE-2026-10-13/wokwi-resumed.json` và Serial đi kèm. Các ca Wokwi T06/reboot/T20 phía firmware và đo DOM vẫn chưa nghiệm thu thêm.
+
+## 13/10/2026 — Hoàn thành Wokwi T06, reboot và TLS sai
+
+- Tạo `scripts/wokwi-remaining.mjs`, lệnh `wokwi:remaining`; private workspace và firmware test ở `.local`, giữ nguyên controller và firmware demo gốc. Người dùng mở đúng tab kiểm thử; script tự nạp ảnh trong phạm vi watcher.
+- Lượt cuối **9/9 nhóm đạt**: reboot với presence HIGH giữ count null/unverified và chặn đóng; beam/presence/contact unknown; count mất xác minh do Serial overflow; stale trả 409 không publish; CA sai và hostname sai bị chính ESP32 mbedTLS từ chối −9984; positive control CA đúng kết nối lại; phục hồi bin/ELF gốc và 5/5 fresh.
+- Ca stale tìm ra lỗi backend xóa phiên mọi thiết bị khi từ chối `DEVICE_NOT_LIVE`. Viết test RED (backlog thay vì accepted), sửa nhánh nghiệp vụ ngoài transaction, GREEN 2/2; toàn bộ **109/109**. Lỗi DB thật vẫn fail closed.
+- Kiểm tra write-fault sau sửa đạt 3 nhóm: 31/31 snapshots không fresh/readiness lỗi; khung tồn đọng lưu đúng một lần sau 418 ms. Bật lại bốn Node simulator; 5/5 fresh, readiness 200, lệnh đóng D07 nhận applied.
+- Lượt chuẩn bị có lỗi watcher ngoài workspace, chạy nhầm cửa sổ và kiểm tra freshness trước TTL; đã sửa, không đánh dấu các lượt lỗi là đạt.
+- Quyết định DEC-039/040; [bằng chứng chi tiết](docs/evidence/WOKWI-REMAINING-2026-10-13.md). Ba nhóm còn thiếu đã hoàn thành; M16 còn đo DOM, M17 còn người nhận chạy lại quy trình.

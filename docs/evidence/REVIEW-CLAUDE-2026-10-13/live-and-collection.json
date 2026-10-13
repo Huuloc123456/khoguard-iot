@@ -1,0 +1,75 @@
+{
+  "checked_at": "2026-10-13T13:45:54.845Z",
+  "postman_read_requests": [
+    {
+      "name": "Health",
+      "status": 200
+    },
+    {
+      "name": "Ready",
+      "status": 200
+    },
+    {
+      "name": "Tài khoản hiện tại",
+      "status": 200
+    },
+    {
+      "name": "Snapshot kho",
+      "status": 200
+    },
+    {
+      "name": "Giữ chỗ",
+      "status": 200
+    },
+    {
+      "name": "Báo cáo events",
+      "status": 200
+    },
+    {
+      "name": "Báo cáo alerts",
+      "status": 200
+    },
+    {
+      "name": "Báo cáo commands",
+      "status": 200
+    },
+    {
+      "name": "Báo cáo reservations",
+      "status": 200
+    }
+  ],
+  "live": {
+    "connections": {
+      "broker": "connected",
+      "database": "connected"
+    },
+    "devices": [
+      {
+        "id": "SIM-A01",
+        "state": "online",
+        "freshness": "fresh"
+      },
+      {
+        "id": "SIM-B01",
+        "state": "online",
+        "freshness": "fresh"
+      },
+      {
+        "id": "ESP-C01",
+        "state": "offline",
+        "freshness": "stale"
+      },
+      {
+        "id": "SIM-C02",
+        "state": "online",
+        "freshness": "fresh"
+      },
+      {
+        "id": "SIM-D01",
+        "state": "online",
+        "freshness": "fresh"
+      }
+    ],
+    "doors": 12
+  }
+}

@@ -6,6 +6,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import mqtt from 'mqtt';
 import { local, readJson } from './local-config.mjs';
 import { validateMqttMessage, registry } from '../contracts/validate.js';
+import { receiveProbe as receive } from './mqtt-probe.mjs';
 
 const accounts = readJson(join(local, 'mosquitto', 'accounts.json'));
 const clients = [];
@@ -22,18 +23,6 @@ const connect = async (username, password = accounts[username], protocolVersion 
   return client;
 };
 const denied = error => error.code === 135;
-function receive(client, topic) {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => { client.off('message', listener); reject(new Error('Expected MQTT message did not arrive')); }, 3000);
-    const listener = (name, payload) => {
-      if (name !== topic) return;
-      clearTimeout(timer);
-      client.off('message', listener);
-      resolve(payload.toString());
-    };
-    client.on('message', listener);
-  });
-}
 try {
   await assert.rejects(connect(undefined, undefined), denied);
   checks.push('anonymous connection denied');
@@ -55,7 +44,7 @@ try {
   example.sent_at = new Date().toISOString();
   const raw = JSON.stringify(example);
   assert.equal(validateMqttMessage(topic, raw).ok, true);
-  const [received, observed] = await Promise.all([receive(backend, topic), receive(observer, topic), device.publishAsync(topic, raw, { qos: 1 })]);
+  const [received, observed] = await Promise.all([receive(backend, topic, raw), receive(observer, topic, raw), device.publishAsync(topic, raw, { qos: 1 })]);
   assert.equal(received, raw);
   assert.equal(observed, raw);
   checks.push('valid telemetry delivered to backend and observer');
@@ -76,25 +65,25 @@ try {
   command.payload.expires_at = new Date(Date.now() + 10000).toISOString();
   const commandRaw = JSON.stringify(command);
   assert.equal(validateMqttMessage(commands, commandRaw).ok, true);
-  const [appliedRequest] = await Promise.all([receive(device, commands), backend.publishAsync(commands, commandRaw, { qos: 1 })]);
+  const [appliedRequest] = await Promise.all([receive(device, commands, commandRaw), backend.publishAsync(commands, commandRaw, { qos: 1 })]);
   assert.equal(appliedRequest, commandRaw);
   checks.push('backend command delivered only as a request');
   const unexpected = [];
   other.on('message', (name, payload) => { if (name === topic) unexpected.push(payload.toString()); });
   try { await other.subscribeAsync(topic, { qos: 1 }); } catch (error) { assert.ok(denied(error)); }
-  await Promise.all([receive(backend, topic), device.publishAsync(topic, raw, { qos: 1 })]);
+  await Promise.all([receive(backend, topic, raw), device.publishAsync(topic, raw, { qos: 1 })]);
   await delay(400);
   assert.deepEqual(unexpected, []);
   checks.push('other device cannot receive private telemetry');
   const legacy = await connect('ESP-C01', accounts['ESP-C01'], 4);
-  const [legacyReceived] = await Promise.all([receive(backend, topic), legacy.publishAsync(topic, raw, { qos: 1 })]);
+  const [legacyReceived] = await Promise.all([receive(backend, topic, raw), legacy.publishAsync(topic, raw, { qos: 1 })]);
   assert.equal(legacyReceived, raw);
   checks.push('MQTT 3.1.1 compatibility verified');
   assert.deepEqual(connectionErrors, []);
   writeFileSync(join(local, 'mqtt-check.json'), JSON.stringify({ date: new Date().toISOString(), endpoint: url, checks }, null, 2) + '\n');
   console.log(`MQTT PASS: ${checks.length} checks — valid delivery, passwords, ACL and MQTT 3.1.1.`);
 } catch (error) {
-  console.error(`MQTT check failed: ${error.code ?? 'ASSERTION'}. Inspect local broker/config; credentials are not logged.`);
+  console.error(`MQTT check failed after ${checks.at(-1) ?? 'setup'}: ${error.code ?? 'ASSERTION'}. Inspect local broker/config; credentials are not logged.`);
   process.exitCode = 1;
 } finally {
   clearTimeout(deadline);
