@@ -6,13 +6,17 @@ export const sqlUtc = date => date.toISOString().replace('T',' ').replace('Z',''
 export function telemetryDecision(current,candidate,message,packet,now,retired) {
   if (packet.retain) return 'retained';
   if (retired) return 'retired_session';
-  if (!candidate || candidate.boot_id !== message.boot_id || candidate.session_id !== message.session_id) return 'unconfirmed';
+  const sameSession = s => s?.boot_id === message.boot_id && s?.session_id === message.session_id;
+  const confirmed = sameSession(candidate);
+  // After a DB fault or backend restart the broker redelivers frames of the session the DB still holds as current,
+  // before the retained status online re-confirms it. Keep them as history ('backlog'); only confirmation makes it live.
+  if (!confirmed && !sameSession(current)) return 'unconfirmed';
   if (message.clock_synced && (Date.parse(message.sent_at) > now || now-Date.parse(message.sent_at) > 10000)) return 'invalid_time';
   if (current?.boot_id === message.boot_id && current.seq !== null) {
     if (message.seq <= current.seq) return 'old_sequence';
     if (message.uptime_ms < current.uptime_ms || message.payload.controller_revision < current.controller_revision) return 'regression';
   }
-  return 'accepted';
+  return confirmed ? 'accepted' : 'backlog';
 }
 
 export function parseHistoryQuery(params) {

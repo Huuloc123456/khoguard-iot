@@ -199,13 +199,18 @@ try {
   const afterRecovery=await (await authFetch(`${faultBase}/api/snapshot`)).json();
   assert.equal(afterRecovery.devices[0].freshness,'stale');
   stage='DB recovery confirmation';
-  assert.equal(await faultStore.ingest(packet({...faultFrame,seq:1,uptime_ms:1000})),'unconfirmed');
+  // The redelivered frame of the stored session is kept as history, but current state and freshness wait for confirmation.
+  assert.equal(await faultStore.ingest(packet({...faultFrame,seq:1,uptime_ms:1000})),'backlog');
+  assert.deepEqual((await pool.execute('SELECT seq,message FROM device_current WHERE device_id=?',['SIM-A01']))[0],beforeFault);
+  assert.equal(Number((await pool.execute('SELECT COUNT(*) AS n FROM telemetry WHERE device_id=? AND boot_id=? AND seq=1',['SIM-A01',faultBoot]))[0][0].n),1);
+  assert.equal((await (await authFetch(`${faultBase}/api/snapshot`)).json()).devices[0].freshness,'stale');
   await faultStore.ingest(packet(statusMessage(faultFrame,'online')));
-  assert.equal(await faultStore.ingest(packet({...faultFrame,seq:1,uptime_ms:1000})),'accepted');
+  assert.equal(await faultStore.ingest(packet({...faultFrame,seq:1,uptime_ms:1000})),'duplicate');
+  assert.equal(await faultStore.ingest(packet({...faultFrame,seq:2,uptime_ms:2000})),'accepted');
   await faultStore.ingest(packet(statusMessage(faultFrame,'offline')));
   probeApp.closeAllConnections();await new Promise(resolve=>probeApp.close(resolve));probeApp=null;
   await gatedPool.end();gatedPool=null;await dbGate.stop();dbGate=null;
-  checks.push('actual MySQL transport loss: snapshot 503, health 200, no failed write/current advance; recovery requires renewed session confirmation');
+  checks.push('actual MySQL transport loss: snapshot 503, health 200, no failed write/current advance; redelivered frame kept as history only, current state and freshness wait for renewed session confirmation');
 
   stage='subscriber transport fault';
   mqttGate=await gate(config.mqtt.port);

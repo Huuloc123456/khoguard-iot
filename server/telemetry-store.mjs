@@ -136,9 +136,14 @@ export function createTelemetryStore(pool,{publish}={}) {
       }
       const now=new Date();
       const decision=telemetryDecision(current,candidates.get(m.device_id),m,packet,now.getTime(),retired);
-      if (decision!=='accepted') return decision;
+      if (!['accepted','backlog'].includes(decision)) return decision;
       const [duplicates]=await execute(connection,'SELECT id FROM telemetry WHERE device_id = ? AND boot_id = ? AND seq = ?',[m.device_id,m.boot_id,m.seq]);
       if (duplicates.length) return 'duplicate';
+      if (decision==='backlog') {
+        // History only: current state, alerts and freshness wait for the session to be confirmed again.
+        await execute(connection,'INSERT INTO telemetry (device_id,boot_id,seq,received_at,message) VALUES (?,?,?,?,?)',[m.device_id,m.boot_id,m.seq,sqlUtc(now),JSON.stringify(m)]);
+        return 'backlog';
+      }
       if (current.boot_id && (current.boot_id!==m.boot_id || current.session_id!==m.session_id)) {
         await execute(connection,'UPDATE device_sessions SET retired = TRUE WHERE device_id = ? AND boot_id = ? AND session_id = ?',[m.device_id,current.boot_id,current.session_id]);
       }

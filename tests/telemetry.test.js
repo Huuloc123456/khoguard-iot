@@ -23,12 +23,25 @@ test('node environment simulator uses its own device and leaves unimplemented sa
 
 test('telemetry needs a confirmed session and live data; retained and old clocks never refresh state', () => {
   assert.equal(decide(),'accepted');
-  assert.equal(telemetryDecision(current,null,message,{retain:false},now,false),'unconfirmed');
+  assert.equal(telemetryDecision({...current,session_id:'older'},null,message,{retain:false},now,false),'unconfirmed');
+  assert.equal(telemetryDecision(null,null,message,{retain:false},now,false),'unconfirmed');
   assert.equal(telemetryDecision(current,candidate,message,{retain:true},now,false),'retained');
   assert.equal(decide(message,current,{retired:true}),'retired_session');
   assert.equal(decide({...message,session_id:'other'}),'unconfirmed');
   assert.equal(decide({...message,clock_synced:true,sent_at:new Date(now-10001).toISOString()}),'invalid_time');
   assert.equal(decide({...message,clock_synced:true,sent_at:new Date(now+1).toISOString()}),'invalid_time');
+});
+test('redelivered frames of the stored current session are kept as history but never confirm the session (T24)', () => {
+  // After a DB fault or backend restart the in-memory confirmation is gone, but the DB still holds this session as current.
+  const backlog = (m, c = current, packet = {retain:false}, retired = false) => telemetryDecision(c, null, m, packet, now, retired);
+  assert.equal(backlog(message), 'backlog');
+  assert.equal(telemetryDecision(current, {boot_id:'boot1',session_id:'session2'}, message, {retain:false}, now, false), 'backlog', 'older session queued behind a reconnect');
+  assert.equal(backlog(message, current, {retain:true}), 'retained');
+  assert.equal(backlog(message, current, {retain:false}, true), 'retired_session');
+  assert.equal(backlog({...message, seq:9}), 'old_sequence');
+  assert.equal(backlog({...message, uptime_ms:1}), 'regression');
+  assert.equal(backlog({...message, clock_synced:true, sent_at:new Date(now+1).toISOString()}), 'invalid_time');
+  assert.equal(backlog({...message, session_id:'other'}), 'unconfirmed');
 });
 test('duplicates, decreasing seq/uptime/revision cannot change the current snapshot; reboot resets counters', () => {
   assert.equal(decide({...message,seq:9}),'old_sequence');
