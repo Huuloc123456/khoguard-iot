@@ -11,3 +11,6 @@ firmware/.pio/
 .impeccable/questions/
 .impeccable/mocks/
 .impeccable/direction*.json
+
+# Office lock files
+~$*
