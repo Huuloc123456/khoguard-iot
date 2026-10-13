@@ -21,8 +21,8 @@ test('configuration fails closed without secrets and cannot select another schem
   assert.throws(() => readConfig({...env,DB_MIGRATION_PASSWORD:''},{migration:true}), /DB_MIGRATION_PASSWORD/);
 });
 
-async function withApp(t, readiness) {
-  const server = createApp(readiness);
+async function withApp(t, readiness, store) {
+  const server = createApp(readiness,store);
   server.listen(0,'127.0.0.1');
   await once(server,'listening');
   t.after(async () => { server.closeAllConnections(); await new Promise(resolve=>server.close(resolve)); });
@@ -44,6 +44,21 @@ test('health stays live while readiness reflects dependency loss and recovery', 
   assert.equal(ready.status,200);
   mqtt = false;
   assert.equal((await fetch(`${base}/api/ready`)).status,503);
+});
+
+test('snapshot/history routes validate queries, bound rows and return 503 without leaking database errors', async t => {
+  let database=true;
+  const store={snapshot:async()=>({revision:1}),history:async query=>({limit:query.limit,device:query.device})};
+  const base=await withApp(t,async()=>({database,mqtt:true}),store);
+  assert.deepEqual(await (await fetch(`${base}/api/snapshot`)).json(),{revision:1});
+  const query='device_id=SIM-A01&from=2026-10-13T00:00:00Z&to=2026-10-13T01:00:00Z&limit=2';
+  assert.deepEqual(await (await fetch(`${base}/api/telemetry?${query}`)).json(),{limit:2,device:'SIM-A01'});
+  for (const path of ['/api/telemetry','/api/snapshot?x=1',`/api/telemetry?${query}&limit=1000`]) assert.equal((await fetch(`${base}${path}`)).status,400);
+  database=false;
+  assert.equal((await fetch(`${base}/api/snapshot`)).status,503);
+  database=true; store.snapshot=async()=>{throw new Error('SELECT secret password');};
+  const error=await fetch(`${base}/api/snapshot`);
+  assert.equal(error.status,503); assert.deepEqual(await error.json(),{error:{code:'DATA_UNAVAILABLE'}});
 });
 test('readiness exceptions do not leak credentials and no mutation route is exposed', async t => {
   const base = await withApp(t,async()=>{throw new Error('password=private SQL SELECT');});

@@ -24,6 +24,8 @@
     "backend:check": "node --env-file=.local/runtime.env scripts/check-backend.mjs"
   },
   "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "mqtt": "^5.16.0",
     "mysql2": "^3.24.5",
     "react": "^19.3.0",
@@ -31,8 +33,6 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.1.2",
-    "ajv": "^8.20.0",
-    "ajv-formats": "^3.0.1",
     "vite": "^8.3.4"
   }
 }

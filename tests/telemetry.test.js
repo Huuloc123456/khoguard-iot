@@ -39,7 +39,7 @@ test('snapshot includes offline inventory, unknown WMS and signals, then marks s
   const row={device_id:'SIM-A01',boot_id:'boot1',session_id:'session1',state:'online',received_at:new Date(now),
     message:{...message,payload:{controller_revision:2,environment:{temperature_c:25,humidity_pct:50},occupancy:{current_occupants:1,count_verified:true,presence:true},doors:registry.devices[0].doors.map(door_id=>({door_id,state:'open',beam_clear:true,panic_latched:false,local_inputs_healthy:true}))}}};
   const args = [zones,[row],1,new Date(now),{database:true,mqtt:true}];
-  const live=new Set(['SIM-A01:boot1:session1']);
+  const live=new Set([JSON.stringify(['SIM-A01','boot1','session1'])]);
   const snapshot=buildSnapshot(...args,live);
   assert.equal(validateSnapshot(snapshot).ok,true);
   assert.equal(snapshot.devices.length,5); assert.equal(snapshot.doors.length,12);

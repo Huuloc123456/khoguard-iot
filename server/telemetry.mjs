@@ -1,6 +1,6 @@
 import { registry } from '../contracts/validate.js';
 
-export const sessionKey = m => `${m.device_id}:${m.boot_id}:${m.session_id}`;
+export const sessionKey = m => JSON.stringify([m.device_id,m.boot_id,m.session_id]);
 export const sqlUtc = date => date.toISOString().replace('T',' ').replace('Z','');
 
 export function telemetryDecision(current,candidate,message,packet,now,retired) {
