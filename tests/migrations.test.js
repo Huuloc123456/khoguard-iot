@@ -1,12 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { migrationAction, inventorySeed } from '../db/migrate.mjs';
+import { migrationAction, inventorySeed, telemetryMigration } from '../db/migrate.mjs';
 import { registry } from '../scripts/local-config.mjs';
 test('applied migration is skipped only when checksum matches; incomplete or edited migration is blocked', () => {
   assert.equal(migrationAction(undefined,'abc'),'apply');
   assert.equal(migrationAction({status:'complete',checksum:'abc'},'abc'),'skip');
   assert.throws(()=>migrationAction({status:'applying',checksum:'abc'},'abc'),/incomplete/);
   assert.throws(()=>migrationAction({status:'complete',checksum:'changed'},'abc'),/checksum/);
+});
+
+test('MySQL telemetry DDL does not reference auto-increment id in a CHECK constraint', () => {
+  assert.doesNotMatch(telemetryMigration.sql,/CHECK\s*\(\s*id\b/i);
+  assert.match(telemetryMigration.sql,/UNIQUE KEY telemetry_dedupe/);
 });
 test('seed contains only registry inventory, including both owners of zone C and no measured safety state', () => {
   assert.equal(inventorySeed.warehouse.id,'WH01');

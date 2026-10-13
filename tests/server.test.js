@@ -5,7 +5,7 @@ import { get } from 'node:http';
 import { readConfig } from '../server/config.mjs';
 import { createApp } from '../server/http.mjs';
 import { databaseReady } from '../server/database.mjs';
-import { inventoryMigration, seedChecksum } from '../db/migrate.mjs';
+import { inventoryMigration, telemetryMigration, seedChecksum } from '../db/migrate.mjs';
 
 const env = { DB_HOST:'127.0.0.1', DB_PORT:'3306', DB_NAME:'khoguard_demo', DB_USER:'khoguard_runtime', DB_PASSWORD:'a'.repeat(48), DB_MIGRATION_USER:'khoguard_migrate', DB_MIGRATION_PASSWORD:'b'.repeat(48), MQTT_HOST:'127.0.0.1', MQTT_PORT:'18884', MQTT_USERNAME:'khoguard-backend', MQTT_PASSWORD:'c'.repeat(48) };
 test('configuration fails closed without secrets and cannot select another schema/account or LAN bind', () => {
@@ -60,7 +60,7 @@ test('readiness exceptions do not leak credentials and no mutation route is expo
 });
 test('database readiness requires ownership, completed schema and seed; a failed connection is discarded', async () => {
   const state={server_uuid:'server',setup_id:'setup'};
-  const row={...state,checksum:inventoryMigration.checksum,seed_checksum:seedChecksum};
+  const row={...state,checksum:inventoryMigration.checksum,seed_checksum:seedChecksum,telemetry_checksum:telemetryMigration.checksum};
   let released=0,destroyed=0;
   const connection={query:async()=>[[row]],release:()=>released++,destroy:()=>destroyed++};
   const pool={getConnection:async()=>connection};

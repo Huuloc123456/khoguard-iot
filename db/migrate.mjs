@@ -7,6 +7,8 @@ const text = path => readFileSync(new URL(path,import.meta.url),'utf8').replaceA
 const hash = value => createHash('sha256').update(value).digest('hex');
 export const inventoryMigration = { version:'001_inventory', sql:text('./migrations/001_inventory.sql') };
 inventoryMigration.checksum = hash(inventoryMigration.sql);
+export const telemetryMigration = {version:'002_telemetry',sql:text('./migrations/002_telemetry.sql')};
+telemetryMigration.checksum = hash(telemetryMigration.sql);
 const seedText = text('./seeds/inventory.json');
 const labels = JSON.parse(seedText);
 export const seedChecksum = hash(JSON.stringify(registry)+seedText);
@@ -71,5 +73,25 @@ export async function applyInventory(connection,state) {
       await connection.commit();
     } catch (error) { await connection.rollback(); throw error; }
     return {applied,seeded:true};
+  } finally { await connection.execute('SELECT RELEASE_LOCK(?)',[lockName]).catch(()=>{}); }
+}
+
+export async function applyTelemetry(connection,state) {
+  await verifyOwnership(connection,state);
+  const lockName='khoguard_demo:migrations';
+  const [locks]=await connection.execute('SELECT GET_LOCK(?, 0) AS acquired',[lockName]);
+  assert.equal(locks[0].acquired,1,'Another migration is running');
+  try {
+    const [base]=await connection.execute('SELECT checksum, status FROM schema_migrations WHERE version = ?',[inventoryMigration.version]);
+    assert.equal(migrationAction(base[0],inventoryMigration.checksum),'skip','Apply inventory first');
+    const [rows]=await connection.execute('SELECT checksum, status FROM schema_migrations WHERE version = ?',[telemetryMigration.version]);
+    if (migrationAction(rows[0],telemetryMigration.checksum)==='skip') return {applied:false};
+    const names=['zone_settings','warehouse_stream','device_sessions','device_current','telemetry'];
+    const [existing]=await connection.execute('SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN (?, ?, ?, ?, ?)',names);
+    assert.equal(existing.length,0,'M05 table collision; refusing changes');
+    await connection.execute('INSERT INTO schema_migrations (version, checksum, status) VALUES (?, ?, ?)',[telemetryMigration.version,telemetryMigration.checksum,'applying']);
+    for (const statement of telemetryMigration.sql.split(';').map(sql=>sql.trim()).filter(Boolean)) await connection.query(statement);
+    await connection.execute('UPDATE schema_migrations SET status = ?, applied_at = CURRENT_TIMESTAMP WHERE version = ?',['complete',telemetryMigration.version]);
+    return {applied:true};
   } finally { await connection.execute('SELECT RELEASE_LOCK(?)',[lockName]).catch(()=>{}); }
 }
