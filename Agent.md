@@ -1,10 +1,10 @@
 # KhoGuard — kế hoạch triển khai và kiểm thử
 
-Cập nhật: **12/10/2026**. Phạm vi: đồ án **mô phỏng**, lập trình ESP32 bằng **PlatformIO trong VS Code**, chạy bằng **Wokwi**, dashboard **React nền trắng**, quản lý nhiều cửa và nhiều khu vực. Tài liệu này là kế hoạch; ô chưa đánh dấu là công việc chưa hoàn thành.
+Cập nhật: **13/10/2026**. Phạm vi: đồ án **mô phỏng**, lập trình ESP32 bằng **PlatformIO trong VS Code**, chạy bằng **Wokwi**, dashboard **React nền trắng**, quản lý nhiều cửa và nhiều khu vực. Tài liệu này là kế hoạch; ô chưa đánh dấu là công việc chưa hoàn thành.
 
 ## 1. Sau giao diện, làm gì trước?
 
-**M01 và M02 đã đạt ngày 12/10/2026: hợp đồng/validator, broker riêng và schema/account MySQL đã kiểm tra thật. Tiếp theo M03: kiểm tra Wokwi kết nối broker trên máy. Sau đó xây một luồng nhỏ: cảm biến → MQTT → backend → MySQL → dashboard.** Chỉ khi luồng này hoạt động mới bổ sung RFID, liên động cửa, sức chứa và lịch làm việc.
+**M01–M03 đã đạt ngày 12/10/2026. ESP32 Wokwi gửi telemetry thật và reconnect sau khi broker khởi động lại qua gateway native. Tiếp theo M04–M06: backend → MySQL → API → dashboard.** Chỉ khi luồng này hoạt động mới bổ sung RFID, liên động cửa, sức chứa và lịch làm việc.
 
 Quyết định: [DESITION.md](DESITION.md). Công việc và kết quả thực tế: [QUA_TRINH.md](QUA_TRINH.md). Hợp đồng M01: [contracts/README.md](contracts/README.md). Người dùng đã chốt **giữ MySQL**; không chuyển MongoDB.
 
@@ -26,10 +26,10 @@ Nội dung tài liệu Word là yêu cầu tham khảo cho mô hình. Các thi�
 | Kiểm thử hiện có | `tests/demo.test.js`: 7 kiểm thử đã đạt ở lần hoàn thiện giao diện; build production đã đạt |
 | Hợp đồng M01 | Registry/schema/fixture/validator ở `contracts/`; 23 test contract + 7 test giao diện = 30 test đạt ngày 12/10/2026; chưa là kết nối IoT thật |
 | Kiểm tra trình duyệt | Các màn hình và kịch bản đã được kiểm tra; bố cục ở chiều rộng 320, 390, 825 và 1440 px |
-| Firmware | Đã build thử ESP32 ở bước kiểm tra công cụ; **chưa có firmware của KhoGuard trong repository** |
-| MQTT | Broker dự án 127.0.0.1:18884, 7 account/ACL riêng; 11 kiểm tra MQTT thật đạt. Dashboard/backend/ESP32 chưa nối; TLS chưa cấu hình |
+| Firmware | Probe ESP-C01/DHT22 ở firmware/, build PlatformIO đạt; telemetry và reconnect qua gateway native đã đạt |
+| MQTT | Broker dự án 127.0.0.1:18884, 7 account/ACL riêng; ESP32 đã publish. Dashboard/backend chưa nối; TLS chưa cấu hình |
 | MySQL | Đã tạo khoguard_demo/infra_meta, runtime/migration account riêng; 6 kiểm tra DB thật đạt. Chưa bảng/dữ liệu nghiệp vụ |
-| Chưa có | Backend/API/WebSocket dữ liệu thật, xác thực ứng dụng, TLS, lưu telemetry nghiệp vụ, WMS, liên động edge, kiểm thử Wokwi/end-to-end |
+| Chưa có | Backend/API/WebSocket dữ liệu thật, xác thực ứng dụng, TLS, lưu telemetry nghiệp vụ, WMS, liên động edge, kiểm thử Wokwi các kịch bản cửa/end-to-end |
 
 Các kịch bản hiện tại tạo lại snapshot mẫu, không phải chuỗi sự kiện từ firmware. Nút tiếp nhận chỉ đánh dấu đã xem, không xóa điều kiện nguy hiểm. Test panic hiện tại có cửa mẫu vốn đang mở; cần test riêng chuyển trạng thái **đóng → nhấn panic → mở** khi xây bộ điều khiển.
 
@@ -41,7 +41,8 @@ Phiên bản dưới đây là kết quả kiểm tra môi trường trong phiê
 | --- | --- | --- |
 | VS Code 1.141 | Đã cài | Mở workspace KhoGuard, dùng terminal tích hợp |
 | PlatformIO extension 3.3.4 / Core 6.2.0 | Đã cài, build ESP32 thành công | Tạo `firmware/platformio.ini`, khóa platform/thư viện đã kiểm chứng |
-| Wokwi extension 4.0.0 | Đã cài | Kiểm tra license/quyền chạy, tạo sơ đồ và kiểm tra private gateway |
+| Wokwi extension 4.0.0 | License hiện có chạy simulator được, ESP32/DHT22 đã chạy | Dùng gateway native; reconnect gateway tích hợp chưa đạt |
+| Wokwi native gateway 2.0.1 | Đã tải/đối chiếu SHA-256, publish/reconnect với simulator đạt | Bật khi chạy mô phỏng; cổng HTTP forward 9080 mặc định, dừng sau demo |
 | Node.js 24.19 / npm 11.17 | Đã cài | Dùng cho frontend, backend và script giả lập các node còn lại |
 | Git 2.55 | Đã cài; repository đã có commit giao diện | Ghi từng thay đổi có thể kiểm chứng; không đổi cấu hình Git toàn máy |
 | Python 3.12.10 | Đã cài | Công cụ phụ để đọc tài liệu; không bắt buộc cho runtime |
@@ -55,7 +56,7 @@ Phiên bản dưới đây là kết quả kiểm tra môi trường trong phiê
 | WSL2 / Ubuntu | Đã có | Tùy chọn; ưu tiên chạy native Windows đang có |
 | Arduino IDE 2.3.10 | Đã cài | Không cần cho luồng PlatformIO |
 
-**Chưa cần cài thêm phần mềm hệ thống.** M01 có Ajv/ajv-formats dev dependency; M02 có mqtt/mysql2 ở manifest gốc cho kết nối. Express/ws chưa có, bổ sung ở mốc backend. .npmrc chặn install lifecycle scripts, clean install đã kiểm chứng. Validator dùng runtime phải có dependency runtime tương ứng. Chọn thư viện MQTT firmware sau thử tương thích ESP32, QoS, reconnect và TLS; không chọn chỉ vì ví dụ ngắn.
+**Các công cụ hệ thống chính đã đủ; M03 bổ sung gateway native riêng và thư viện/toolchain qua PlatformIO.** M01 có Ajv/ajv-formats dev dependency; M02 có mqtt/mysql2 ở manifest gốc cho kết nối. Express/ws chưa có, bổ sung ở mốc backend. .npmrc chặn install lifecycle scripts, clean install đã kiểm chứng. Validator dùng runtime phải có dependency runtime tương ứng. MQTT firmware 2.5.3 đã thử QoS1/reconnect; TLS còn phải nghiệm thu ở M12.
 
 Kiểm thử dùng `node:test` đã có. Kiểm thử firmware thuần logic dùng PlatformIO/native khi toolchain tương ứng khả dụng; adapter ESP32 vẫn phải build và chạy Wokwi. Chỉ thêm Playwright vào dev dependency khi viết kiểm thử trình duyệt có thể chạy lại. Không cần Redis, Kubernetes, Node-RED, driver USB hay phần mềm PLC cho phạm vi mô phỏng.
 
@@ -130,7 +131,7 @@ Nguồn cấu hình: [Mosquitto — listener, authentication, ACL và TLS](https
 
 ### 6.3. Wokwi và PlatformIO
 
-Tạo `wokwi.toml` và `diagram.json` trong `firmware/`; build trước khi khởi động simulator. Đường dẫn firmware dự kiến `.pio/build/esp32dev/firmware.bin` và ELF tương ứng, dùng dấu `/` trong TOML. [Cấu hình Wokwi cho VS Code](https://docs.wokwi.com/vscode/project-config).
+Đã tạo `wokwi.toml` và `diagram.json` trong `firmware/`; build trước khi khởi động simulator. Binary/ELF chứa credential nằm trong `.local/firmware-build/esp32dev/`, được Git ignore và Vite deny; TOML dùng đường dẫn tương đối với dấu `/`. [Cấu hình Wokwi cho VS Code](https://docs.wokwi.com/vscode/project-config).
 
 ESP32 ảo không dùng `127.0.0.1` để chỉ máy Windows. Khi dùng private gateway, hostname truy cập máy là `host.wokwi.internal`. Public gateway không truy cập được mạng cục bộ. Phải kiểm tra license, gateway trong VS Code và publish thực tế trước khi coi đường truyền đã xong. Không tự mua gói trả phí. [Mạng ESP32 trong Wokwi](https://docs.wokwi.com/guides/esp32-wifi).
 
@@ -262,10 +263,12 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 
 ### M03 — Probe PlatformIO/Wokwi và mạng
 
-- [ ] Tạo firmware tối thiểu, `diagram.json`, `wokwi.toml`; xác minh license/gateway.
-- [ ] Publish một message hợp schema từ ESP32 Wokwi vào broker dự án và xem bằng MQTTX.
+- [x] Tạo firmware tối thiểu, `diagram.json`, `wokwi.toml`; license hiện có đã chạy, gateway tích hợp gửi được telemetry.
+- [x] Publish message hợp schema từ ESP32 Wokwi vào broker dự án và quan sát bằng observer chỉ đọc, đối chiếu boot Serial Monitor; chưa dùng MQTTX GUI.
+- [x] Ngắt/khôi phục broker, sensor loop tiếp tục và reconnect cùng boot, session mới, seq/uptime tăng.
 - Phụ thuộc: M01, broker ở M02. Phạm vi: `firmware/`, hướng dẫn cấu hình gateway.
 - Nghiệm thu: build lặp lại được; simulator thật chạy và message có đúng device ID; broker mất rồi khôi phục thì reconnect không treo loop. Nếu license chặn, đánh dấu mốc chưa đạt và tiếp tục backend bằng script.
+- Kết quả: **đạt M03** với gateway native 2.0.1; 40/40 test, build firmware/frontend, 8 URL secret bị chặn đạt. Telemetry live QoS1, boot đối chiếu Serial Monitor, reconnect và đổi DHT22 −18,4 → 39,4°C đạt. Gateway tích hợp vẫn chưa đạt reconnect; không kết luận lỗi Arduino core đã được sửa. [Hướng dẫn firmware](firmware/README.md), [bằng chứng M03](docs/evidence/M03-2026-10-12.md).
 
 ### M04 — Backend nền tảng và migration
 
@@ -477,4 +480,4 @@ Còn thiếu: điều kiện chưa xác minh; bước tiếp theo
 | Linh kiện mmWave/CO₂/thermal không có trong Wokwi | Dùng input giả lập được ghi nguồn | Không chặn kiểm thử logic; không chứng minh độ chính xác cảm biến |
 | Log khi nguồn/DB mất và giới hạn replay | Chốt application ack/gap policy, thử T24 | Chặn tuyên bố lưu trữ đầy đủ khi mất kết nối |
 
-**Việc tiếp theo cụ thể:** M03 probe PlatformIO/Wokwi tới broker riêng. Quyền/schema MySQL đã có; chưa cần mở rộng giao diện trước khi chứng minh luồng dữ liệu đầu tiên.
+**Việc tiếp theo cụ thể:** M04 — backend HTTP, validation cấu hình, pool MySQL, migration/seed khu–cửa–thiết bị và health/readiness. M05 lưu telemetry, M06 mới nối dashboard. MySQL được giữ nguyên.

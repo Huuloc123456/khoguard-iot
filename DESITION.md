@@ -67,6 +67,23 @@ Tên file giữ theo yêu cầu người dùng. Đây là sổ quyết định: 
 - Dùng manifest/lockfile npm gốc cho mqtt/mysql2 và infra; chưa tạo server manifest riêng. .npmrc tắt install lifecycle scripts; clean install/build/test đạt, không có package hiện tại cần install hook.
 - Hệ quả: M04 dùng npm script gốc, không npm --prefix server ci trước khi có boundary riêng. Dừng Vite trước clean install trên Windows, không dùng admin toàn máy để vượt EPERM.
 
+## DEC-010 — Probe ESP-C01 trước bộ điều khiển cửa
+
+- Ngày: 12/10/2026. Trạng thái: **đã triển khai/build/publish kiểm thử**.
+- Dùng PlatformIO Espressif32 7.0.1, Arduino 2.0.17 và các thư viện khóa phiên bản trong firmware/platformio.ini. Đây là probe MQTT/DHT22, chưa là safety controller.
+- Gửi đầy đủ telemetry thiết bị sở hữu; D07/D08, occupancy, beam/panic chưa nối nên unknown/null, không dùng số 0 hoặc false để báo an toàn. Clock chưa đồng bộ nên sent_at=null; chưa nhận command.
+- Network task riêng, QoS1/retain, retry 5 giây; boot/session ngẫu nhiên, seq theo boot. Observer chỉ đọc kiểm tra schema, live frame và boot đối chiếu UART.
+- Header và binary/ELF chứa credential chỉ ở .local có NTFS riêng, Git ignore và HTTP deny. Firmware nhận duy nhất account ESP-C01, không dùng account backend/admin.
+- Hệ quả: M03 chứng minh đường cảm biến → broker; backend/DB/UI và điều khiển an toàn làm ở các mốc sau. Arduino 3.3.12 cũng từng gửi được dữ liệu; thay core không giải quyết reconnect gateway tích hợp.
+
+## DEC-011 — Gateway native cho Wokwi trên máy này
+
+- Ngày: 12/10/2026. Trạng thái: **đã chọn sau thử reconnect thực tế đạt**.
+- Chọn Wokwi gateway native 2.0.1, tải release chính thức, kiểm tra SHA-256 ZIP/executable. wokwi.toml dùng ws://127.0.0.1:9011, ESP32 dùng host.wokwi.internal:18884; broker vẫn chỉ bind loopback.
+- Lý do: gateway tích hợp Wokwi 4.0.0 gửi được telemetry, nhưng mất broker làm heartbeat/UART dừng và không nối lại trong 45 giây. Với gateway native, heartbeat tiếp tục, cùng boot/session mới/seq tăng sau broker restart. Đây là bằng chứng lựa chọn, chưa xác định lỗi nội bộ gateway tích hợp.
+- Hệ quả: thêm một terminal gateway khi chạy demo. Upstream còn forward HTTP cổng 9080 trên mọi interface và không hỗ trợ tắt bằng --forward=; firmware hiện không có HTTP server. Không cấp quyền Firewall rộng; dừng gateway sau demo. Cần giới hạn ingress trước khi thêm HTTP server hoặc chạy ở môi trường khác.
+- Script kiểm tra cổng chỉ bind loopback. Người dùng đã yêu cầu hoàn tác lần nhấn Allow nhầm: gỡ đúng hai quyền PowerShell Public qua UAC do người dùng xác nhận, người dùng Cancel hộp thoại Firewall; đã đọc lại thấy Block/Public. Không đổi Firewall toàn cục hay quyền của ứng dụng khác.
+
 ## Cách cập nhật
 
 Mỗi quyết định mới thêm DEC-xxx với ngày, trạng thái, lý do và hệ quả. Khi thay đổi, thêm mục mới tham chiếu mục bị thay thế; giữ lịch sử. Chỉ ghi “đã triển khai” khi có công việc/test tương ứng trong `QUA_TRINH.md`.

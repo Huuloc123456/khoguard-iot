@@ -40,3 +40,7 @@ Các số liệu, sơ đồ và nhật ký là dữ liệu giả lập trong b�
 Đã có broker riêng `127.0.0.1:18884`, ACL/tài khoản theo thiết bị và schema MySQL `khoguard_demo` với runtime/migration account riêng. Dashboard vẫn là demo frontend, chưa nhận dữ liệu từ broker/database.
 
 Xem [infra/README.md](infra/README.md) để setup/start và kiểm tra MQTT, MySQL, bảo vệ secret. Cấu hình thật nằm trong `.local/` được bảo vệ, không vào Git. Trước `npm ci` trên Windows cần dừng Vite của dự án để tránh khóa thư viện native.
+
+## Firmware mô phỏng M03
+
+[firmware/README.md](firmware/README.md) hướng dẫn build PlatformIO và chạy ESP32/DHT22 trong Wokwi. Telemetry ESP-C01 tới broker thật; reconnect qua gateway native và đổi nhiệt độ đã đạt. Các tín hiệu cửa/occupancy vẫn unknown và dashboard vẫn dùng dữ liệu mẫu. Tiếp theo M04: backend/MySQL. [Bằng chứng](docs/evidence/M03-2026-10-12.md).

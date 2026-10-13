@@ -1,6 +1,6 @@
 # Quá trình thực hiện KhoGuard
 
-Cập nhật: 12/10/2026. Sổ này ghi **đã làm thực tế**, kết quả kiểm tra và việc chưa xong. Kế hoạch: [Agent.md](Agent.md). Quyết định: [DESITION.md](DESITION.md). Các bước sau tiếp tục bổ sung ở đây; không ghi pass nếu chưa chạy.
+Cập nhật: 13/10/2026. Sổ này ghi **đã làm thực tế**, kết quả kiểm tra và việc chưa xong. Kế hoạch: [Agent.md](Agent.md). Quyết định: [DESITION.md](DESITION.md). Các bước sau tiếp tục bổ sung ở đây; không ghi pass nếu chưa chạy.
 
 ## 01 — Đọc tài liệu và kiểm tra công cụ
 
@@ -92,9 +92,43 @@ Kết quả thực tế:
 
 Chưa làm: firmware/Wokwi/TLS, schema nghiệp vụ, ingest/API/WebSocket hay UI dữ liệu thật. MQTT probe là client Node, không phải ESP32. Quyết định mới: DEC-008/DEC-009.
 
+## 06 — Triển khai M03: firmware PlatformIO/Wokwi
+
+Ngày: 12/10/2026. Nhánh: codex/m03-wokwi-firmware. Trạng thái: **đã đạt M03 với gateway native**, chưa là backend hoặc bộ điều khiển an toàn.
+
+Đã làm:
+
+- Tạo firmware ESP-C01/DHT22, sơ đồ GPIO15/pull-up, config PlatformIO/Wokwi và hướng dẫn chạy. Giữ D07/D08/occupancy unknown; chưa có output điều khiển cửa.
+- Khóa Espressif32 7.0.1/Arduino 2.0.17, MQTT 2.5.3, ArduinoJson 7.4.3, DHT 1.4.7 và Unified Sensor 1.1.15.
+- Tạo credential header riêng .local, build artifact riêng .local/firmware-build; mở rộng ignore/Vite deny và kiểm tra secret.
+- Tạo observer chỉ đọc; bỏ retained/duplicate, validate contract/QoS1, kiểm tra boot/session/seq/uptime và unknown input. Thêm 5 unit test, tổng 40 test.
+- Tải Wokwi gateway native 2.0.1 từ release chính thức, đối chiếu SHA-256; setup/start bằng Windows PowerShell/.NET, không cần cài PowerShell 7.
+
+Lỗi và cách xử lý:
+
+1. PlatformIO console lỗi Unicode ở child runtime: đặt PYTHONIOENCODING=utf-8 trong wrapper build.
+2. ArduinoJson proxy không copy được với toolchain Arduino 2: dùng JsonObject qua as<JsonObject>(); banner version dùng macro số. Build đạt sau sửa.
+3. Gateway tích hợp publish được nhưng reconnect timeout 45 giây, UART/heartbeat dừng. Arduino 3.3.12 và 2.0.17 đều gặp; không coi đổi core là sửa lỗi. Chọn gateway native sau kiểm tra đạt. Thử pin task không được giữ trong bản cuối.
+4. Child PowerShell không load Get-FileHash; dùng SHA-256/.NET và ZIP chuẩn. Tham số --forward= không tắt cổng 9080; đã sửa hướng dẫn/startscript, không ghi là cổng được tắt.
+5. Người dùng lỡ Allow Firewall cho PowerShell rồi yêu cầu hiện lại để Cancel. Lệnh thường bị Access denied; UAC lần đầu bị Cancel nên không đổi quyền. Lần hai người dùng cho phép UAC và Cancel Firewall; đọc lại thấy hai rule Block/Public. Kiểm tra cổng trong script đã đổi sang loopback để tránh tạo lại prompt này.
+
+Kết quả:
+
+- npm test: **40/40 đạt**, 0 fail/skip. Build frontend đạt; firmware RAM 44.864 byte (13,7%), flash 762.745 byte (58,2%).
+- Wokwi license hiện có chạy được. Boot 78629e212a11bb5db110f921622204e4 khớp UART và observer.
+- Trước ngắt broker: session 8fddb16b607c215149d2f6865ec8cf61, seq 15–17, uptime 29.805–33.805 ms.
+- Khi broker tắt: heartbeat tiếp tục tới 67.627 ms, retry được ghi. Sau mở broker: session 31c83d630a0ebc23dc6c465c6bc7af07, seq 21–23, uptime 80.801–84.824 ms; assertion cùng boot/session đổi/seq-uptime tiến đạt.
+- Đổi DHT22 −18,4 → **39,4°C**, humidity 55%; observer seq 46–48 nhận reading mới và assertion đạt.
+- infra:secrets:check: **7 file được ignore, 8 URL trả 403**; header/binary ACL NTFS riêng đã kiểm tra. Gateway setup reuse/hash và start từ chối cổng đang chiếm đạt.
+- Sau thử dừng simulator/gateway; broker dự án 18884 và Vite 5173 vẫn chạy; Mosquitto service 1883/MySQL 3306 cũ không bị dừng. [Bằng chứng M03](docs/evidence/M03-2026-10-12.md), [hướng dẫn firmware](firmware/README.md). Quyết định DEC-010/DEC-011.
+- Rà soát cuối 13/10/2026: 63 file tracked/new không chứa credential local đã đối chiếu, không in secret; git diff --check đạt. Admin env hiện trống password, không cần admin cho M03 hoặc runtime/migration M04.
+- Save point code: e54ea19 — feat: add verified Wokwi MQTT firmware probe and native gateway; kế hoạch/quyết định/bằng chứng ở commit tài liệu kế tiếp. Chưa push hoặc merge.
+
+Chưa kiểm tra: MQTTX GUI, Last Will riêng, mất WiFi riêng, cảm biến lỗi vật lý, TLS/NTP/command, backend/DB/UI dữ liệu thật. Không suy các phần này đã đạt từ test M03.
+
 ## Bước kế tiếp
 
-M03: firmware PlatformIO/Wokwi publish message hợp contract vào broker riêng. License/private gateway chưa xác minh; ghi kết quả trước khi đánh dấu đạt. Backend/schema nghiệp vụ bắt đầu M04 sau đó.
+M04: backend HTTP/config validation/pool MySQL, migration/seed khu–cửa–thiết bị, health/readiness và kiểm thử cấu hình/DB/migration. Sau đó M05 ingest/lưu telemetry, M06 nối dashboard. Giữ MySQL.
 
 ## Mẫu ghi thêm ở mỗi bước
 
