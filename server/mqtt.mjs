@@ -41,9 +41,15 @@ export function connectBroker(options,ingest,{ca=options.tls ? defaultCa() : und
       const started=generation;
       Promise.resolve().then(async()=>{
         if (!await ingest.databaseReady()) throw new Error('DATABASE_UNAVAILABLE');
-        if (generation!==started) return;
+        if (generation!==started) return false;
         await ingest.ingest(packet);
-      }).then(()=>done(),()=>{
+        return true;
+      }).then(current=>{
+        // A packet left over from a closed connection must not be acknowledged: MQTT.js would queue the PUBACK and
+        // send it after reconnecting, so the broker would drop a message that was never stored. Its stream is already
+        // gone, so do not destroy the (possibly new) one; the broker redelivers it on the persistent session.
+        if (current) done(); else done(new Error('STALE_CONNECTION'));
+      },()=>{
         reset();
         console.error('MQTT ingest unavailable; connection discarded, persistence not acknowledged.');
         client.stream?.destroy();
