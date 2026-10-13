@@ -3,6 +3,8 @@ import Icon from './Icon.jsx';
 import { createDemo, getSummary, scenarios } from './demo.js';
 import { WarehouseMap, ZoneDetail, Pill } from './WarehouseMap.jsx';
 import { DoorTable, EnvironmentTable, EventTable } from './DataTables.jsx';
+import {useLiveWarehouse} from './useLiveWarehouse.js';
+import {reading} from './live-data.js';
 
 const navigation = [
   { id: 'overview', label: 'Tổng quan', icon: 'overview', title: 'Tổng quan kho hàng', description: 'Theo dõi vận hành, môi trường và an toàn tại một nơi.' },
@@ -19,9 +21,14 @@ function Alerts({ alerts, onAcknowledge, onSelect }) {
 export default function App() {
   const [view, setView] = useState('overview');
   const [selected, setSelected] = useState('C');
-  const [demo, setDemo] = useState(() => createDemo());
+  const [sample, setDemo] = useState(() => createDemo());
+  const [mode,setMode]=useState('live');
+  const live=useLiveWarehouse(mode==='live');
   const [showSimulation, setShowSimulation] = useState(false);
   const [notice, setNotice] = useState('');
+  const modeControl=<label className="data-mode">Nguồn dữ liệu <select aria-label="Nguồn dữ liệu" value={mode} onChange={e=>{setMode(e.target.value);setShowSimulation(false);setNotice('');}}><option value="live">Backend / MQTT</option><option value="demo">Demo giao diện</option></select></label>;
+  const demo=mode==='demo' ? sample:live.data;
+  if(!demo) return <main className="panel live-loading" aria-busy={live.status==='loading'}><h1>KhoGuard</h1>{modeControl}<p role="status">{live.status==='loading'?'Đang tải dữ liệu từ backend…':live.error}</p><p>Đang thử kết nối lại. Chưa có dữ liệu cảm biến; có thể chọn demo giao diện để xem số mẫu.</p></main>;
   const summary = getSummary(demo);
   const current = navigation.find(item => item.id === view);
   const zone = demo.zones.find(item => item.id === selected);
@@ -45,6 +52,7 @@ export default function App() {
   }
 
   function acknowledge(id) {
+    if(mode==='live') {setNotice('Tiếp nhận cảnh báo backend sẽ có ở M11.');return;}
     const alert = demo.alerts.find(item => item.id === id);
     if (!alert || alert.acknowledged) return;
     setDemo(previous => ({ ...previous,
@@ -71,19 +79,20 @@ export default function App() {
     <aside className="sidebar">
       <a className="brand" href="#main-content" onClick={() => navigate('overview')} aria-label="KhoGuard — Tổng quan"><span className="brand-mark"><Icon name="warehouse" size={23} /></span><span>KhoGuard<span className="brand-subtitle">Quản lý kho thông minh</span></span></a>
       <nav aria-label="Điều hướng chính">{navigation.map(item => <button key={item.id} className={`nav-item ${view === item.id ? 'active' : ''}`} aria-current={view === item.id ? 'page' : undefined} onClick={() => navigate(item.id)}><Icon name={item.icon} size={19} /><span>{item.label}</span>{item.id === 'overview' && pending > 0 && <span className="nav-count">{pending}</span>}</button>)}</nav>
-      <div className="sidebar-bottom"><div className="source-status"><span className="status-dot" /><span>Mô phỏng cục bộ</span></div><p>MQTT chưa kết nối</p><div className="profile"><span className="avatar">17</span><div><strong>Nhóm 17</strong><span>Đồ án Internet of Things</span></div></div></div>
+      <div className="sidebar-bottom"><div className="source-status"><span className="status-dot" /><span>{mode==='demo'?'Demo giao diện':live.status==='connected'?'Backend đã kết nối':'Mất kết nối backend'}</span></div><p>{mode==='demo'?'Số mẫu trong trình duyệt':`MQTT ${demo.connections?.broker==='connected'?'đã kết nối':'mất kết nối'}`}</p><div className="profile"><span className="avatar">17</span><div><strong>Nhóm 17</strong><span>Đồ án Internet of Things</span></div></div></div>
     </aside>
     <div className="workspace">
-      <header className="topbar"><div className="warehouse-label"><Icon name="warehouse" size={19} /><strong>Kho trung tâm</strong><span className="topbar-separator" /><span>{summary.zones} khu vực · {summary.doors} cửa</span></div><div className="topbar-right"><span className="shift-label">Ca ngày <span>06:00–18:00</span></span><Pill tone="info">Dữ liệu giả lập</Pill></div></header>
+      <header className="topbar"><div className="warehouse-label"><Icon name="warehouse" size={19} /><strong>Kho trung tâm</strong><span className="topbar-separator" /><span>{summary.zones} khu vực · {summary.doors} cửa</span></div><div className="topbar-right">{modeControl}<Pill tone="info">{mode==='demo'?'Dữ liệu mẫu':'Mô phỏng IoT qua MQTT'}</Pill></div></header>
       <main id="main-content" tabIndex={-1}>
-        <div className="page-heading"><div><h1>{current.title}</h1><p>{current.description}</p></div><div className="heading-actions"><button className="button export-button" aria-label="Xuất nhật ký" title="Xuất nhật ký CSV" onClick={exportEvents}><Icon name="download" size={17} /><span className="button-label">Xuất nhật ký</span></button><button className={`button primary ${showSimulation ? 'pressed' : ''}`} aria-expanded={showSimulation} aria-controls="simulation-panel" onClick={() => setShowSimulation(!showSimulation)}><Icon name="play" size={16} />Mô phỏng</button></div></div>
+        <div className="page-heading"><div><h1>{current.title}</h1><p>{current.description}</p></div><div className="heading-actions"><button className="button export-button" aria-label="Xuất nhật ký" title="Xuất nhật ký CSV" onClick={exportEvents}><Icon name="download" size={17} /><span className="button-label">Xuất nhật ký</span></button>{mode==='demo'&&<button className={`button primary ${showSimulation ? 'pressed' : ''}`} aria-expanded={showSimulation} aria-controls="simulation-panel" onClick={() => setShowSimulation(!showSimulation)}><Icon name="play" size={16} />Mô phỏng</button>}</div></div>
+        {mode==='live'&&<div className={`connection-banner ${live.status==='error'?'warning-text':''}`} role="status">{live.status==='error'?live.error:`MySQL đã kết nối · MQTT ${demo.connections.broker==='connected'?'đã kết nối':'mất kết nối'}`} · {demo.devices.filter(d=>d.freshness==='fresh').length}/5 thiết bị có dữ liệu mới · Cập nhật {new Date(demo.generatedAt).toLocaleTimeString('vi-VN')}<p>Giá trị “—” chưa có dữ liệu. Dữ liệu cũ giữ để tra cứu; chưa có bộ máy cảnh báo hoặc điều khiển cửa.</p></div>}
         {showSimulation && <section id="simulation-panel" className="simulation-panel" aria-labelledby="simulation-title"><div className="simulation-heading"><div><h2 id="simulation-title">Kịch bản mô phỏng</h2><p>Mỗi kịch bản bắt đầu từ dữ liệu mẫu. Thay đổi chỉ áp dụng cho phiên này.</p></div><button className="text-button" onClick={() => runScenario('default')}><Icon name="refresh" size={16} />Đặt lại</button></div><div className="scenario-buttons">{scenarios.map(item => <button key={item.id} className={`button ${demo.scenario === item.id ? 'scenario-active' : ''}`} aria-pressed={demo.scenario === item.id} onClick={() => runScenario(item.id)}>{item.id === 'panic' && <Icon name="alert" size={15} />}{item.label}</button>)}</div></section>}
         <p className={`notice ${notice ? 'visible' : ''}`} role="status">{notice}</p>
         <div className="summary-strip" aria-label="Tóm tắt trạng thái kho">
-          <div className="summary-item"><span className="summary-label"><Icon name="door" size={17} />Cửa giám sát</span><div><strong>{summary.doors}<span>cửa</span></strong><span className="summary-caption">{summary.doors - summary.openDoors} đóng · {summary.openDoors} mở</span></div></div>
-          <div className="summary-item"><span className="summary-label"><Icon name="people" size={17} />Người trong kho</span><div><strong>{summary.people}<span>người</span></strong><span className="summary-caption">Trong {summary.zones} khu vực</span></div></div>
-          <div className="summary-item"><span className="summary-label"><Icon name="box" size={17} />Sức chứa sử dụng</span><div><strong className={summary.utilization >= 95 ? 'danger-text' : ''}>{summary.utilization}<span>%</span></strong><span className="summary-caption">{summary.occupied} / {summary.capacity} vị trí</span></div></div>
-          <div className="summary-item"><span className="summary-label"><Icon name="alert" size={17} />Cần tiếp nhận</span><div><strong className={pending ? 'warning-text' : ''}>{pending}<span>cảnh báo</span></strong><span className="summary-caption">{pending ? 'Cần kiểm tra tại khu vực' : 'Đã tiếp nhận tất cả'}</span></div></div>
+          <div className="summary-item"><span className="summary-label"><Icon name="door" size={17} />Cửa giám sát</span><div><strong>{summary.doors}<span>cửa</span></strong><span className="summary-caption">{demo.doors.filter(d=>d.open===false).length} đóng · {summary.openDoors} mở · {demo.doors.filter(d=>d.open===null).length} chưa rõ</span></div></div>
+          <div className="summary-item"><span className="summary-label"><Icon name="people" size={17} />Người trong kho</span><div><strong>{reading(summary.people)}<span>người</span></strong><span className="summary-caption">{summary.people===null?'Chưa xác minh đủ các khu':`Trong ${summary.zones} khu vực`}</span></div></div>
+          <div className="summary-item"><span className="summary-label"><Icon name="box" size={17} />Sức chứa sử dụng</span><div><strong className={summary.utilization >= 95 ? 'danger-text' : ''}>{reading(summary.utilization)}<span>%</span></strong><span className="summary-caption">{reading(summary.occupied)} / {summary.capacity} vị trí · {mode==='live'?'Chưa có WMS':'Mẫu'}</span></div></div>
+          <div className="summary-item"><span className="summary-label"><Icon name="alert" size={17} />Cần tiếp nhận</span><div><strong className={pending ? 'warning-text' : ''}>{pending}<span>cảnh báo</span></strong><span className="summary-caption">{pending ? 'Cần kiểm tra tại khu vực' : mode==='live'?'Bộ máy cảnh báo chưa triển khai':'Đã tiếp nhận tất cả'}</span></div></div>
         </div>
         {(view === 'overview' || view === 'map') && <div className="map-and-detail"><WarehouseMap demo={demo} selected={selected} onSelect={setSelected} /><ZoneDetail zone={zone} doors={demo.doors} alerts={demo.alerts} /></div>}
         {view === 'overview' && <><Alerts alerts={demo.alerts} onAcknowledge={acknowledge} onSelect={showZone} /><EventTable events={demo.events} compact onViewAll={() => navigate('activity')} /></>}
@@ -91,7 +100,7 @@ export default function App() {
         {view === 'doors' && <DoorTable demo={demo} onSelect={showZone} />}
         {view === 'environment' && <EnvironmentTable zones={demo.zones} onSelect={showZone} />}
         {view === 'activity' && <EventTable events={demo.events} />}
-        <footer className="page-footer"><span>KhoGuard · Bản giao diện mô phỏng</span><span><Icon name="flask" size={14} />Dữ liệu mẫu, chưa kết nối thiết bị</span></footer>
+        <footer className="page-footer"><span>KhoGuard · Mô hình mô phỏng</span><span><Icon name="flask" size={14} />{mode==='demo'?'Dữ liệu mẫu trong trình duyệt':'Nguồn Wokwi / Node mô phỏng · đọc từ MySQL'}</span></footer>
       </main>
     </div>
   </div>;

@@ -18,11 +18,12 @@ export const scenarios = [
 ];
 
 export function canCloseDoor(zone) {
-  return zone.people === 0 && !zone.presence && !zone.beam && !zone.panic;
+  return zone.people === 0 && zone.presence === false && zone.beam === false && zone.panic === false
+    && (zone.mode!=='live' || (zone.freshness==='fresh' && zone.countVerified && zone.inputsHealthy));
 }
 
 export function isTemperatureWarning(zone) {
-  return zone.temperature < zone.range[0] || zone.temperature > zone.range[1];
+  return zone.temperature!==null && (zone.temperature < zone.range[0] || zone.temperature > zone.range[1]);
 }
 
 // shortcut: browser-local synthetic snapshots; replace with validated telemetry when MQTT is integrated.
@@ -64,15 +65,15 @@ export function createDemo(scenario = 'default') {
 }
 
 export function getSummary(demo) {
-  const occupied = demo.zones.reduce((sum, zone) => sum + zone.occupied, 0);
+  const occupied = demo.zones.some(z=>z.occupied===null) ? null:demo.zones.reduce((sum, zone) => sum + zone.occupied, 0);
   const capacity = demo.zones.reduce((sum, zone) => sum + zone.capacity, 0);
   return {
     zones: demo.zones.length,
     doors: demo.doors.length,
     openDoors: demo.doors.filter(door => door.open).length,
-    people: demo.zones.reduce((sum, zone) => sum + zone.people, 0),
+    people: demo.zones.some(z=>z.people===null || (z.mode==='live' && (!z.countVerified || z.freshness!=='fresh'))) ? null:demo.zones.reduce((sum, zone) => sum + zone.people, 0),
     occupied,
     capacity,
-    utilization: Math.round(occupied / capacity * 100),
+    utilization: occupied===null ? null:Math.round(occupied / capacity * 100),
   };
 }

@@ -1,13 +1,14 @@
-import { readFileSync } from 'node:fs';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
+import deviceRegistry from './devices.json' with {type:'json'};
+import mqttContract from './mqtt.schema.json' with {type:'json'};
+import snapshotContract from './snapshot.schema.json' with {type:'json'};
 
-const read = name => JSON.parse(readFileSync(new URL(name, import.meta.url), 'utf8'));
-export const registry = read('./devices.json');
+export const registry = deviceRegistry;
 const ajv = new Ajv({ strict: true, allErrors: true, ownProperties: true });
 addFormats(ajv, ['date-time']);
-const mqttSchema = ajv.compile(read('./mqtt.schema.json'));
-const snapshotSchema = ajv.compile(read('./snapshot.schema.json'));
+const mqttSchema = ajv.compile(mqttContract);
+const snapshotSchema = ajv.compile(snapshotContract);
 const failure = (code, message, details) => ({ ok: false, error: { code, message, ...(details ? { details } : {}) } });
 const schemaFailure = (code, validate) => failure(code, 'Data does not match the contract', structuredClone(validate.errors));
 const deviceById = id => registry.devices.find(device => device.id === id);

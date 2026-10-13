@@ -3,6 +3,7 @@ import { createDbPool, loadOwnership, databaseReady } from './database.mjs';
 import { connectBroker } from './mqtt.mjs';
 import { createApp } from './http.mjs';
 import { createTelemetryStore } from './telemetry-store.mjs';
+import {attachSnapshots} from './websocket.mjs';
 
 try {
   const config = readConfig(process.env);
@@ -11,7 +12,9 @@ try {
   const store=createTelemetryStore(pool);
   const ready=()=>databaseReady(pool,state);
   const broker = connectBroker(config.mqtt,{...store,databaseReady:ready});
-  const server = createApp(async()=>({database:await ready(),mqtt:broker.connected && broker.ingestReady}),store);
+  const readiness=async()=>({database:await ready(),mqtt:broker.connected && broker.ingestReady});
+  const server = createApp(readiness,store);
+  const stopSnapshots=attachSnapshots(server,readiness,store);
   let stopping = false;
   async function stop(code=0) {
     if (stopping) return;
@@ -19,6 +22,7 @@ try {
     process.exitCode = code;
     const deadline = setTimeout(()=>process.exit(code || 1),5000);
     deadline.unref();
+    await stopSnapshots();
     server.closeAllConnections();
     await Promise.allSettled([new Promise(resolve=>server.close(resolve)),broker.endAsync(true),pool.end()]);
     clearTimeout(deadline);
