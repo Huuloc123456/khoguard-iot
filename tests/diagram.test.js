@@ -11,7 +11,7 @@ test('Wokwi ESP32 wiring uses RX2/TX2 aliases for GPIO16/17 and unique assigned 
   assert.ok(switches.every(s=>['','1'].includes(s.attrs.value)));
 });
 test('each Wokwi switch drives exactly the firmware input slot assigned to its door',()=>{
-  const source=readFileSync(new URL('../firmware/src/main.cpp',import.meta.url),'utf8');
+  const source=readFileSync(new URL('../firmware/lib/khoguard/src/kg_board.h',import.meta.url),'utf8');
   const pins=/INPUT_PINS\[\]\s*=\s*\{([\d,\s]+)\}/.exec(source)[1].split(',').map(Number);
   const pin=endpoint=>({'esp:RX2':16,'esp:TX2':17})[endpoint] ?? Number(/^esp:D(\d+)$/.exec(endpoint)?.[1]);
   const wired=id=>diagram.connections.filter(c=>c[0]===`${id}:2`).map(c=>pin(c[1]));
@@ -22,7 +22,7 @@ test('each Wokwi switch drives exactly the firmware input slot assigned to its d
   assert.ok(!pins.includes(15),'DHT22 data pin must stay separate from safety inputs');
 });
 test('each firmware output pin drives one labelled LED to ground, separate from inputs',()=>{
-  const source=readFileSync(new URL('../firmware/src/main.cpp',import.meta.url),'utf8');
+  const source=readFileSync(new URL('../firmware/lib/khoguard/src/kg_board.h',import.meta.url),'utf8');
   const list=name=>new RegExp(`${name}\\[\\]\\s*=\\s*\\{([\\d,\\s]+)\\}`).exec(source)[1].split(',').map(Number);
   const outputs=list('OUTPUT_PINS'), inputs=list('INPUT_PINS');
   const leds=['lock07','lock08','open07','close07','open08','close08','light','buzzer','heater','fan'];

@@ -200,7 +200,8 @@ khoguard-iot/
 ├── firmware/                 ESP32 (PlatformIO + Wokwi)
 │   ├── platformio.ini        Board esp32dev, thư viện khóa phiên bản, build ra .local/
 │   ├── include/controller.h  TOÀN BỘ quy tắc edge (thuần C++, test được trên PC)
-│   ├── src/main.cpp          Adapter: GPIO, DHT22, Serial, WiFi, MQTT/TLS, FreeRTOS task
+│   ├── src/main.cpp          Chỉ gọi thư viện: setup() khởi tạo, loop() chạy 3 bước
+│   ├── lib/khoguard/src/     Adapter chia module (xem §8.4): GPIO, DHT22, Serial, WiFi, MQTT/TLS
 │   ├── test/controller_test.cpp  Test debounce, RFID, số người (M07–M08)
 │   ├── test/safety_test.cpp      Test cổng đóng, panic, liên động, timer, lệnh (M09–M11)
 │   ├── diagram.json          Mạch Wokwi: ESP32, DHT22, 7 công tắc, 10 LED
@@ -521,7 +522,28 @@ flowchart TB
 3. `expected_revision` ≠ `revision` hiện tại → `REVISION_MISMATCH` (người vận hành đang nhìn trạng thái cũ).
 4. Ngược lại → `request()` qua `openGate`/`closeGate`/reset panic.
 
-### 8.4 `main.cpp` — adapter phần cứng và mạng
+### 8.4 `lib/khoguard` — adapter phần cứng và mạng
+
+`src/main.cpp` không còn logic, chỉ gọi thư viện riêng `firmware/lib/khoguard/src` (PlatformIO tự biên dịch thư mục `lib/`; `platformio.ini` thêm `-Iinclude` để thư viện thấy `controller.h`):
+
+```cpp
+void setup() { Serial.begin(115200); kg::state::begin(); kg::environment::begin(); kg::board::begin();
+               if (!kg::events::begin()) return; kg::network::start(); }
+void loop()  { kg::edge::step(); kg::rfid::poll(); kg::environment::poll(); delay(10); }
+```
+
+| Module | Vai trò |
+| --- | --- |
+| `kg_state` | Trạng thái dùng chung giữa `loop` và task mạng: `Controller`, `sampleLock`, `bootId`/`sessionId`, mẫu DHT |
+| `kg_board` | Bảng chân `INPUT_PINS`/`OUTPUT_PINS`/`DHT_PIN`, đọc 7 input, ghi 10 LED + log `OUTPUTS` |
+| `kg_environment` | DHT22: đọc mỗi 2 s, `SENSOR_HEARTBEAT` |
+| `kg_events` | Queue 32 event, `enqueue` (đánh `seq`, `EVENT_GAP`), so trạng thái trước/sau để sinh `INPUT_EVENT`/`SAFETY_EVENT` |
+| `kg_edge` | Một nhịp an toàn: đọc input → `update`/`tick` trong khóa → ghi output → báo event |
+| `kg_rfid` | Đọc dòng Serial không chặn, `parseRfid`, `scan`, `RFID_EVENT` |
+| `kg_commands` | Callback MQTT `commands`: kiểm tra, gọi `controller.command`, xếp ≤ 4 ack |
+| `kg_messages` | Topic + dựng JSON: envelope, telemetry, event, ack |
+| `kg_network` | WiFi, banner, `networkTask` (kết nối, Last Will, publish QoS1) |
+| `khoguard.h` | Header gom các module mà `main.cpp` gọi |
 
 - **Khởi động**: tạo `boot_id` ngẫu nhiên, `pinMode`, tạo queue 32 event, nối WiFi `Wokwi-GUEST`, in banner `KHOGUARD_M12 boot=… transport=mqtts:18885 CA-verified`, tạo `networkTask` (stack 12 KB khi có TLS).
 - **Kết nối MQTT**: host `host.wokwi.internal`, cổng 18885 với `WiFiClientSecure` + CA demo nhúng từ `.local/firmware/kg_secrets.h` (do `firmware:prepare` sinh). **Không bao giờ** `setInsecure()`. Mỗi lần nối: `session_id` mới, Last Will `offline` (retain), clean session (lệnh cũ không giao lại), publish `online`, subscribe `commands`.
@@ -586,7 +608,7 @@ listen(127.0.0.1:3001)
 SIGINT/SIGTERM         → đóng WS, HTTP, MQTT, pool; quá 5 s thì thoát cưỡng bức
 ```
 
-**`config.mjs`** cố định những thứ không được đổi: host chỉ `127.0.0.1`, DB `khoguard_demo`, user runtime `khoguard_runtime`, MQTT user `khoguard-backend`, cổng MQTT chỉ 18884 hoặc 18885 (18885 ⇒ TLS). Mật khẩu phải đúng dạng 48 ký tự hex (do script sinh) — ngăn cấu hình nhầm sang tài khoản khác.
+**`config.mjs`** cố định những thứ không được đổi: host chỉ `127.0.0.1`, DB `khoguard_demo`, user runtime `khoguard_runtime`, MQTT user `khoguard-backend`, cổng MQTT chỉ 18884 hoặc 18885 (18885 ⇒ TLS). Mật khẩu phải khớp `SECRET_PATTERN`: 4–128 chữ/số (máy demo đang dùng `1234`, DEC-041); chỉ chữ/số để ghi an toàn vào C++ và SQL.
 
 ### 10.2 Readiness — `database.mjs`
 
@@ -1086,7 +1108,7 @@ Ca ngày 06:00–18:00, ca đêm 18:00–06:00 (khoảng `[start, end)`), giờ 
 | `tests/websocket.test.js` | Origin, phiên, resync, payload lạ |
 | `tests/tls.test.js` | SAN chứng chỉ, listener, PEM không chèn được code C++ |
 | `tests/firmware.test.js` | Observer telemetry firmware |
-| `tests/diagram.test.js` | Chân GPIO trong `diagram.json` khớp `main.cpp` |
+| `tests/diagram.test.js` | Chân GPIO trong `diagram.json` khớp `lib/khoguard/src/kg_board.h` |
 | `tests/infra.test.js`, `migrations.test.js`, `demo.test.js` | ACL/broker config, migration journal, dữ liệu demo |
 
 ### 17.3 Ma trận yêu cầu

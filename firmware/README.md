@@ -88,6 +88,7 @@ Serial in `RFID_EVENT ... result=<0 accepted|1 duplicate|2 unauthorized> count=.
 
 ## Quy tắc an toàn, lệnh và timer (M09–M11)
 
+- `src/main.cpp` chỉ gọi thư viện `lib/khoguard/src` (state, board, environment, events, edge, rfid, commands, messages, network); `platformio.ini` thêm `-Iinclude` để thư viện thấy `controller.h`.
 - Quy tắc thuần ở `include/controller.h`; test: `g++ -std=gnu++11 firmware/test/safety_test.cpp -o safety_test && ./safety_test` (6 nhóm M09/M10/M11).
 - Lệnh từ dashboard chỉ bật LED motor. Trong Wokwi, **tự gạt switch contact** của cửa đó trong 10 s để mô phỏng cửa tới nơi; quá 10 s thì dừng và báo lỗi input. Rèm quang bị chắn hoặc mmWave bật khi đang đóng → cửa mở lại.
 - Thiết bị chỉ chạy lệnh đúng boot/session hiện tại và đúng revision; lệnh trùng ID chỉ ack lại. Serial in `COMMAND_IGNORED: ...` khi lệnh sai dạng.
