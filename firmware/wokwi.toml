@@ -2,6 +2,8 @@
 version = 1
 firmware = '../.local/firmware-build/esp32dev/firmware.bin'
 elf = '../.local/firmware-build/esp32dev/firmware.elf'
+# Serial over RFC2217 for scripts/wokwi-acceptance.mjs; Wokwi 4.0.0 passes this object to net.Server.listen, so loopback only.
+rfc2217ServerPort = { port = 4000, host = "127.0.0.1" }
 
 [net]
 gateway = 'ws://127.0.0.1:9011'

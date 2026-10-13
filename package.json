@@ -36,7 +36,8 @@
     "demo:warehouse": "node --env-file=.local/runtime.env scripts/simulate-warehouse.mjs",
     "demo:scenarios": "node --env-file=.local/runtime.env scripts/demo-scenarios.mjs",
     "load:test": "node --env-file=.local/runtime.env scripts/load-run.mjs",
-    "verify:all": "node scripts/verify-all.mjs"
+    "verify:all": "node scripts/verify-all.mjs",
+    "wokwi:acceptance": "node --env-file=.local/runtime.env scripts/wokwi-acceptance.mjs"
   },
   "dependencies": {
     "ajv": "^8.20.0",
