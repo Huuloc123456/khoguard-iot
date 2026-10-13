@@ -11,7 +11,7 @@ import { signIn } from './check-session.mjs';
 
 // M14 against the running backend and the real MySQL. Every reservation it makes is cancelled again; a confirmed test slot is put back to available.
 const config=readConfig(process.env), pool=createDbPool(config.db), base=`http://${config.host}:${config.port}`;
-const checks=[], mine=new Set(), confirmedSlots=[];
+const checks=[], mine=new Set(), confirmedSlots=[], stagingSlots=[];
 let stage='idle reservations';
 const tag=`chk14-${randomUUID().slice(0,8)}`;
 let n=0;
@@ -28,6 +28,9 @@ const list=async()=>{const r=await fetch(`${base}/api/reservations`,{headers:{co
 const snapshot=async()=>(await fetch(`${base}/api/snapshot`,{headers:{cookie:operator},signal:AbortSignal.timeout(5000)})).json();
 const admission=(overrides={})=>({request_id:rid(),temperature_class:'ambient',size_class:1,load_kg:100,...overrides});
 const pending=async()=>(await pool.execute("SELECT id,request_id FROM reservations WHERE status='pending'"))[0];
+async function restoreStaging() {
+  while (stagingSlots.length) await pool.execute("UPDATE slots SET status='available',occupancy_source=NULL WHERE id=? AND staging AND occupancy_source='reservation'",[stagingSlots.pop()]);
+}
 try {
   const others=(await pending()).filter(r=>!r.request_id.startsWith('chk14-'));
   // The expiry step uses a backend clock moved forward; it must not expire someone else's live reservation.
@@ -80,6 +83,30 @@ try {
   assert.equal(slot.status,'occupied');
   checks.push(`confirm at 14:59.999 → confirmed (slot ${confirmed.slot_id} occupied); confirm at 15:00.000 → RESERVATION_EXPIRED and stored as expired`);
 
+  stage='staging area congested (T17)';
+  const area=await list(), staging=area.staging;
+  assert.ok((area.storage.occupied+area.storage.reserved)*100 < 95*area.storage.capacity,'storage is below its own ceiling');
+  // First used count at which staging blocks receiving: used*100 >= 95*capacity.
+  const blockAt=Math.ceil(95*staging.capacity/100), need=blockAt-1-(staging.occupied+staging.reserved);
+  const [freeStaging]=await pool.execute("SELECT id FROM slots WHERE staging AND status='available' ORDER BY id");
+  assert.ok(need>=0 && freeStaging.length>need,'enough free staging slots to reach the boundary');
+  // Reservations never use staging slots, so the check marks free ones occupied; finally{} puts back exactly these.
+  const occupyStaging=async ids=>{for (const id of ids) {
+    const [r]=await pool.execute("UPDATE slots SET status='occupied',occupancy_source='reservation' WHERE id=? AND staging AND status='available'",[id]);
+    assert.equal(r.affectedRows,1); stagingSlots.push(id);
+  }};
+  await occupyStaging(freeStaging.slice(0,need).map(r=>r.id));
+  const below=await post('/api/admissions',admission());
+  assert.equal(below.status,201,`staging at ${blockAt-1}/${staging.capacity} still receives`);
+  await post(`/api/reservations/${below.body.reservation.id}/cancel`,{});
+  await occupyStaging([freeStaging[need].id]);
+  const congested=await post('/api/admissions',admission());
+  assert.deepEqual([congested.status,congested.body],[409,{error:{code:'STAGING_BLOCKED'}}]);
+  const storageUsed=area.storage.occupied+area.storage.reserved;
+  await restoreStaging();
+  assert.equal((await list()).staging.occupied,staging.occupied,'staging slots restored');
+  checks.push(`staging ${blockAt-1}/${staging.capacity} → 201; ${blockAt}/${staging.capacity} (≥95%) → 409 STAGING_BLOCKED while storage is only ${storageUsed}/${area.storage.capacity}; staging slots restored`);
+
   stage='fill to the 95% ceiling, then two concurrent requests';
   let state=await list();
   const cap=state.storage.capacity, max=Math.floor(95*cap/100);
@@ -119,6 +146,7 @@ finally {
   // Cleanup: cancel what this check holds, and return its confirmed test slot to the demo seed state.
   await pool.execute(`UPDATE reservations SET status='cancelled',finished_at=UTC_TIMESTAMP(3),finished_by='check' WHERE status='pending' AND request_id LIKE ?`,[`${tag}-%`]).catch(()=>{});
   for (const id of confirmedSlots) await pool.execute("UPDATE slots SET status='available',occupancy_source=NULL WHERE id=? AND occupancy_source='reservation'",[id]).catch(()=>{});
+  await restoreStaging().catch(()=>{});
   await pool.execute("UPDATE warehouse_stream SET revision = revision + 1 WHERE warehouse_id = 'WH01'").catch(()=>{});
   await pool.end();
 }

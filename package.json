@@ -32,6 +32,7 @@
     "auth:check": "node --env-file=.local/runtime.env scripts/check-auth.mjs",
     "reservations:check": "node --env-file=.local/runtime.env scripts/check-reservations.mjs",
     "reports:check": "node --env-file=.local/runtime.env scripts/check-reports.mjs",
+    "writefault:check": "node --env-file=.local/runtime.env scripts/check-write-fault.mjs",
     "demo:environment": "node --env-file=.local/runtime.env scripts/simulate-environment.mjs",
     "demo:warehouse": "node --env-file=.local/runtime.env scripts/simulate-warehouse.mjs",
     "demo:scenarios": "node --env-file=.local/runtime.env scripts/demo-scenarios.mjs",
