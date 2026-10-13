@@ -1,0 +1,72 @@
+# ESP-C01 — probe PlatformIO/Wokwi (M03)
+
+ESP32 mô phỏng khu C, đọc DHT22 trên GPIO15. Mỗi khoảng 2 giây gửi telemetry QoS1/retain cho `ESP-C01`, gồm đủ phần thiết bị sở hữu theo registry: môi trường, occupancy và D07/D08. Các input an toàn chưa nối nên count/presence/beam/panic là null, cửa unknown, input chưa khỏe. Firmware chưa điều khiển cửa hoặc nhận command.
+
+## Build và chạy trong VS Code
+
+Từ thư mục gốc `D:\huit\iot\source\khoguard-iot`:
+
+```powershell
+npm run firmware:build
+npm run firmware:gateway:setup
+code --new-window firmware
+```
+
+Trong cửa sổ firmware, nhấn **F1 → Wokwi: Start Simulator**. Extension Wokwi 4.0.0 và PlatformIO đã cài trên máy. License hiện có phải cho phép chạy; không suy từ việc cài extension. Giữ tab simulator hiển thị trong khi kiểm tra.
+
+`firmware:build` lấy duy nhất account ESP-C01 từ `.local/mosquitto/accounts.json`, sinh header vào `.local/firmware/kg_secrets.h`, rồi gọi PlatformIO Core đã cài. Không cần copy mật khẩu vào source. Nếu dùng nút PlatformIO Build ở VS Code trên checkout mới, chạy `npm run firmware:prepare` từ root trước. Thư viện tải ở lần build đầu.
+
+Platform khóa **platformio/espressif32 7.0.1 / Arduino 2.0.17 / IDF 4.4.7**; MQTT 2.5.3, ArduinoJson 7.4.3, DHT sensor library 1.4.7, Adafruit Unified Sensor 1.1.15. Core PlatformIO trên máy 6.2.0. Build/artifact chứa password đều trong `.local/firmware-build`, không đưa vào Git hoặc Vite. `.pio` chỉ cache thư viện và được ignore.
+
+## Đường mạng và kiểm tra
+
+Broker riêng phải đang chạy trong terminal khác:
+
+```powershell
+npm run infra:mqtt:start
+```
+
+Trong terminal riêng nữa, chạy gateway đã đối chiếu SHA-256:
+
+```powershell
+npm run firmware:gateway:start
+```
+
+ESP32 vào WiFi `Wokwi-GUEST`, channel 6, password rỗng. `host.wokwi.internal:18884` qua gateway trỏ tới máy chạy VS Code; không dùng `127.0.0.1` từ ESP32 và không mở broker ra LAN. `wokwi.toml` chọn gateway native 2.0.1 tại `ws://127.0.0.1:9011`. Publish/reconnect đã đạt với gateway này. Gateway tích hợp gửi được dữ liệu nhưng thử reconnect chưa đạt; chưa chứng minh nguyên nhân nội bộ của extension.
+
+Gateway upstream còn lắng nghe cổng **9080 trên mọi interface** để chuyển HTTP vào simulator. Tham số `--forward=` không tắt cổng này. Firmware M03 không có HTTP server; không cấp quyền Firewall rộng hoặc thêm HTTP server trước khi giới hạn ingress. Script start từ chối cổng đang bị chiếm, không dừng process khác. Các script dùng Windows PowerShell 5.1/.NET và curl.exe sẵn có, không cần PowerShell 7. Dừng terminal gateway bằng Ctrl+C sau khi thử.
+
+Lấy `boot=...` từ dòng `KHOGUARD_M03` trong Serial Monitor, rồi ở terminal root:
+
+```powershell
+npm run firmware:check -- <boot-ID-32-ký-tự>
+```
+
+Observer chỉ đọc; không tự publish giả ESP32. Kiểm tra ba frame live cùng boot/session, đúng schema, QoS1, seq/uptime tăng, có DHT22 reading và không báo an toàn giả. Retained cũ/duplicate không tính. Deadline 45 giây, lỗi trả exit code 1. Kết quả không secret ở `.local/firmware-observation.json`. Chạy không truyền boot chỉ chứng minh frame device hợp lệ, chưa đối chiếu nguồn với Serial Monitor.
+
+M03 chưa có NTP: `clock_synced=false`, `sent_at=null`, uptime dùng timer 64-bit. Last Will offline QoS1/retain gắn boot/session chuẩn bị trước connect; seq=0/uptime=0 không phải thời điểm mất kết nối. Boot đổi khi reboot, session đổi mỗi lần reconnect. Telemetry sequence tiếp tục trong cùng boot, không phát lại dữ liệu cũ sau mất mạng; lưu/replay event thuộc các mốc sau.
+
+MQTT chạy trong task riêng, retry cách 5 giây, timeout TCP/ACK cấu hình 1 giây. Sensor/heartbeat có loop riêng và snapshot bảo vệ bằng critical section. Đây là cấu trúc code; nghiệm thu không treo vẫn phải ngắt/khôi phục broker trên simulator thật.
+
+## Sơ đồ và kiểm thử lỗi
+
+| Linh kiện | Nối vào ESP32 | Nguồn dữ liệu |
+| --- | --- | --- |
+| DHT22 VCC/GND | 3V3/GND | Linh kiện Wokwi, mặc định −18,4°C / 55% |
+| DHT22 SDA | GPIO15, pull-up 10 kΩ lên 3V3 | Chỉnh nhiệt/ẩm bằng bảng điều khiển DHT22 |
+| Serial | TX0/RX0 → Serial Monitor | Boot/session, PUBACK và heartbeat; không log password |
+| Occupancy, D07/D08, beam/panic | Chưa nối | Unknown; bổ sung ở M07–M10 |
+
+Để nghiệm thu reconnect: lưu boot/session/seq ban đầu; dừng **chỉ broker dự án** trên 18884, kiểm tra `SENSOR_HEARTBEAT` vẫn tăng; mở lại broker và chạy observer với cùng boot. Session phải đổi, seq/uptime phải tiến và cửa vẫn unknown. Không dừng Mosquitto service cũ 1883 hoặc MySQL 3306. Khi simulator bị ẩn/thu nhỏ hoặc gateway không hoạt động, ghi kết quả chưa đạt; không coi timeout là pass.
+
+Để nghiệm thu thay đổi cảm biến: chỉnh DHT22 trong simulator và quan sát reading mới tới observer. Nếu đọc lỗi/giá trị không hợp lệ hoặc sample quá 5 giây, telemetry gửi null. Dashboard vẫn là demo đến M06.
+
+Ngày 12/10/2026: đã đối chiếu boot, ba frame live trước/sau broker restart và thay đổi DHT22 −18,4 → 39,4°C / 55%. Sensor loop tiếp tục khi broker mất; boot giữ nguyên, session đổi, seq/uptime tiến. [Bằng chứng M03](../docs/evidence/M03-2026-10-12.md). Sau thử đã dừng simulator/gateway; broker dự án và Vite vẫn chạy. Khi chạy lại, bật gateway trước **Wokwi: Start Simulator**; nếu extension cũ bị kẹt, dùng **Developer: Reload Window** rồi khởi động lại.
+
+## Nguồn chính thức
+
+- [Wokwi: config, gateway, tab visibility](https://docs.wokwi.com/vscode/project-config), [khởi động/license](https://docs.wokwi.com/vscode/getting-started), [WiFi/host.wokwi.internal](https://docs.wokwi.com/guides/esp32-wifi), [DHT22](https://docs.wokwi.com/parts/wokwi-dht22).
+- [PlatformIO Espressif đã khóa](https://github.com/platformio/platform-espressif32/releases/tag/v7.0.1).
+- [MQTT: setWill/options/publish QoS](https://github.com/256dpi/arduino-mqtt#api), [ArduinoJson 7](https://arduinojson.org/v7/api/jsondocument/), [Adafruit DHT](https://github.com/adafruit/DHT-sensor-library/blob/1.4.7/examples/DHTtester/DHTtester.ino).
+- [Gateway native và cấu hình VS Code](https://github.com/wokwi/wokwigw/tree/v2.0.1), [default forwarding](https://github.com/wokwi/wokwigw/blob/v2.0.1/cmd/wokwigw/config.go).
+- [ESP-IDF tasks/critical sections](https://docs.espressif.com/projects/esp-idf/en/v4.4.7/esp32/api-reference/system/freertos.html), [64-bit timer](https://docs.espressif.com/projects/esp-idf/en/v4.4.7/esp32/api-reference/system/esp_timer.html).

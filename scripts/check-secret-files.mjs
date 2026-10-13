@@ -3,7 +3,8 @@ import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { root } from './local-config.mjs';
 
-const files = ['mysql-admin.env', 'runtime.env', 'mosquitto/accounts.json', 'mysql-users.json'];
+const files = ['mysql-admin.env', 'runtime.env', 'mosquitto/accounts.json', 'mysql-users.json',
+  'firmware/kg_secrets.h', 'firmware-build/esp32dev/firmware.bin', 'firmware-build/esp32dev/firmware.elf'];
 for (const file of files) {
   const ignored = spawnSync('git', ['check-ignore', '--quiet', `.local/${file}`], { cwd: root, windowsHide: true });
   assert.equal(ignored.status, 0, 'Local credential file must be ignored by Git');
@@ -15,4 +16,4 @@ for (const path of urls) {
   assert.equal(response.status, 403, 'Vite must reject local credential paths');
   await response.body?.cancel();
 }
-console.log('Secrets PASS: 4 files ignored by Git, 5 HTTP routes denied with 403; no secret contents read.');
+console.log(`Secrets PASS: ${files.length} files ignored by Git, ${urls.length} HTTP routes denied with 403; no secret contents read.`);

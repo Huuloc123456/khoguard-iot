@@ -4,6 +4,6 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
-    fs: { deny: ['.env', '.env.*', '*.{crt,pem,key}', '**/.local/**', '**/.git/**', '**/.impeccable/**', '**/PRODUCT.md', '**/DESIGN.md'] },
+    fs: { deny: ['.env', '.env.*', '*.{crt,pem,key}', '**/.local/**', '**/.pio/**', '**/.git/**', '**/.impeccable/**', '**/PRODUCT.md', '**/DESIGN.md'] },
   },
 });

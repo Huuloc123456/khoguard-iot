@@ -13,7 +13,12 @@
     "infra:db:init": "node scripts/provision-mysql.mjs",
     "infra:mqtt:check": "node scripts/check-mqtt.mjs",
     "infra:db:check": "node scripts/check-mysql.mjs",
-    "infra:secrets:check": "node scripts/check-secret-files.mjs"
+    "infra:secrets:check": "node scripts/check-secret-files.mjs",
+    "firmware:prepare": "node scripts/prepare-firmware.mjs",
+    "firmware:build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-firmware.ps1",
+    "firmware:check": "node scripts/check-firmware.mjs",
+    "firmware:gateway:setup": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-wokwi.ps1",
+    "firmware:gateway:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-wokwi.ps1"
   },
   "dependencies": {
     "mqtt": "^5.16.0",

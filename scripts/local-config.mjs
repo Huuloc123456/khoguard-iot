@@ -7,6 +7,15 @@ export const local = fileURLToPath(new URL('../.local/', import.meta.url));
 export const readJson = path => JSON.parse(readFileSync(path, 'utf8'));
 export const registry = readJson(new URL('../contracts/devices.json', import.meta.url));
 
+export function firmwareSecrets(password) {
+  if (typeof password !== 'string' || !/^[a-f0-9]{48}$/.test(password)) throw new Error('Invalid ESP-C01 credential');
+  return '#pragma once\n'
+    + 'constexpr char MQTT_HOST[] = "host.wokwi.internal";\n'
+    + 'constexpr int MQTT_PORT = 18884;\n'
+    + 'constexpr char MQTT_USER[] = "ESP-C01";\n'
+    + `constexpr char MQTT_PASSWORD[] = "${password}";\n`;
+}
+
 export function buildAcl() {
   const prefix = 'khoguard/v1/WH01/devices/';
   const outgoing = ['telemetry', 'events', 'status', 'acks'];

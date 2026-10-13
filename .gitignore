@@ -6,6 +6,7 @@ dist/
 *.pem
 *.key
 .local/
+firmware/.pio/
 .impeccable/review/
 .impeccable/questions/
 .impeccable/mocks/
