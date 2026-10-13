@@ -76,3 +76,11 @@ MQTT probe gửi fixture lên topic demo: chạy trước phiên demo hoặc khi
 Dependency runtime dùng manifest/lockfile gốc; chưa có server manifest riêng. [MQTT.js](https://github.com/mqttjs/MQTT.js), [mysql2](https://sidorares.github.io/node-mysql2/docs).
 
 M03 sẽ tạo firmware và thử Wokwi/private gateway; các probe Node không chứng minh license, TLS hoặc firmware đã chạy.
+
+## TLS cho broker (M12)
+
+- `npm run infra:tls:setup` tìm openssl (biến `OPENSSL`, PATH, Git for Windows, OpenSSL-Win64), tạo `.local/tls/ca.key`, `ca.crt`, `server.key`, `server.crt` (SAN `localhost`, `host.wokwi.internal`, `127.0.0.1`), thêm listener `127.0.0.1:18885` (TLS ≥ 1.2) vào cấu hình broker dự án và đổi `MQTT_PORT` trong `runtime.env` sang 18885. Đã có đủ file thì giữ nguyên; thiếu một phần thì dừng, không ghi đè. Không in khóa.
+- Cổng 18884 không mã hóa vẫn chỉ nghe localhost cho công cụ cũ. Password file và ACL dùng chung cho cả hai cổng; anonymous vẫn tắt.
+- `npm run infra:tls:check` (6 nhóm): đúng CA/hostname, từ chối CA hệ thống/CA lạ/hostname sai/MQTT thường, sai mật khẩu và publish chéo.
+- Broker giữ phiên bền 1 ngày, tối đa 1000 message mỗi client (`persistent_client_expiration`, `max_queued_messages`).
+- `infra:secrets:check` kiểm thêm `.local/tls/*.key` và `.local/dashboard-users.json` phải bị Git bỏ qua và Vite trả 403.

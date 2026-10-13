@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kiến trúc tổng thể KhoGuard</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --paper:#ffffff; --ink:#28353c; --muted:#65717a; --accent:#176d60; --line:#e7ebed; }
+  body { font-family:'Segoe UI', 'Noto Sans', system-ui, sans-serif; background:var(--paper); color:var(--ink); min-height:100vh; display:flex; justify-content:center; padding:3rem 2rem; }
+  .frame { max-width:1240px; width:100%; }
+  .diagram-container { width:100%; overflow-x:auto; }
+  .eyebrow { font-family:Consolas, 'Cascadia Mono', ui-monospace, monospace; font-size:0.68rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); margin-bottom:0.5rem; }
+  h1 { font-size:clamp(1.4rem, 2vw + 0.8rem, 1.9rem); font-weight:600; letter-spacing:-0.01em; line-height:1.2; margin-bottom:1.25rem; }
+  svg { width:100%; min-width:1160px; display:block; }
+  .notes { margin-top:1.25rem; color:var(--muted); font-size:0.9rem; line-height:1.55; max-width:72ch; }
+  .notes li { margin-left:1.2rem; margin-bottom:0.25rem; }
+  .notes code { font-family:Consolas, 'Cascadia Mono', ui-monospace, monospace; font-size:0.85em; color:var(--ink); }
+  @media print { .diagram-container { overflow-x:visible; } svg { min-width:0; } }
+</style>
+</head>
+<body>
+<div class="frame">
+<p class="eyebrow">Kiến trúc · KhoGuard IoT</p>
+<h1>Kiến trúc tổng thể KhoGuard</h1>
+<div class="diagram-container">
+<svg viewBox="0 80 1160 540" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="khoguard-architecture-title khoguard-architecture-desc">
+<title id="khoguard-architecture-title">Kiến trúc tổng thể KhoGuard</title>
+<desc id="khoguard-architecture-desc">Sơ đồ kiến trúc: ESP32 Wokwi và bộ mô phỏng gửi MQTT/TLS tới Mosquitto, backend Node lưu MySQL và phục vụ dashboard React qua REST và WebSocket, bí mật trong .local.</desc>
+<defs>
+<marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#65717a"/></marker>
+<marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#176d60"/></marker>
+<marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2f5f8f"/></marker>
+<marker id="arrow-open" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polyline points="0 0, 8 3, 0 6" fill="none" stroke="#65717a" stroke-width="1.2"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<rect x="24" y="104" width="264" height="400" rx="8" fill="rgba(40,53,60,0.02)" stroke="rgba(40,53,60,0.2)" stroke-width="0.8" stroke-dasharray="4,4"/>
+<rect x="36" y="98" width="140" height="12" rx="2" fill="#ffffff"/>
+<text x="106" y="107" fill="rgba(40,53,60,0.55)" font-size="7" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.14em">BIÊN · WOKWI / MÔ PHỎNG</text><rect x="320" y="104" width="528" height="400" rx="8" fill="rgba(40,53,60,0.02)" stroke="rgba(40,53,60,0.2)" stroke-width="0.8" stroke-dasharray="4,4"/>
+<rect x="332" y="98" width="204" height="12" rx="2" fill="#ffffff"/>
+<text x="434" y="107" fill="rgba(40,53,60,0.55)" font-size="7" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.14em">MÁY CHỦ CỤC BỘ · CHỈ NGHE 127.0.0.1</text><rect x="880" y="104" width="256" height="400" rx="8" fill="rgba(40,53,60,0.02)" stroke="rgba(40,53,60,0.2)" stroke-width="0.8" stroke-dasharray="4,4"/>
+<rect x="892" y="98" width="72" height="12" rx="2" fill="#ffffff"/>
+<text x="928" y="107" fill="rgba(40,53,60,0.55)" font-size="7" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.14em">NGƯỜI DÙNG</text><line x1="152" y1="208" x2="152" y2="264" stroke="#65717a" stroke-width="1.2" marker-end="url(#arrow)"/><line x1="240" y1="300" x2="360" y2="300" stroke="#2f5f8f" stroke-width="1.2" marker-end="url(#arrow-link)"/><path d="M 240,436 H 440 Q 448,436 448,428 V 336" fill="none" stroke="#2f5f8f" stroke-width="1.2" marker-end="url(#arrow-link)"/><line x1="536" y1="288" x2="624" y2="288" stroke="#176d60" stroke-width="1.4" marker-end="url(#arrow-accent)"/><line x1="624" y1="316" x2="536" y2="316" stroke="#65717a" stroke-width="1.2" marker-end="url(#arrow)"/><line x1="724" y1="336" x2="724" y2="400" stroke="#65717a" stroke-width="1.2" marker-end="url(#arrow)"/><path d="M 536,160 H 716 Q 724,160 724,168 V 264" fill="none" stroke="#65717a" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/><line x1="448" y1="208" x2="448" y2="264" stroke="#65717a" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/><line x1="360" y1="184" x2="240" y2="184" stroke="#65717a" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/><line x1="920" y1="288" x2="824" y2="288" stroke="#2f5f8f" stroke-width="1.2" marker-end="url(#arrow-link)"/><line x1="824" y1="316" x2="920" y2="316" stroke="#65717a" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow-open)"/><line x1="1008" y1="208" x2="1008" y2="264" stroke="#2f5f8f" stroke-width="1.2" marker-end="url(#arrow-link)"/><rect x="160" y="230" width="96" height="12" rx="2" fill="#ffffff"/>
+<text x="208" y="239" fill="#65717a" font-size="8" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">Wi-Fi Wokwi-GUEST</text><rect x="270" y="280" width="60" height="12" rx="2" fill="#ffffff"/>
+<text x="300" y="289" fill="#2f5f8f" font-size="8" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">TLS :18885</text><rect x="270" y="416" width="68" height="12" rx="2" fill="#ffffff"/>
+<text x="304" y="425" fill="#2f5f8f" font-size="8" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">SIM-* · TLS</text><rect x="554" y="268" width="52" height="12" rx="2" fill="#ffffff"/>
+<text x="580" y="277" fill="#176d60" font-size="8" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">SUB QoS1</text><rect x="554" y="324" width="52" height="12" rx="2" fill="#ffffff"/>
+<text x="580" y="333" fill="#65717a" font-size="8" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">PUB lệnh</text><rect x="732" y="362" width="96" height="12" rx="2" fill="#ffffff"/>
+<text x="780" y="371" fill="#65717a" font-size="8" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">SQL · transaction</text><rect x="570" y="140" width="120" height="12" rx="2" fill="#ffffff"/>
+<text x="630" y="149" fill="#65717a" font-size="8" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">--env-file runtime.env</text><rect x="456" y="230" width="108" height="12" rx="2" fill="#ffffff"/>
+<text x="510" y="239" fill="#65717a" font-size="8" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">passwd · ACL · cert</text><rect x="252" y="164" width="96" height="12" rx="2" fill="#ffffff"/>
+<text x="300" y="173" fill="#65717a" font-size="8" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">kg_secrets.h + CA</text><rect x="844" y="268" width="56" height="12" rx="2" fill="#ffffff"/>
+<text x="872" y="277" fill="#2f5f8f" font-size="8" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">REST /api</text><rect x="852" y="324" width="40" height="12" rx="2" fill="#ffffff"/>
+<text x="872" y="333" fill="#65717a" font-size="8" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">WS /ws</text><rect x="1016" y="230" width="60" height="12" rx="2" fill="#ffffff"/>
+<text x="1046" y="239" fill="#2f5f8f" font-size="8" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">HTTP :5173</text><g>
+  <rect x="64" y="136" width="176" height="72" rx="6" fill="#ffffff"/>
+  <rect x="64" y="136" width="176" height="72" rx="6" fill="rgba(101,113,122,0.1)" stroke="#5a6870" stroke-width="1"/>
+  <rect x="72" y="144" width="32" height="12" rx="2" fill="transparent" stroke="rgba(101,113,122,0.4)" stroke-width="0.8"/>
+  <text x="88" y="153" fill="#5a6870" font-size="7" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">WOKWI</text>
+  
+  <text x="152" y="178" fill="#28353c" font-size="12.5" font-weight="600" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif" text-anchor="middle">ESP32 · ESP-C01</text>
+  <text x="152" y="194" fill="#65717a" font-size="9" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle">khu C · D07/D08 · RFID</text>
+</g><g>
+  <rect x="64" y="264" width="176" height="72" rx="6" fill="#ffffff"/>
+  <rect x="64" y="264" width="176" height="72" rx="6" fill="#ffffff" stroke="#28353c" stroke-width="1"/>
+  <rect x="72" y="272" width="20" height="12" rx="2" fill="transparent" stroke="rgba(40,53,60,0.4)" stroke-width="0.8"/>
+  <text x="82" y="281" fill="#28353c" font-size="7" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">GW</text>
+  
+  <text x="152" y="306" fill="#28353c" font-size="12.5" font-weight="600" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif" text-anchor="middle">Wokwi IoT Gateway</text>
+  <text x="152" y="322" fill="#65717a" font-size="9" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle">wokwigw 2.0.1 · ws :9011</text>
+</g><g>
+  <rect x="64" y="400" width="176" height="72" rx="6" fill="#ffffff"/>
+  <rect x="64" y="400" width="176" height="72" rx="6" fill="rgba(101,113,122,0.1)" stroke="#5a6870" stroke-width="1"/>
+  <rect x="72" y="408" width="28" height="12" rx="2" fill="transparent" stroke="rgba(101,113,122,0.4)" stroke-width="0.8"/>
+  <text x="86" y="417" fill="#5a6870" font-size="7" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">NODE</text>
+  
+  <text x="152" y="442" fill="#28353c" font-size="12.5" font-weight="600" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif" text-anchor="middle">Bộ mô phỏng SIM-*</text>
+  <text x="152" y="458" fill="#65717a" font-size="9" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle">A01 · B01 · C02 · D01</text>
+</g><g>
+  <rect x="360" y="136" width="176" height="72" rx="6" fill="#ffffff"/>
+  <rect x="360" y="136" width="176" height="72" rx="6" fill="rgba(40,53,60,0.05)" stroke="#65717a" stroke-width="1"/>
+  <rect x="368" y="144" width="40" height="12" rx="2" fill="transparent" stroke="rgba(101,113,122,0.5)" stroke-width="0.8"/>
+  <text x="388" y="153" fill="#65717a" font-size="7" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">SECRET</text>
+  
+  <text x="448" y="178" fill="#28353c" font-size="12.5" font-weight="600" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif" text-anchor="middle">.local (ngoài Git)</text>
+  <text x="448" y="194" fill="#65717a" font-size="9" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle">CA · mật khẩu · runtime.env</text>
+</g><g>
+  <rect x="360" y="264" width="176" height="72" rx="6" fill="#ffffff"/>
+  <rect x="360" y="264" width="176" height="72" rx="6" fill="#ffffff" stroke="#28353c" stroke-width="1"/>
+  <rect x="368" y="272" width="40" height="12" rx="2" fill="transparent" stroke="rgba(40,53,60,0.4)" stroke-width="0.8"/>
+  <text x="388" y="281" fill="#28353c" font-size="7" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">BROKER</text>
+  
+  <text x="448" y="306" fill="#28353c" font-size="12.5" font-weight="600" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif" text-anchor="middle">Mosquitto</text>
+  <text x="448" y="322" fill="#65717a" font-size="9" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle">18885 TLS · 18884 · ACL</text>
+</g><g>
+  <rect x="624" y="264" width="200" height="72" rx="6" fill="#ffffff"/>
+  <rect x="624" y="264" width="200" height="72" rx="6" fill="rgba(23,109,96,0.08)" stroke="#176d60" stroke-width="1"/>
+  <rect x="632" y="272" width="24" height="12" rx="2" fill="transparent" stroke="rgba(23,109,96,0.5)" stroke-width="0.8"/>
+  <text x="644" y="281" fill="#176d60" font-size="7" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">API</text>
+  
+  <text x="724" y="306" fill="#28353c" font-size="12.5" font-weight="600" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif" text-anchor="middle">Backend Node.js</text>
+  <text x="724" y="322" fill="#65717a" font-size="9" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle">127.0.0.1:3001 · ingest · WS</text>
+</g><g>
+  <rect x="624" y="400" width="200" height="72" rx="6" fill="#ffffff"/>
+  <rect x="624" y="400" width="200" height="72" rx="6" fill="rgba(40,53,60,0.05)" stroke="#65717a" stroke-width="1"/>
+  <rect x="632" y="408" width="20" height="12" rx="2" fill="transparent" stroke="rgba(101,113,122,0.5)" stroke-width="0.8"/>
+  <text x="642" y="417" fill="#65717a" font-size="7" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">DB</text>
+  
+  <text x="724" y="442" fill="#28353c" font-size="12.5" font-weight="600" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif" text-anchor="middle">MySQL · khoguard_demo</text>
+  <text x="724" y="458" fill="#65717a" font-size="9" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle">:3306 · migration 001–006</text>
+</g><g>
+  <rect x="920" y="136" width="176" height="72" rx="6" fill="#ffffff"/>
+  <rect x="920" y="136" width="176" height="72" rx="6" fill="rgba(101,113,122,0.1)" stroke="#5a6870" stroke-width="1"/>
+  <rect x="928" y="144" width="28" height="12" rx="2" fill="transparent" stroke="rgba(101,113,122,0.4)" stroke-width="0.8"/>
+  <text x="942" y="153" fill="#5a6870" font-size="7" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">USER</text>
+  
+  <text x="1008" y="178" fill="#28353c" font-size="12.5" font-weight="600" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif" text-anchor="middle">Người vận hành</text>
+  <text x="1008" y="194" fill="#65717a" font-size="9" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle">viewer · operator · admin</text>
+</g><g>
+  <rect x="920" y="264" width="176" height="72" rx="6" fill="#ffffff"/>
+  <rect x="920" y="264" width="176" height="72" rx="6" fill="#ffffff" stroke="#28353c" stroke-width="1"/>
+  <rect x="928" y="272" width="24" height="12" rx="2" fill="transparent" stroke="rgba(40,53,60,0.4)" stroke-width="0.8"/>
+  <text x="940" y="281" fill="#28353c" font-size="7" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">WEB</text>
+  
+  <text x="1008" y="306" fill="#28353c" font-size="12.5" font-weight="600" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif" text-anchor="middle">Dashboard React</text>
+  <text x="1008" y="322" fill="#65717a" font-size="9" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" text-anchor="middle">Vite :5173 · proxy /api /ws</text>
+</g><line x1="40" y1="536" x2="1120" y2="536" stroke="rgba(40,53,60,0.1)" stroke-width="0.8"/>
+<text x="40" y="552" fill="#65717a" font-size="8" font-family="Consolas, 'Cascadia Mono', ui-monospace, monospace" letter-spacing="0.18em">CHÚ GIẢI</text><rect x="40" y="566" width="14" height="10" rx="2" fill="rgba(23,109,96,0.08)" stroke="#176d60" stroke-width="1"/><text x="60" y="574" fill="#65717a" font-size="9" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif">Trọng tâm: backend</text><rect x="172" y="566" width="14" height="10" rx="2" fill="#ffffff" stroke="#28353c" stroke-width="1"/><text x="192" y="574" fill="#65717a" font-size="9" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif">Dịch vụ</text><rect x="249" y="566" width="14" height="10" rx="2" fill="rgba(40,53,60,0.05)" stroke="#65717a" stroke-width="1"/><text x="269" y="574" fill="#65717a" font-size="9" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif">Lưu trữ / bí mật</text><rect x="371" y="566" width="14" height="10" rx="2" fill="rgba(101,113,122,0.1)" stroke="#5a6870" stroke-width="1"/><text x="391" y="574" fill="#65717a" font-size="9" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif">Thiết bị / người</text><line x1="493" y1="571" x2="521" y2="571" stroke="#176d60" stroke-width="1.4" marker-end="url(#arrow-accent)"/><text x="529" y="574" fill="#65717a" font-size="9" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif">Luồng dữ liệu chính</text><line x1="646" y1="571" x2="674" y2="571" stroke="#2f5f8f" stroke-width="1.2" marker-end="url(#arrow-link)"/><text x="682" y="574" fill="#65717a" font-size="9" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif">Qua ranh giới vùng</text><line x1="794" y1="571" x2="822" y2="571" stroke="#65717a" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/><text x="830" y="574" fill="#65717a" font-size="9" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif">Cấu hình đọc lúc khởi động</text><line x1="982" y1="571" x2="1010" y2="571" stroke="#65717a" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow-open)"/><text x="1018" y="574" fill="#65717a" font-size="9" font-family="'Segoe UI', 'Noto Sans', system-ui, sans-serif">Đẩy realtime</text>
+</svg>
+</div>
+<ul class="notes">
+<li><b>Luồng dữ liệu:</b> ESP32 trong Wokwi và các SIM-* publish telemetry/events/status QoS1 lên Mosquitto; backend subscribe, kiểm hợp đồng (Ajv) rồi ghi MySQL trong một transaction, sau đó đẩy snapshot qua WebSocket mỗi giây.</li>
+<li><b>Điều khiển:</b> operator gửi lệnh qua <code>POST /api/doors/D07|D08/commands</code>; backend publish xuống <code>commands/ESP-C01</code>, ESP-C01 tự quyết định theo quy tắc an toàn và trả ack. Chi tiết ở <a href="luong-lenh-cua.html">sơ đồ luồng lệnh cửa</a>.</li>
+<li><b>Bảo mật:</b> mọi cổng chỉ nghe 127.0.0.1; ESP32 tới máy qua <code>host.wokwi.internal</code> của gateway. MQTT/TLS bằng CA demo, mỗi thiết bị một tài khoản và ACL mặc định từ chối; dashboard dùng cookie <code>kg_session</code> HttpOnly. Bí mật chỉ nằm trong <code>.local/</code>.</li>
+<li>Cổng 9080 của gateway Wokwi nghe trên mọi interface (hành vi upstream); firmware không có HTTP server nên không mở firewall cho cổng này.</li>
+</ul>
+</div>
+</body>
+</html>

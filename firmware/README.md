@@ -55,7 +55,9 @@ MQTT chạy trong task riêng, retry cách 5 giây, timeout TCP/ACK cấu hình 
 | DHT22 VCC/GND | 3V3/GND | Linh kiện Wokwi, mặc định −18,4°C / 55% |
 | DHT22 SDA | GPIO15, pull-up 10 kΩ lên 3V3 | Chỉnh nhiệt/ẩm bằng bảng điều khiển DHT22 |
 | Serial | TX0/RX0 → Serial Monitor | Boot/session, PUBACK và heartbeat; không log password |
-| Occupancy, D07/D08, beam/panic | Chưa nối | Unknown; bổ sung ở M07–M10 |
+| D07/D08 contact, beam, panic; presence | GPIO16(RX2),17(TX2),18 / 19,21,22 / 23, slide switch, `INPUT_PULLUP` | M07: debounce 30 ms, panic latch; contact là cảm biến vị trí cửa (DEC-019) |
+| Output (LED) | GPIO25 khóa D07, 26 khóa D08, 27/14 motor mở/đóng D07, 2/13 motor mở/đóng D08, 32 đèn, 33 còi, 4 sưởi, 5 quạt | M10: mô phỏng, không phải actuator thật (DEC-021) |
+| RFID | Serial Monitor: `RFID D07\|D08 <thẻ> IN\|OUT` | M08: DEMO-017/018 được phép, DEMO-999 và thẻ lạ bị từ chối; count chưa xác minh sau boot |
 
 Để nghiệm thu reconnect: lưu boot/session/seq ban đầu; dừng **chỉ broker dự án** trên 18884, kiểm tra `SENSOR_HEARTBEAT` vẫn tăng; mở lại broker và chạy observer với cùng boot. Session phải đổi, seq/uptime phải tiến và cửa vẫn unknown. Không dừng Mosquitto service cũ 1883 hoặc MySQL 3306. Khi simulator bị ẩn/thu nhỏ hoặc gateway không hoạt động, ghi kết quả chưa đạt; không coi timeout là pass.
 
@@ -70,3 +72,31 @@ Ngày 12/10/2026: đã đối chiếu boot, ba frame live trước/sau broker re
 - [MQTT: setWill/options/publish QoS](https://github.com/256dpi/arduino-mqtt#api), [ArduinoJson 7](https://arduinojson.org/v7/api/jsondocument/), [Adafruit DHT](https://github.com/adafruit/DHT-sensor-library/blob/1.4.7/examples/DHTtester/DHTtester.ino).
 - [Gateway native và cấu hình VS Code](https://github.com/wokwi/wokwigw/tree/v2.0.1), [default forwarding](https://github.com/wokwi/wokwigw/blob/v2.0.1/cmd/wokwigw/config.go).
 - [ESP-IDF tasks/critical sections](https://docs.espressif.com/projects/esp-idf/en/v4.4.7/esp32/api-reference/system/freertos.html), [64-bit timer](https://docs.espressif.com/projects/esp-idf/en/v4.4.7/esp32/api-reference/system/esp_timer.html).
+
+## RFID mô phỏng (M08)
+
+Wokwi không có đầu đọc RC522, nên mỗi dòng gõ vào Serial Monitor là một lượt quẹt:
+
+```text
+RFID D07 DEMO-017 IN
+RFID D07 DEMO-017 OUT
+RFID D08 STRANGER-1 IN
+```
+
+Serial in `RFID_EVENT ... result=<0 accepted|1 duplicate|2 unauthorized> count=... verified=...` và gửi event `rfid` kèm `result`. Sau boot số người là *chưa xác minh* (gửi `null`) cho tới khi mmWave clear và không thẻ nào đang ở trong. Dòng dài hơn 63 ký tự bị bỏ và làm mất xác minh. Test quy tắc thuần: `g++ -std=c++17 firmware/test/controller_test.cpp -o controller_test && ./controller_test`.
+
+
+## Quy tắc an toàn, lệnh và timer (M09–M11)
+
+- Quy tắc thuần ở `include/controller.h`; test: `g++ -std=gnu++11 firmware/test/safety_test.cpp -o safety_test && ./safety_test` (6 nhóm M09/M10/M11).
+- Lệnh từ dashboard chỉ bật LED motor. Trong Wokwi, **tự gạt switch contact** của cửa đó trong 10 s để mô phỏng cửa tới nơi; quá 10 s thì dừng và báo lỗi input. Rèm quang bị chắn hoặc mmWave bật khi đang đóng → cửa mở lại.
+- Thiết bị chỉ chạy lệnh đúng boot/session hiện tại và đúng revision; lệnh trùng ID chỉ ack lại. Serial in `COMMAND_IGNORED: ...` khi lệnh sai dạng.
+- Timer: đèn sáng khi cửa mở ≥ 30 s, còi khi > 60 s; presence liên tục khi hai cửa đóng > 5 phút → khẩn cấp (đèn, còi, sưởi bật, quạt tắt). Timer chạy cả khi mất broker.
+
+Cần nghiệm thu trên Wokwi (chưa làm): xem danh sách trong [bằng chứng M10](../docs/evidence/M10-2026-10-13.md) và [M11](../docs/evidence/M11-2026-10-13.md).
+
+## TLS (M12)
+
+- Sau `npm run infra:tls:setup`, `npm run firmware:prepare` ghi CA demo vào `.local/firmware/kg_secrets.h` (`MQTT_CA_CERT`) và đặt port 18885. Firmware dùng `WiFiClientSecure` + `setCACert`, handshake timeout 5 s; không có CA thì dùng 18884 như trước. Không dùng `setInsecure()`.
+- Banner: `KHOGUARD_M12 ... transport=tls|plain`. ESP32 trong Wokwi không chạy NTP; cần xác nhận mbedTLS chấp nhận chứng chỉ khi chạy thật — **chưa build/chạy**.
+- Hàng đợi event 32, ack 4; đầy thì in `EVENT_GAP` và backend thấy gap theo `seq`. Clean session: lệnh của phiên cũ không được giao lại.

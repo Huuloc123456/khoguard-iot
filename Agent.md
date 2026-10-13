@@ -4,7 +4,7 @@ Cập nhật: **13/10/2026**. Phạm vi: đồ án **mô phỏng**, lập trình
 
 ## 1. Sau giao diện, làm gì trước?
 
-**M01–M03 đã đạt ngày 12/10/2026; M04–M05 đạt ngày 13/10/2026. MQTT → MySQL → snapshot/history đã kiểm thử. Đang triển khai M06–M08 theo yêu cầu người dùng: dashboard, input firmware và RFID.**
+**M01–M03 đã đạt ngày 12/10/2026; M04–M05 đạt ngày 13/10/2026. Đã nạp bản ZIP M06–M16 và kiểm tra trên máy Windows: 102/102 test JavaScript, hai bộ C++, build web/ESP32 và các kiểm tra tích hợp đạt. Wokwi gửi telemetry live và phản hồi lệnh đóng D07 từ web. Còn nghiệm thu đầy đủ các tình huống an toàn trên Wokwi trước khi đánh dấu M16 hoàn tất. [Báo cáo kiểm tra](docs/evidence/CHECK-WINDOWS-2026-10-13.md).**
 
 Quyết định: [DESITION.md](DESITION.md). Công việc và kết quả thực tế: [QUA_TRINH.md](QUA_TRINH.md). Hợp đồng M01: [contracts/README.md](contracts/README.md). Người dùng đã chốt **giữ MySQL**; không chuyển MongoDB.
 
@@ -289,12 +289,14 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 
 ### M06 — Dashboard nhận dữ liệu backend
 
-- [ ] Tạo adapter API/WebSocket và mode demo rõ ràng; giữ component/bố cục đang có.
-- [ ] Hiển thị loading, lỗi, stale, nguồn thiết bị; reconnect/resync khi thiếu revision.
+- [x] Tạo adapter API/WebSocket và mode demo rõ ràng; giữ component/bố cục đang có.
+- [x] Hiển thị loading, lỗi, stale, nguồn thiết bị; reconnect/resync khi thiếu revision.
 - Phụ thuộc: M05. Phạm vi: adapter mới, `src/App.jsx`, component trạng thái kết nối và test.
 - Nghiệm thu: đổi nhiệt độ MQTT thấy trên UI mà không reload; reload vẫn có dữ liệu DB; dừng backend thấy mất kết nối, không tự dùng số giả.
 
 **Checkpoint A:** chứng minh message → DB → API → UI. Nếu M03 đạt, dùng chính Wokwi làm nguồn; nếu chưa đạt, ghi nguồn script và điểm bị chặn.
+
+- Trạng thái 13/10/2026: **đạt bằng nguồn SIM-A01 (script)**, Wokwi chưa làm nguồn UI. [Bằng chứng M06](docs/evidence/M06-2026-10-13.md).
 
 ### M07 — Firmware đọc input và đưa trạng thái cửa
 
@@ -302,6 +304,7 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 - [ ] Tách hàm quyết định thuần khỏi GPIO/MQTT, publish snapshot và event đúng schema.
 - Phụ thuộc: M03, M05. Phạm vi: adapter firmware, pin config, sơ đồ, test mapping.
 - Nghiệm thu: từng input chỉ ảnh hưởng thiết bị được gán; debounce đúng; ngắt broker vẫn đọc input và xử lý loop.
+- Trạng thái 13/10/2026: code, test C++ và test ánh xạ chân đạt; **chưa build PlatformIO/chạy Wokwi** nên chưa đánh dấu. [Bằng chứng M07](docs/evidence/M07-2026-10-13.md).
 
 ### M08 — RFID và số người
 
@@ -309,13 +312,15 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 - [ ] Số người không âm; reboot/lost events chuyển count sang chưa xác minh khi cần.
 - Phụ thuộc: M07. Phạm vi: occupancy rule, firmware adapter, event ingest, test.
 - Nghiệm thu: một lượt vào tăng một, ra giảm một; đọc lặp không tăng thêm; thẻ trái phép không cấp quyền; count 0 + presence vẫn chặn đóng.
+- Trạng thái 13/10/2026: quy tắc edge (test C++), contract, event ingest MySQL, `/api/events`, Nhật ký UI đạt (`events:check` 5 nhóm); **chưa chạy Wokwi** nên chưa đánh dấu. [Bằng chứng M08](docs/evidence/M08-2026-10-13.md).
 
 ### M09 — Bộ quy tắc an toàn cục bộ
 
-- [ ] Triển khai close gate, beam reverse, panic latch/reset và interlock hai cửa trong module thuần.
-- [ ] Kiểm thử toàn bộ tổ hợp cổng đóng, hai yêu cầu đồng thời, unknown và ưu tiên panic.
+- [x] Triển khai close gate, beam reverse, panic latch/reset và interlock hai cửa trong module thuần.
+- [x] Kiểm thử toàn bộ tổ hợp cổng đóng, hai yêu cầu đồng thời, unknown và ưu tiên panic.
 - Phụ thuộc: M01, M08. Phạm vi: module rule và test firmware; không gom API/UI vào mốc này.
 - Nghiệm thu: một điều kiện không an toàn đủ chặn đóng; panic mở từ trạng thái đóng; ack không reset latch; hai cửa không cùng mở trong chế độ bình thường.
+- Đạt 13/10/2026: `safety_test.cpp` 4 nhóm M09 bằng g++. [Bằng chứng M09](docs/evidence/M09-2026-10-13.md).
 
 ### M10 — Gắn quy tắc vào Wokwi và lệnh có ack
 
@@ -323,6 +328,7 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 - [ ] UI hiển thị pending/applied/rejected/expired, reason code; edge từ chối lệnh không an toàn/hết hạn.
 - Phụ thuộc: M06, M09. Phạm vi: firmware adapter, command service, UI trạng thái lệnh, integration test.
 - Nghiệm thu: gửi lệnh không tự đổi cửa trên UI; lệnh trùng không thực hiện lại; lệnh cũ không chạy sau reconnect; panic hoạt động khi backend/broker dừng.
+- Trạng thái 13/10/2026: test C++, `control:check` 7 nhóm và E2E trình duyệt (ESP-C01 giả lập) đạt; **chưa build PlatformIO/chạy Wokwi** nên chưa đánh dấu. [Bằng chứng M10](docs/evidence/M10-2026-10-13.md).
 
 ### M11 — Cảnh báo, timer và tiếp nhận
 
@@ -330,6 +336,7 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 - [ ] Lưu audit tiếp nhận và hiển thị cùng điều kiện tại khu/cửa; giới hạn phát cảnh báo lặp.
 - Phụ thuộc: M07, M09, M10. Phạm vi: rule timer, alerts DB/API, adapter UI, test.
 - Nghiệm thu: đúng ranh giới 30 s, >60 s, >5 phút; tiếp nhận không xóa nguy hiểm; điều kiện hết thì resolve đúng; timer local vẫn chạy khi mất mạng.
+- Trạng thái 13/10/2026: ranh giới timer (C++), vòng đời cảnh báo/tiếp nhận (`control:check`) và UI đạt; timer khi mất mạng **chưa thử trên Wokwi** nên chưa đánh dấu. [Bằng chứng M11](docs/evidence/M11-2026-10-13.md).
 
 ### M12 — TLS, offline và phục hồi
 
@@ -337,29 +344,33 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 - [ ] Giới hạn queue/retry; xác định dữ liệu nào replay được, phát hiện gap và ứng xử khi DB không ghi được.
 - Phụ thuộc: M05, M10, M11. Phạm vi: cấu hình TLS, MQTT session, firmware reconnect, fault test.
 - Nghiệm thu: sai CA/quyền bị từ chối; retained cũ không thành online; reboot không tự count 0; phục hồi không áp dụng lệnh hết hạn hay nhân đôi RFID.
+- Trạng thái 13/10/2026: `infra:tls:check` 6 nhóm và `recovery:check` 5 nhóm đạt (ESP-C01 giả lập); firmware TLS **chưa build PlatformIO/chạy Wokwi** nên chưa đánh dấu. [Bằng chứng M12](docs/evidence/M12-2026-10-13.md).
 
 **Checkpoint B:** demo bảo vệ người trong Wokwi với broker bật/tắt, các trạng thái unknown và bằng chứng panic đóng → mở. Chưa đạt checkpoint này thì không trình bày như đã hoàn thành bảo vệ cục bộ.
 
 ### M13 — Phiên đăng nhập, quyền, ca và an ninh
 
-- [ ] Thêm viewer/operator/admin, thẻ demo, lịch ca và access audit; seed tài khoản qua secret local.
-- [ ] Bảo vệ REST/WebSocket, request thay đổi trạng thái và mode demo; thử ca qua nửa đêm.
+- [x] Thêm viewer/operator/admin, thẻ demo, lịch ca và access audit; seed tài khoản qua secret local.
+- [x] Bảo vệ REST/WebSocket, request thay đổi trạng thái và mode demo; thử ca qua nửa đêm.
 - Phụ thuộc: M04, M10, M12. Chia hai phần nhỏ: xác thực/quyền trước, ca/thẻ sau.
 - Nghiệm thu: viewer bị backend từ chối thao tác; API không đăng nhập bị từ chối; mốc 06:00/18:00 đúng; ngoài ca không tắt bảo vệ người; chưa gọi WMS thật.
+- Trạng thái 13/10/2026: **đạt** — unit, `auth:check` 5 nhóm, E2E trình duyệt. [Bằng chứng M13](docs/evidence/M13-2026-10-13.md).
 
 ### M14 — Giữ chỗ và điều kiện nhận hàng
 
-- [ ] Seed slot có nhiệt độ/kích thước/tải trọng; tính available/occupied/reserved; transaction giữ chỗ, confirm/cancel/expire.
-- [ ] Kiểm tra 85%/95%, buffer/staging, không có slot phù hợp và hai request đồng thời.
+- [x] Seed slot có nhiệt độ/kích thước/tải trọng; tính available/occupied/reserved; transaction giữ chỗ, confirm/cancel/expire.
+- [x] Kiểm tra 85%/95%, buffer/staging, không có slot phù hợp và hai request đồng thời.
 - Phụ thuộc: M04, M13. Chia rule/transaction trước, API/UI sau.
 - Nghiệm thu: không cấp một slot hai lần; không vượt sức chứa sau hai request; hết hạn 15 phút đúng; tỷ lệ làm tròn trên UI không quyết định nhận hàng.
+- Trạng thái 13/10/2026: **đạt** — unit, `reservations:check` 5 nhóm với MySQL thật, E2E trình duyệt; số liệu chứa hàng là demo seed. [Bằng chứng M14](docs/evidence/M14-2026-10-13.md).
 
 ### M15 — Lịch sử, báo cáo và CSV
 
-- [ ] Nối nhật ký hiện có với DB; filter/phân trang, lịch sử cảnh báo, lệnh và nhận hàng.
-- [ ] Xuất CSV từ tập dữ liệu đã chọn, UTF-8, escape delimiter/quote và phòng ô bị hiểu là công thức.
+- [x] Nối nhật ký hiện có với DB; filter/phân trang, lịch sử cảnh báo, lệnh và nhận hàng.
+- [x] Xuất CSV từ tập dữ liệu đã chọn, UTF-8, escape delimiter/quote và phòng ô bị hiểu là công thức.
 - Phụ thuộc: M11, M13, M14. Phạm vi: events/report API, `src/DataTables.jsx`, export helper và test.
 - Nghiệm thu: filter trên UI khớp dữ liệu lưu; dữ liệu còn sau restart; CSV có tiếng Việt đúng và không chứa secret.
+- Trạng thái 13/10/2026: **đạt** — unit, `reports:check` 4 nhóm, E2E trình duyệt; UI ở `src/History.jsx` (không dùng `src/DataTables.jsx`). [Bằng chứng M15](docs/evidence/M15-2026-10-13.md).
 
 ### M16 — Tích hợp toàn kho, tải và lỗi
 
@@ -367,6 +378,7 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 - [ ] Chạy ma trận mục 10, kiểm tra UI responsive, quyền, reboot, broker/DB/backend lỗi và tài nguyên.
 - Phụ thuộc: M12–M15; M03 phải đạt trước khi đánh dấu tích hợp Wokwi hoàn thành.
 - Nghiệm thu: bốn demo đi qua nguồn MQTT/DB; không chỉ thay mảng frontend; kết quả tải/lỗi có số liệu và bằng chứng.
+- Trạng thái 13/10/2026: script đã có và **đạt trong sandbox với ESP-C01 giả lập** — `demo:scenarios` 4 kịch bản/20 bước, `load:test` P95 publish → WebSocket 186 ms, mất 0/2.000, `verify:all` 16 bước đạt/1 bỏ qua; ma trận T01–T27 trong bằng chứng. Chưa đánh dấu: cần chạy bốn kịch bản với Wokwi (firmware TLS) và T08. [Bằng chứng M16](docs/evidence/M16-2026-10-13.md).
 
 ### M17 — Đóng gói và bàn giao đồ án
 
@@ -377,7 +389,7 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 
 ## 10. Ma trận kiểm thử bắt buộc
 
-Các dòng sau là **kế hoạch**, chưa phải kết quả đã chạy. Unit kiểm tra quy tắc; integration dùng broker/DB riêng; E2E kiểm tra trình duyệt; Wokwi kiểm tra firmware và input/output mô phỏng.
+Các dòng sau là **kế hoạch**; kết quả đã chạy từng dòng (13/10/2026) ở [bằng chứng M16](docs/evidence/M16-2026-10-13.md#ma-trận-t01t27). Unit kiểm tra quy tắc; integration dùng broker/DB riêng; E2E kiểm tra trình duyệt; Wokwi kiểm tra firmware và input/output mô phỏng.
 
 | ID | Trường hợp | Kết quả phải có | Lớp kiểm tra |
 | --- | --- | --- | --- |
@@ -409,7 +421,7 @@ Các dòng sau là **kế hoạch**, chưa phải kết quả đã chạy. Unit 
 | T26 | 320/390/825/1440 px; keyboard, focus, trạng thái không chỉ màu | Không tràn trang; cửa/cảnh báo/thao tác dùng được | E2E + kiểm tra trực quan |
 | T27 | 12 rồi 50 node, mỗi node gửi snapshot/2 s, burst/reconnect | Đúng tổng hợp; đo latency, lỗi, backlog và memory | Load + integration |
 
-Mục tiêu hiệu năng **đề xuất, chưa đo**: P95 từ publish tới hiển thị ≤2 giây trên máy demo cho 50 node × một snapshot/2 giây (khoảng 25 message/s bình thường), đo tối thiểu 1.000 message và tách pha burst/reconnect. Ghi cấu hình máy, cách đo và sample bị mất; không thay ngưỡng sau khi chạy chỉ để đạt. Không dùng độ trễ WebSocket làm thời gian phản ứng an toàn cục bộ.
+Mục tiêu hiệu năng **đề xuất trước khi đo** (đo 13/10/2026 trong sandbox: P95 186 ms, xem M16): P95 từ publish tới hiển thị ≤2 giây trên máy demo cho 50 node × một snapshot/2 giây (khoảng 25 message/s bình thường), đo tối thiểu 1.000 message và tách pha burst/reconnect. Ghi cấu hình máy, cách đo và sample bị mất; không thay ngưỡng sau khi chạy chỉ để đạt. Không dùng độ trễ WebSocket làm thời gian phản ứng an toàn cục bộ.
 
 ## 11. Bốn kịch bản trình diễn cuối
 
@@ -444,6 +456,10 @@ npm run test:e2e
 ```
 
 Tên environment `native` và các script server/migration/integration/E2E phải được tạo tại mốc tương ứng; hiện chưa tồn tại. M02 chốt dùng manifest/lockfile gốc, không có server manifest riêng. Chạy Wokwi bằng Start Simulator trong VS Code sau build, không upload vào ESP32 thật. [PlatformIO — lệnh build và project directory](https://docs.platformio.org/en/latest/core/userguide/cmd_run.html).
+
+**Từ M15–M16:** `reports:check` (tự bật backend), `demo:warehouse`, `demo:scenarios` (backend đang chạy, Wokwi tắt), `load:test` (tự bật backend), `verify:all` (chạy mọi kiểm tra; broker + MySQL bật, backend/Vite/Wokwi tắt). Hướng dẫn từng lệnh: [docs/HUONG_DAN_CAU_HINH.md](docs/HUONG_DAN_CAU_HINH.md); sơ đồ: [docs/architecture/](docs/architecture/kien-truc-tong-the.html).
+
+Kiểm tra tích hợp đã có (backend phải đang chạy): `backend:check`, `telemetry:check`, `events:check`, `control:check` (M10/M11), `auth:check` (M13), `reservations:check` (M14), `infra:tls:check` (M12); `recovery:check` (M12) tự bật/tắt backend nên phải dừng backend trước. Thiết lập M12–M13: `infra:tls:setup`, `auth:setup`. Test quy tắc edge: `g++ -std=gnu++11 firmware/test/safety_test.cpp`.
 
 Các lệnh M02 đã có: `infra:setup`, `infra:mqtt:start`, `infra:db:init`, `infra:mqtt:check`, `infra:db:check`, `infra:secrets:check`; dùng `npm run <tên>` theo [hướng dẫn](infra/README.md). Dừng Vite trước `npm ci` trên Windows.
 
@@ -483,4 +499,4 @@ Còn thiếu: điều kiện chưa xác minh; bước tiếp theo
 | Linh kiện mmWave/CO₂/thermal không có trong Wokwi | Dùng input giả lập được ghi nguồn | Không chặn kiểm thử logic; không chứng minh độ chính xác cảm biến |
 | Log khi nguồn/DB mất và giới hạn replay | Chốt application ack/gap policy, thử T24 | Chặn tuyên bố lưu trữ đầy đủ khi mất kết nối |
 
-**Việc tiếp theo cụ thể:** M06–M08 theo yêu cầu người dùng; giữ MySQL, giao diện trắng và nguồn Wokwi/script có nhãn rõ.
+**Việc tiếp theo cụ thể (13/10/2026):** chạy Wokwi trên máy dự án cho M07, M08, M10–M12 và bốn kịch bản M16; sau đó M17. Giữ MySQL, giao diện trắng và nguồn Wokwi/script có nhãn rõ.

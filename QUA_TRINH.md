@@ -164,7 +164,115 @@ Chưa làm: subscribe/validate/dedupe/lưu telemetry, API snapshot/history, WebS
 
 Yêu cầu mới: tiếp tục M06–M08 và mở VS Code/web/MySQL/MQTT. M06 nối UI; M07 input ESP-C01; M08 RFID/số người/event ingest.
 
-M06–M08; giữ MySQL và ghi nguồn dữ liệu mô phỏng rõ ràng.
+## 09 — M06: dashboard nhận dữ liệu backend (13/10/2026, đã đạt bằng nguồn script)
+
+Môi trường kiểm tra M06–M08: container Linux riêng của Claude (Mosquitto 2.0.18, MySQL 8.0.46), dựng bằng chính template/ACL/provision/migration của dự án, không phải máy Windows. Trước khi làm, chạy lại M02–M05 trên môi trường này: mqtt 11, db 6, backend 9, telemetry 10 nhóm đều đạt.
+
+- Code adapter đã có từ trước nhưng chưa ghi sổ: `src/live-data.js`, `src/useLiveWarehouse.js`, `server/websocket.mjs`, bộ chọn nguồn Backend/MQTT ↔ Demo trong `App.jsx`.
+- E2E trình duyệt: MQTT 24,5→27,3°C hiện trên UI sau ~0,5 s không reload; reload vẫn có giá trị từ MySQL (nhãn Dữ liệu cũ); dừng backend báo mất kết nối, không rơi về số mẫu; bật lại tự nối.
+- Lỗi đã sửa: tràn ngang 60 px ở 320 px do topbar; thêm rule `max-width: 399px`. Sau sửa 320/390/825 px: 0 px.
+- Lỗi môi trường: `backend:check` chỉ nhận `ER_NO_REFERENCED_ROW_2`; MySQL 8.0 trả `ER_NO_REFERENCED_ROW` cho cùng lỗi FK khi runtime không đọc được bảng cha. Check nhận cả hai.
+- Bằng chứng: [M06](docs/evidence/M06-2026-10-13.md). Chưa dùng Wokwi làm nguồn UI; chưa thêm E2E tự động vào repo.
+
+## 10 — M07: firmware đọc input và trạng thái cửa (13/10/2026, code đạt, chưa chạy Wokwi)
+
+- Code đã có từ trước: debounce/panic latch/input health trong `controller.h`, 7 input GPIO, telemetry D07/D08, event door/panic. Sửa: cửa đổi cùng lúc panic nay phát cả hai event.
+- Thêm test ánh xạ sơ đồ Wokwi ↔ `INPUT_PINS` (`tests/diagram.test.js`). C++ test chạy bằng g++ đạt; header biên dịch được với gnu++11.
+- Không build được PlatformIO: proxy mạng chặn `api.registry.platformio.org` (HTTPClientError). Không ghi là build đạt.
+- Cần trên máy dự án: `npm run firmware:build`, chạy Wokwi, gạt từng switch, thử tắt broker. Bằng chứng: [M07](docs/evidence/M07-2026-10-13.md).
+
+## 11 — M08: RFID, số người và event ingest (13/10/2026, đạt unit/integration, chưa chạy Wokwi)
+
+- RED: `controller_test.cpp` đã có test `kg::Occupancy` (viết trước, chưa có code) và không biên dịch; bổ sung test parser serial rồi mới viết code.
+- Firmware: whitelist demo, trạng thái trong/ngoài theo thẻ, không âm, count chưa xác minh sau boot (gửi null), xác minh 0 khi mmWave clear và không thẻ nào trong; dòng serial tràn → bỏ xác minh. RFID mô phỏng bằng Serial Monitor `RFID D07 DEMO-017 IN`.
+- Contract: event `rfid` bắt buộc `result` (accepted/duplicate/unauthorized), các loại khác không được có `result`. Cập nhật example và test.
+- Backend: migration `003_events` (device_events dedupe theo device+event_id, event_gaps), readiness yêu cầu 003, subscribe thêm `+/events`, ingest cần phiên đã xác nhận, bỏ retained replay/QoS0/trùng, ghi gap theo seq mỗi boot; `GET /api/events` có lọc device/type, limit ≤200, keyset cursor. `npm run events:check` mới.
+- Dashboard: Nhật ký ở chế độ live đọc `/api/events` khi revision đổi; hiển thị quẹt hợp lệ, đọc lặp, thẻ bị từ chối và gap.
+- Kết quả: `npm test` 66/66; `events:check` 5 nhóm; M02–M05 check chạy lại đạt; build đạt; audit 0.
+- Lỗi đã gặp: lần đầu `events:check` đếm 6 thay vì 5 event. Nguyên nhân: Mosquitto giao message retained tới subscriber đang online với retain=false; event retained vẫn là live. Bỏ bước đó khỏi check; retained replay được unit test. Một lần thứ hai thất bại do sửa script không được áp (lệnh trước đó dừng giữa chừng), đã kiểm tra lại file rồi chạy lại đạt.
+- Bằng chứng: [M08](docs/evidence/M08-2026-10-13.md). Chưa làm: Wokwi thật, ACK/replay event (M12), cảnh báo (M11), close gate (M09). Rollback 003 chưa chạy. Không commit/push (thư mục dự án ở đây không có Git).
+
+## 12 — M09: bộ quy tắc an toàn cục bộ (13/10/2026, đạt)
+
+- `controller.h`: close gate (panic → input chưa rõ/count chưa xác minh → count → presence → beam), đảo chiều khi đang đóng, timeout chạy cửa 10 s, panic chốt/nhả khóa/mở từ trạng thái đóng, reset chỉ khi nút nhả, liên động hai cửa (panic thắng liên động). Reason code dùng chung với contract.
+- Test: `firmware/test/safety_test.cpp`, 4 nhóm M09 đạt bằng g++ (gnu++11, cùng chuẩn với Arduino-ESP32 2.0.17). Test M07/M08 vẫn đạt.
+- Lỗi khi viết test: kỳ vọng đảo chiều sai. Contact vẫn báo mở nên đảo chiều kết thúc ngay ở "mở", không qua "đang mở". Sửa assertion, khôi phục beam trước lần đóng thứ hai.
+- Quyết định: DEC-019 (mô hình chạy cửa), DEC-021 (output). Bằng chứng: [M09](docs/evidence/M09-2026-10-13.md).
+
+## 13 — M10: lệnh cửa có ack và output mô phỏng (13/10/2026, đạt unit/integration/E2E, chưa chạy Wokwi)
+
+- Firmware: 10 LED output trong `diagram.json` (test ánh xạ chân), nhận `commands`, kiểm phiên + revision, chống trùng 8 ID, ack có reason; telemetry thêm `locked`, `open_ms`, `alarms`, `outputs`. Cú pháp `main.cpp` kiểm bằng header giả lập; **chưa build PlatformIO** (proxy chặn).
+- Contract: door `locked`/`open_ms`, `alarms`, `outputs`; alarm phải thuộc cửa của thiết bị. Snapshot: door `locked`, alert `door_id`/`resolved_at`/`acknowledged_at`; mã cảnh báo cho phép chữ số.
+- Backend: migration 004 (applied, chạy lại no-op), readiness yêu cầu 004, subscribe thêm `+/acks` (4 grant), `POST /api/doors/:id/commands`, `GET /api/commands/:id`. Lệnh chỉ gửi khi thiết bị có phiên live ≤ 10 s; publish lỗi → `rejected/NOT_SENT`.
+- Dashboard: thẻ "Điều khiển cửa khu C"; cửa chỉ đổi theo telemetry.
+- Kết quả: `npm test` 76/76; `control:check` 7 nhóm (chạy 2 lần); M02–M08 check chạy lại đạt; E2E 2 lần đạt; build, audit 0.
+- Lỗi đã gặp: (1) `control:check` lần hai fail vì `occurrences` 4 ≠ 2: cảnh báo của lần chạy trước còn trong cửa sổ 60 s nên được mở lại, đúng thiết kế; sửa check so sánh tương đối. (2) E2E: `npx` không dừng tiến trình Vite con, gọi thẳng `node_modules/.bin/vite`. (3) Tràn ngang trang Giám sát cửa trên mobile (có từ trước) do `sr-only` trong bảng; thêm `position: relative`.
+- Quyết định: DEC-020, DEC-023. Bằng chứng: [M10](docs/evidence/M10-2026-10-13.md).
+
+## 14 — M11: cảnh báo, timer, tiếp nhận (13/10/2026, đạt unit/integration/E2E, chưa chạy Wokwi)
+
+- Edge giữ timer (≥ 30 s, > 60 s, > 5 phút, an toàn khi `millis()` tràn); backend chỉ phản ánh `alarms` và trạng thái edge thành bảng `alerts`.
+- Một dòng cho mỗi điều kiện (khu|cửa|mã): tăng mức cùng dòng và cần tiếp nhận lại; hết điều kiện → resolved; lặp trong 60 s → mở lại cùng dòng. Nhiệt độ trễ 0,5 °C. Tiếp nhận ghi `alert_acks`, không đổi trạng thái.
+- Dashboard: tiếp nhận qua API, hiện cảnh báo đã hết trong 10 phút; số cần tiếp nhận chỉ đếm active chưa tiếp nhận; bỏ câu "chưa có bộ máy cảnh báo hoặc điều khiển cửa"; giờ cập nhật theo múi giờ Việt Nam như các mốc khác.
+- Quyết định: DEC-022. Bằng chứng: [M11](docs/evidence/M11-2026-10-13.md).
+- Chưa làm: chạy Wokwi cho M07, M08, M10, M11; rollback 004 chưa chạy; đăng nhập/quyền (M13) — hiện chỉ giới hạn Origin. Không commit/push (thư mục dự án ở đây không có Git).
+
+## 15 — M12: TLS, offline và phục hồi (13/10/2026, đạt trong sandbox, firmware TLS chưa chạy Wokwi)
+
+- TLS bằng CA demo riêng (`infra:tls:setup`), listener 127.0.0.1:18885, backend `mqtts` kiểm CA + hostname; firmware `WiFiClientSecure` + CA khi `kg_secrets.h` có CA. Không `setInsecure()`, không anonymous, không sửa password file.
+- Backend dùng phiên MQTT bền (`clean: false`); DB lỗi thì không PUBACK để broker giữ message. Broker giới hạn 1000 message/1 ngày; edge giới hạn event 32, ack 4, vượt thì ghi gap.
+- Kết quả: `infra:tls:check` 6 nhóm, `recovery:check` 5 nhóm, check M02–M11 chạy lại qua TLS đạt.
+- Lỗi đã gặp: (1) include `WiFiClientSecure.h` đặt trước `kg_secrets.h` nên macro CA chưa có; chuyển xuống sau. (2) MQTT 3.1.1 không báo publish bị ACL chặn; check dùng MQTT v5 để thấy reason 135. (3) `pkill -f` khớp chính shell đang chạy; dừng theo PID. (4) Container khởi động lại giữa phiên, phải bật lại MySQL/Mosquitto sandbox (dữ liệu còn).
+- Quyết định: DEC-024, DEC-025. Bằng chứng: [M12](docs/evidence/M12-2026-10-13.md).
+
+## 16 — M13: đăng nhập, vai trò, ca (13/10/2026, đạt)
+
+- Migration 005 (users, user_sessions, auth_audit, access_cards, access_audit); `auth:setup` sinh mật khẩu local, DB lưu scrypt. Cookie HttpOnly/SameSite=Strict, khóa sau 5 lần sai. Mọi route dữ liệu + WebSocket cần phiên; viewer/operator/admin kiểm ở backend.
+- Ca 06:00/18:00 giờ Việt Nam; đánh giá ca chỉ ghi audit, không đổi quyết định edge.
+- Dashboard: đăng nhập, người dùng/vai trò/đăng xuất, chế độ chỉ xem, bảng "Ra vào theo ca"; phiên hết thì về đăng nhập.
+- Kết quả: `auth:check` 5 nhóm; E2E trình duyệt 15 bước (gồm cả M14) đạt; các check cũ sửa để đăng nhập như dashboard (`scripts/check-session.mjs`).
+- Lỗi đã gặp: (1) nới `card_id` sau khi đã áp 005 làm checksum lệch, readiness 503; trong sandbox chạy rollback 005 rồi migrate lại (máy dự án chưa áp 005 nên không bị). (2) `/api/commands/bad%20id` trả 404 thay vì 400; kiểm mã trong route. (3) `auth:check` lấy 4 dòng mới nhất nên lẫn dòng của `recovery:check` vừa chạy; lọc theo thời điểm bắt đầu bước.
+- Quyết định: DEC-026, DEC-027, DEC-028 (DEC-023 được thay). Bằng chứng: [M13](docs/evidence/M13-2026-10-13.md).
+
+## 17 — M14: giữ chỗ và nhận hàng (13/10/2026, đạt)
+
+- Migration 006 (slots demo seed, reservations với unique `request_id` và `active_slot`). Quy tắc 85%/95% bằng số nguyên, khu đệm, vị trí phù hợp; transaction khóa kho trước rồi vị trí, thử lại khi deadlock; hết hạn đúng 15 phút theo đồng hồ backend.
+- API `GET /api/reservations`, `POST /api/admissions`, `POST /api/reservations/:id/confirm|cancel`; snapshot có `occupied`/`reserved`. Dashboard có trang "Nhận hàng".
+- Kết quả: `npm test` 96/96; `reservations:check` 5 nhóm (5 lần); E2E giữ chỗ/hủy/không có vị trí; `vite build` đạt.
+- Lỗi đã gặp: lần đầu check cho hai request đồng thời dùng hàng thường/mát khi các khu đó đã hết chỗ nên cả hai bị NO_SUITABLE_SLOT; đổi sang hàng lạnh còn chỗ để chỉ ngưỡng sức chứa quyết định.
+- Quyết định: DEC-029. Bằng chứng: [M14](docs/evidence/M14-2026-10-13.md).
+- Chưa làm: chạy Wokwi cho M07, M08, M10, M11, M12; rollback 006 chưa chạy; xuất kho chưa có. Không commit/push (thư mục dự án ở đây không có Git).
+
+## 18 — M15: lịch sử, báo cáo, CSV (13/10/2026, đạt)
+
+- `server/reports.mjs`: 5 loại báo cáo (events, alerts, commands, reservations, access) với from/to (≤ 31 ngày), khu, loại, limit ≤ 500, cursor; access giữ quyền `access_audit`. Route `/api/reports/:kind`.
+- `src/csv.js` dùng chung cho demo và Backend/MQTT: BOM, CRLF, quote, chặn công thức, cột theo danh sách. `src/History.jsx`: bộ lọc giờ Việt Nam, Tải thêm, Xuất CSV.
+- Kết quả: `npm test` 100/100; `reports:check` 4 nhóm (khớp MySQL, phân trang, còn sau restart, CSV không lộ 13 secret); E2E 4 bước, 320/390 px không tràn.
+- Lỗi đã gặp: test CSV ban đầu tách dòng theo CRLF nhưng lại kỳ vọng `\n` trong ô làm xuống dòng; sửa test: xuống dòng nằm trong ô có ngoặc kép.
+- Quyết định: DEC-030. Bằng chứng: [M15](docs/evidence/M15-2026-10-13.md).
+
+## 19 — M16: toàn kho, bốn demo, tải (13/10/2026, đạt sandbox, chưa đánh dấu vì cần Wokwi)
+
+- `scripts/sim-lib.mjs`, `simulate-warehouse.mjs` (4 khu, 12 cửa, seed), `demo-scenarios.mjs` (bốn kịch bản §11 với ESP-C01 giả lập), `load-run.mjs` (50 nguồn ảo / 5 tài khoản), `verify-all.mjs` (toàn bộ check theo thứ tự).
+- Kết quả: `verify:all` 16 bước đạt, 1 bỏ qua (secrets check cần Git). Tải ổn định 25 msg/s: mất 0/1.500, ingest P95 4 ms, publish → WebSocket P95 186 ms (mục tiêu ≤ 2 s); burst 500 hết sau 2,4 s; tổng mất 0/2.000.
+- Ma trận T01–T27 ghi trong bằng chứng: còn T08 chưa chạy, T17/T24/T26 một phần, các dòng Wokwi chờ máy dự án.
+- Lỗi đã gặp: (1) event xếp hàng mang session cũ sau reconnect; (2) `node --test` chạy nhầm `load-test.mjs`, đổi tên `load-run.mjs`; (3) tóm tắt `verify:all` lấy nhầm dòng.
+- Quyết định: DEC-031. Bằng chứng: [M16](docs/evidence/M16-2026-10-13.md).
+
+## 20 — Sơ đồ kiến trúc và hướng dẫn cấu hình (13/10/2026)
+
+- Hai sơ đồ HTML/SVG theo skill diagram-design (cathrynlavery/diagram-design), dùng màu/chữ của dashboard: [kiến trúc tổng thể](docs/architecture/kien-truc-tong-the.html) (9 thành phần, 3 vùng, 12 đường nối) và [luồng lệnh cửa](docs/architecture/luong-lenh-cua.html) (sequence 5 bên, 12 message, một khối ALT). Ảnh PNG kèm theo; đã kiểm bằng ảnh chụp trình duyệt.
+- Lệnh `/plugin marketplace add` không chạy được trong phiên đám mây này; skill được đọc từ bản clone của repo, không chạy script nào của repo đó. Cài trên máy: `/plugin marketplace add cathrynlavery/diagram-design` rồi `/plugin install diagram-design@diagram-design`.
+- [docs/HUONG_DAN_CAU_HINH.md](docs/HUONG_DAN_CAU_HINH.md): từ cài công cụ trên Windows tới demo, kiểm tra toàn bộ, dừng/reset và bảng lỗi thường gặp.
+- Quyết định: DEC-032.
+
+Bước kế tiếp trên máy dự án:
+
+1. `npm ci`, `npm test`, `npm run db:migrate` (nếu chưa áp 005, 006).
+2. Dừng backend, Vite, Wokwi; với broker + MySQL đang chạy: `npm run verify:all`.
+3. `npm run firmware:build`, chạy Wokwi theo phần "còn thiếu" của M07, M08, M10–M12 và bốn kịch bản bằng tay (M16), kể cả T08 dừng broker dự án khi panic.
+
+Sau đó M17 (đóng gói, Postman collection, checklist demo).
 
 ## Mẫu ghi thêm ở mỗi bước
 
@@ -177,3 +285,12 @@ Lỗi đã gặp / cách sửa:
 Bằng chứng hoặc commit:
 Còn thiếu / bước tiếp theo:
 ```
+## 13/10/2026 — Kiểm tra và chạy ZIP M06–M16 trên Windows
+
+- Nạp 133 file thay đổi từ ZIP theo đường dẫn người dùng cung cấp; sao lưu bản trước trong `.local/backup-before-M06-M16-20261013`, giữ cấu hình VS Code và mật khẩu cục bộ.
+- MySQL migration 003–006, tài khoản dashboard và TLS demo đã chuẩn bị. Web/backend/broker/Wokwi và bốn nguồn Node đang chạy; Workbench/MQTTX đã mở, giữ cấu hình riêng hiện có.
+- Đạt 102/102 test JavaScript, hai bộ C++ qua WSL, build React/ESP32 và 14 script kiểm tra riêng sau sửa TLS. Bốn kịch bản có 20 bước (FakeEdge). Tải 2.000/2.000, mất 0; P95 publish→WebSocket 242 ms.
+- Web hiển thị 5/5 thiết bị fresh; Đóng D07 từ web nhận ack applied từ firmware Wokwi; xuất CSV thật 24 dòng.
+- Sửa test TLS nhận nhầm retained, observer còn giả định M03 và nguồn D09 ghi nhầm Wokwi. Thêm hai test hồi quy.
+- Chưa nghiệm thu đủ RFID/presence/panic/T08 trên Wokwi vì thao tác công tắc chưa làm thay đổi input quan sát được. Diagram thử đã khôi phục, M16 chưa đánh dấu hoàn tất.
+- [Báo cáo và ảnh kiểm thử](docs/evidence/CHECK-WINDOWS-2026-10-13.md). Quyết định: DEC-033, giới hạn TTL theo DEC-020.

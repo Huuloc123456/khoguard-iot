@@ -120,3 +120,18 @@ Timer: cửa mở ≥30 s warning, >60 s danger; presence liên tục khi cửa 
 | Ngoài quyền/ngoài ca | Ghi an ninh, không cấp vào; không chặn người thoát hiểm |
 
 Ca 12 giờ, buffer cụ thể, kích thước/tải trọng slot và cách reset panic là giả định demo sẽ được cấu hình ở M13/M14, không phải dữ liệu vận hành thật. Các mốc sau cần kiểm thử rule/transaction theo bảng trước khi đánh dấu đạt.
+
+## Thay đổi M08 (13/10/2026)
+
+Event `rfid` bắt buộc thêm `result`: `accepted` (đã cập nhật số người), `duplicate` (đọc lặp hoặc ra khi chưa vào, không đổi count) hoặc `unauthorized` (thẻ không trong danh sách cho phép). Event loại khác không được có `result`. Message cũ không có RFID vẫn hợp lệ. Xem DEC-016.
+
+
+## Thay đổi M10/M11 (13/10/2026)
+
+Telemetry có thể thêm: `doors[].locked`, `doors[].open_ms` (ms cửa đã mở theo đồng hồ thiết bị), `alarms[]` (`DOOR_OPEN_WARNING`/`DOOR_OPEN_CRITICAL` kèm `door_id` của chính thiết bị, `TRAPPED_PERSON` không kèm cửa; tối đa 6) và `outputs` (light/buzzer/heater/fan). Snapshot thêm door `locked` và alert `door_id`, `resolved_at`, `acknowledged_at`; mã alert cho phép chữ số (ví dụ `DEVICE_OFFLINE_ESP_C01`). Các trường đều tùy chọn, message cũ vẫn hợp lệ. Xem DEC-020, DEC-022.
+
+## Thay đổi M12–M14 (13/10/2026)
+
+- Snapshot: `zones[].capacity` là số vị trí khả dụng (bỏ vị trí xả đá; khu C = 78), `occupied` và `reserved` lấy từ bảng `slots`/`reservations` (demo seed, không phải WMS). Giữ chỗ đã quá hạn không tính.
+- Quy tắc sức chứa ở bảng trên được áp dụng ở `server/admission.mjs` cho kho lưu trữ A–C; khu đệm D là cổng riêng (DEC-029).
+- Ca 06:00/18:00 dùng như bảng trên; kết quả chỉ ghi `access_audit` (DEC-028).
