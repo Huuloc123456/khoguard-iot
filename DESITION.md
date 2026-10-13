@@ -102,4 +102,15 @@ Tên file giữ theo yêu cầu người dùng. Đây là sổ quyết định: 
 
 ## Cách cập nhật
 
+## DEC-014 — Ingest transaction và phiên MQTT
+
+- Ngày 13/10/2026; đã kiểm thử M05. Giữ MySQL, dùng unique device/boot/seq cho bảng telemetry; history/current/revision commit cùng transaction. Phiên đã nghỉ lưu tombstone trong DB, Will cũ không đánh offline phiên mới.
+- Status online (kể cả retained) chỉ xác nhận candidate; cần telemetry live cùng phiên mới fresh. Duplicate/retained không kéo dài độ mới. MQTT/transaction lỗi hoặc backend restart xóa xác nhận live; giá trị cuối vẫn có nhưng stale/unknown.
+- MQTT.js handleMessage backpressure một packet; DB lỗi hủy MQTT, không ACK như đã lưu. Clean session chỉ phục hồi retained cuối; application ACK/replay chống gap còn ở M12.
+
+## DEC-015 — Snapshot giữ unknown và lịch sử có giới hạn
+
+- Ngày 13/10/2026; đã triển khai. Range/capacity là cấu hình demo; occupied/reserved null trước WMS. Không suy count/presence/door an toàn từ mất tín hiệu. Null vẫn phải giữ ràng buộc capacity cho phần đã biết.
+- GET telemetry bắt buộc device đăng ký + khoảng UTC [from,to) theo received_at tối đa 7 ngày, limit 1–200, keyset cursor; query trùng/lạ sai trả 400, DB lỗi 503. Ajv chuyển runtime, không thêm framework.
+
 Mỗi quyết định mới thêm DEC-xxx với ngày, trạng thái, lý do và hệ quả. Khi thay đổi, thêm mục mới tham chiếu mục bị thay thế; giữ lịch sử. Chỉ ghi “đã triển khai” khi có công việc/test tương ứng trong `QUA_TRINH.md`.

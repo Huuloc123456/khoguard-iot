@@ -155,7 +155,16 @@ Chưa làm: subscribe/validate/dedupe/lưu telemetry, API snapshot/history, WebS
 
 ## Bước kế tiếp
 
-M05: MQTT ingest, validate/dedupe theo boot/session/seq, lưu telemetry vào MySQL, API snapshot và lịch sử có giới hạn; sau đó M06 nối dashboard. Giữ MySQL, bắt đầu với luồng môi trường đầu tiên.
+## 08 — M05: telemetry tới MySQL/API (13/10/2026, đã đạt)
+
+- Thêm migration 002, repository transaction, tombstone session/boot, subscriber QoS1, snapshot và lịch sử UTC có giới hạn. Script demo:environment nguồn SIM-A01 gửi mỗi 2 giây; input an toàn chưa có giữ null/unknown.
+- 54 unit test, 10 nhóm telemetry:check và 9 backend:check đạt; build đạt, audit 0 vulnerability, 7 file secret ignored/8 URL 403. CLI 25,5°C/60% tới API fresh và Last Will offline khi dừng đã kiểm tra.
+- Lỗi đã sửa: MySQL không cho CHECK tham chiếu AUTO_INCREMENT; journal applying giữ bằng chứng, sửa và hoàn tất riêng DDL mới sau ownership/checksum/count guards, không reset inventory. Lỗi pool getConnection trước try chưa xóa freshness đã sửa và thử DB transport mất/phục hồi. Đồng hồ gửi cũ không được kéo dài freshness từ thời gian nhận.
+- Save points: e0b8ec7, f45523c, 7cf1e29, 8d4a8ad. [Bằng chứng M05](docs/evidence/M05-2026-10-13.md). Chưa nối dashboard, chưa chạy lại Wokwi→DB trong M05; chưa auth/TLS/replay hoặc rollback DDL.
+
+Yêu cầu mới: tiếp tục M06–M08 và mở VS Code/web/MySQL/MQTT. M06 nối UI; M07 input ESP-C01; M08 RFID/số người/event ingest.
+
+M06–M08; giữ MySQL và ghi nguồn dữ liệu mô phỏng rõ ràng.
 
 ## Mẫu ghi thêm ở mỗi bước
 

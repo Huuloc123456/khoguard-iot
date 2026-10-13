@@ -4,7 +4,7 @@ Cập nhật: **13/10/2026**. Phạm vi: đồ án **mô phỏng**, lập trình
 
 ## 1. Sau giao diện, làm gì trước?
 
-**M01–M03 đã đạt ngày 12/10/2026; M04 đạt ngày 13/10/2026. Có backend HTTP, pool MySQL, inventory và health/readiness đã thử lỗi/kết nối lại. Tiếp theo M05 lưu telemetry, M06 nối API/dashboard.** Chỉ khi luồng này hoạt động mới bổ sung RFID, liên động cửa, sức chứa và lịch làm việc.
+**M01–M03 đã đạt ngày 12/10/2026; M04–M05 đạt ngày 13/10/2026. MQTT → MySQL → snapshot/history đã kiểm thử. Đang triển khai M06–M08 theo yêu cầu người dùng: dashboard, input firmware và RFID.**
 
 Quyết định: [DESITION.md](DESITION.md). Công việc và kết quả thực tế: [QUA_TRINH.md](QUA_TRINH.md). Hợp đồng M01: [contracts/README.md](contracts/README.md). Người dùng đã chốt **giữ MySQL**; không chuyển MongoDB.
 
@@ -281,8 +281,9 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 
 ### M05 — Luồng môi trường đầu tiên đến DB/API
 
-- [ ] Backend subscribe một node; validate/dedupe, lưu telemetry và trả snapshot/API lịch sử.
-- [ ] Script tạo nhiệt độ/humidity hợp lệ và dữ liệu sai, cũ, trùng.
+- [x] Backend subscribe status/telemetry; validate/dedupe, lưu MySQL và trả snapshot/lịch sử.
+- [x] Script SIM-A01 và 10 nhóm integration có dữ liệu sai, cũ, trùng, session/boot/Will và lỗi DB/MQTT.
+- Đạt 13/10/2026: 54 unit test + 10 nhóm M05 + 9 check M04; [bằng chứng](docs/evidence/M05-2026-10-13.md).
 - Phụ thuộc: M01, M04. Phạm vi: MQTT ingest, schema adapter, repository DB, integration test.
 - Nghiệm thu: một message đi tới DB/API; trùng không nhân đôi event; message sai không đổi current state; API lịch sử có giới hạn.
 
@@ -482,4 +483,4 @@ Còn thiếu: điều kiện chưa xác minh; bước tiếp theo
 | Linh kiện mmWave/CO₂/thermal không có trong Wokwi | Dùng input giả lập được ghi nguồn | Không chặn kiểm thử logic; không chứng minh độ chính xác cảm biến |
 | Log khi nguồn/DB mất và giới hạn replay | Chốt application ack/gap policy, thử T24 | Chặn tuyên bố lưu trữ đầy đủ khi mất kết nối |
 
-**Việc tiếp theo cụ thể:** M05 — subscribe MQTT, validate/dedupe, lưu telemetry vào MySQL và API snapshot/lịch sử; M06 nối dashboard. MySQL được giữ nguyên; M04 readiness chưa chứng minh ingest.
+**Việc tiếp theo cụ thể:** M06–M08 theo yêu cầu người dùng; giữ MySQL, giao diện trắng và nguồn Wokwi/script có nhãn rõ.
