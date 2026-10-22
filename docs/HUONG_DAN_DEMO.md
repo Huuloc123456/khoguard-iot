@@ -31,13 +31,13 @@ Làm theo từng bước để demo trực tiếp trước giảng viên. Đi k�
 
 ## 2. Khởi động (15 phút trước giờ)
 
-**Cách nhanh:** nhấp đúp `run.bat` ở thư mục gốc dự án. Script mở 5 cửa sổ dưới đây theo đúng thứ tự, chờ từng cổng sẵn sàng, mở VS Code thư mục `firmware` và trình duyệt. Phần nào đang chạy thì bỏ qua. Sau đó chỉ còn bấm **F1 → Wokwi: Start Simulator** và đăng nhập.
+**Cách nhanh:** nhấp đúp `run.bat` ở thư mục gốc dự án. Script mở 5 cửa sổ dưới đây theo đúng thứ tự, chờ từng cổng sẵn sàng, mở **4 cửa sổ VS Code** (khu C và 3 nút khu A, B, D) và trình duyệt. Phần nào đang chạy thì bỏ qua. Sau đó chỉ còn bấm **F1 → Wokwi: Start Simulator** trong từng cửa sổ VS Code, rồi đăng nhập.
 
 | Lệnh | Tác dụng |
 | --- | --- |
-| `run.bat` | Đầy đủ, ESP-C01 chạy trên Wokwi (mặc định) |
-| `run.bat fake` | ESP-C01 giả lập bằng Node (cách B). **Không** mở Wokwi cùng lúc |
-| `run.bat web` | Chỉ broker, backend, dashboard và các khu mô phỏng |
+| `run.bat` | Đầy đủ (mặc định): ESP-C01 và 3 nút khu A, B, D chạy trên Wokwi; Node chỉ chạy cửa D09 |
+| `run.bat fake` | Không cần Wokwi: khu A, B, D và ESP-C01 đều giả lập bằng Node (cách B). **Không** mở Wokwi cùng lúc |
+| `run.bat web` | Khu A, B, D giả lập bằng Node, không có ESP-C01 |
 | `run.bat status` | Xem dịch vụ nào đang chạy |
 | `close.bat` | Dừng mọi thứ `run.bat` đã mở. Không đụng MySQL, Mosquitto 1883 hay chương trình khác |
 | `close.bat list` | Chỉ liệt kê, không dừng |
@@ -51,7 +51,7 @@ MySQL không được `run.bat` bật (là service Windows); script chỉ cảnh
 | T1 — Broker | `npm.cmd run infra:mqtt:start` | Mosquitto nghe 18884 và 18885 |
 | T2 — Backend | `npm.cmd run backend:start` | Backend nghe `127.0.0.1:3001` |
 | T3 — Dashboard | `npm.cmd run dev -- --strictPort` | Vite `http://127.0.0.1:5173` |
-| T4 — Các khu mô phỏng | `npm.cmd run demo:warehouse -- --seed=17` | Gửi dữ liệu SIM-A01, SIM-B01, SIM-C02, SIM-D01 |
+| T4 — Cửa D09 (Node) | `npm.cmd run demo:warehouse -- --seed=17` | Gửi dữ liệu SIM-C02. Thêm `--with-fake-zones` nếu khu A/B/D không chạy Wokwi |
 | T5 — Gateway Wokwi | `npm.cmd run firmware:gateway:start` | Nghe `ws://127.0.0.1:9011` |
 
 MySQL là service Windows, phải đang chạy sẵn (`Get-Service MySQL*`).
@@ -67,6 +67,27 @@ MySQL là service Windows, phải đang chạy sẵn (`Get-Service MySQL*`).
    MQTT_ONLINE boot=... session=...
    TELEMETRY_ACK seq=1
    ```
+
+**Bật 3 nút khu A, B, D trên Wokwi:**
+
+1. Mở 3 cửa sổ VS Code: `code --new-window firmware/wokwi/zone-a` (tương tự `zone-b`, `zone-d`). `run.bat` đã mở sẵn.
+2. Trong từng cửa sổ: **F1 → Wokwi: Start Simulator**.
+3. Serial Monitor phải có `KHOGUARD_ZONE device=SIM-A01 zone=A ...` rồi `MQTT_ONLINE SIM-A01 ...`.
+4. Đầu tiên mỗi khu báo số người *chưa xác minh*; để công tắc **Hiện diện** ở LOW vài giây thì về 0 (đã xác minh).
+
+Thao tác trên nút khu:
+
+| Muốn làm | Thao tác | Thấy |
+| --- | --- | --- |
+| Mở/đóng cửa | Gạt công tắc `D0x cửa` (HIGH = mở) | Dashboard đổi trạng thái cửa, Nhật ký có sự kiện cửa |
+| Cửa mở lâu | Để cửa mở | Sau 30 s LED vàng sáng và cảnh báo "Cửa … mở từ 30 giây"; sau 60 s LED đỏ, mức nghiêm trọng |
+| Người vào/ra | Bấm nút xanh **Vào** / nút đỏ **Ra** | Số người khu đó tăng/giảm 1 |
+| Có người | Gạt **Hiện diện** lên HIGH | Dashboard hiện có hiện diện |
+| Nhiệt độ ngoài ngưỡng | Bấm DHT22, kéo nhiệt độ (ví dụ khu B lên 10 °C) | Cảnh báo "Nhiệt độ khu B ngoài ngưỡng"; kéo về thì tự hết |
+
+Nút khu không có khóa, rèm quang hay panic nên dashboard hiện các tín hiệu đó là *chưa rõ*, và không gửi được lệnh cửa tới khu A/B/D (chỉ khu C điều khiển được).
+
+**Nếu không bật được Wokwi cho khu A/B/D:** chạy `run.bat web` hoặc thêm `--with-fake-zones` cho T4. Khi đó Node giả lập 3 khu ở chế độ sinh động: cửa tự đóng mở, thỉnh thoảng mở quá 30/60 giây; kho B định kỳ lên 9,5 °C (sau khoảng 1 phút, lặp mỗi 5 phút), kho A lên 31,5 °C (sau khoảng 3 phút, lặp mỗi 7 phút). Giao diện vẫn ghi nguồn là Wokwi, nên phải nói rõ với giảng viên đây là bản giả lập. Muốn các khu đứng yên thì thêm `--steady`.
 
 **Mở dashboard:**
 

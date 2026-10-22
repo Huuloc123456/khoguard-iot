@@ -43,11 +43,11 @@ KhoGuard giám sát một **kho hàng có kho lạnh** gồm 4 khu và 12 cửa:
 
 | Khu | Tên | Nhiệt độ cho phép | Cửa | Thiết bị phụ trách |
 | --- | --- | --- | --- | --- |
-| A | Kho thường | 18 → 30 °C | D01, D02, D03 | `SIM-A01` (script Node) |
-| B | Kho mát | 2 → 8 °C | D04, D05, D06 | `SIM-B01` (script Node) |
+| A | Kho thường | 18 → 30 °C | D01, D02, D03 | `SIM-A01` (nút khu ESP32 trên **Wokwi**) |
+| B | Kho mát | 2 → 8 °C | D04, D05, D06 | `SIM-B01` (nút khu ESP32 trên **Wokwi**) |
 | C | Kho lạnh | −22 → −16 °C | D07, D08 | `ESP-C01` (ESP32 trên **Wokwi**) |
 | C | Kho lạnh | — | D09 | `SIM-C02` (script Node, chỉ cửa) |
-| D | Khu đệm (staging) | 18 → 28 °C | D10, D11, D12 | `SIM-D01` (script Node) |
+| D | Khu đệm (staging) | 18 → 28 °C | D10, D11, D12 | `SIM-D01` (nút khu ESP32 trên **Wokwi**) |
 
 Bài toán trọng tâm là **bảo vệ người trong kho lạnh**: không được đóng/khóa cửa khi còn người bên trong, nút khẩn cấp phải mở cửa ngay cả khi mạng hỏng, và mọi thông tin chưa chắc chắn phải được coi là *không an toàn*. Ngoài ra hệ thống còn:
 
@@ -110,7 +110,8 @@ Bốn kịch bản trình diễn cuối cùng (chi tiết ở [Agent.md §11](Ag
 flowchart LR
   subgraph EDGE["Biên (thiết bị)"]
     ESP["ESP-C01<br/>ESP32 trên Wokwi<br/>khu C: D07, D08"]
-    SIM["SIM-A01 · SIM-B01 · SIM-C02 · SIM-D01<br/>script Node (scripts/simulate-warehouse.mjs)"]
+    ZN["SIM-A01 · SIM-B01 · SIM-D01<br/>nút khu ESP32 trên Wokwi<br/>khu A, B, D"]
+    SIM["SIM-C02<br/>script Node (scripts/simulate-warehouse.mjs)<br/>cửa D09"]
   end
   GW["Wokwi gateway<br/>ws://127.0.0.1:9011"]
   subgraph HOST["Máy chủ cục bộ 127.0.0.1"]
@@ -202,6 +203,8 @@ khoguard-iot/
 │   ├── include/controller.h  TOÀN BỘ quy tắc edge (thuần C++, test được trên PC)
 │   ├── src/main.cpp          Chỉ gọi thư viện: setup() khởi tạo, loop() chạy 3 bước
 │   ├── lib/khoguard/src/     Adapter chia module (xem §8.4): GPIO, DHT22, Serial, WiFi, MQTT/TLS
+│   ├── lib/khoguard_zone/src/ Nút khu A/B/D (xem §8.6); src/zone_main.cpp chỉ gọi thư viện này
+│   ├── wokwi/zone-a|b|d/     Project Wokwi của 3 nút khu (mạch + wokwi.toml)
 │   ├── test/controller_test.cpp  Test debounce, RFID, số người (M07–M08)
 │   ├── test/safety_test.cpp      Test cổng đóng, panic, liên động, timer, lệnh (M09–M11)
 │   ├── diagram.json          Mạch Wokwi: ESP32, DHT22, 7 công tắc, 10 LED
@@ -551,6 +554,18 @@ void loop()  { kg::edge::step(); kg::rfid::poll(); kg::environment::poll(); dela
 - **Event**: lấy từ queue; envelope (kể cả `session_id`) được tạo **lúc gửi**, nên event xếp hàng khi mất mạng vẫn đi với phiên mới hợp lệ. Queue đầy → in `EVENT_GAP` (backend sẽ thấy gap theo `seq`).
 - **onCommand**: chạy trong callback MQTT, chỉ xếp ack (≤ 4) — publish ack ở vòng lặp mạng, không bao giờ trong callback.
 - **JSON** ≤ 4096 byte; vượt thì không gửi (`JSON_LIMIT`).
+
+### 8.6 Nút khu A/B/D — `lib/khoguard_zone` (DEC-043)
+
+Firmware thứ hai, build thành 3 bản (`platformio.ini` env `zone_a`, `zone_b`, `zone_d`), chạy trong 3 project `firmware/wokwi/zone-*`. Mỗi bản dùng đúng tài khoản MQTT của khu đó (`SIM-A01`, `SIM-B01`, `SIM-D01`); `firmware:prepare` sinh `kg_secrets.h` riêng cho từng bản trong `.local/firmware/<env>`.
+
+| Module | Vai trò |
+| --- | --- |
+| `zn_config` | Chọn khu theo `-DKG_ZONE_A/B/D`: mã thiết bị, mã cửa, bảng chân |
+| `zn_node` | 3 công tắc cửa, công tắc hiện diện, nút Vào/Ra đếm người, DHT22; chống dội 30 ms bằng `kg::Input` của `controller.h`; tự tính cảnh báo cửa mở ≥ 30 s / > 60 s và bật LED |
+| `zn_network` | WiFi, Last Will, telemetry 2 s, sự kiện cửa; TLS như ESP-C01; không nhận lệnh |
+
+Nút khu không có khóa, rèm quang hay panic: telemetry gửi `beam_clear`/`panic_latched` là `null` (chưa rõ), không giả là "thông". Số người sau khi bật là *chưa xác minh* cho tới khi công tắc hiện diện ở LOW. Backend chỉ cho gửi lệnh tới thiết bị có `door_control` trong `contracts/devices.json` (ESP-C01).
 
 ### 8.5 Giao thức Serial
 

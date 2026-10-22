@@ -9,14 +9,16 @@ export const readJson = path => JSON.parse(readFileSync(path, 'utf8'));
 export const registry = readJson(new URL('../contracts/devices.json', import.meta.url));
 
 const PEM = /^-----BEGIN CERTIFICATE-----\n(?:[A-Za-z0-9+/=]{1,64}\n)+-----END CERTIFICATE-----\n?$/;
-export function firmwareSecrets(password, caPem) {
-  if (typeof password !== 'string' || !SECRET_PATTERN.test(password)) throw new Error('Invalid ESP-C01 credential');
+// user: the MQTT account compiled into this image, ESP-C01 or a Wokwi zone node (SIM-A01, SIM-B01, SIM-D01).
+export function firmwareSecrets(password, caPem, user = 'ESP-C01') {
+  if (!registry.devices.some(device => device.id === user && device.source === 'wokwi')) throw new Error('Invalid firmware device credential');
+  if (typeof password !== 'string' || !SECRET_PATTERN.test(password)) throw new Error(`Invalid ${user} credential`);
   if (caPem !== undefined && (typeof caPem !== 'string' || !PEM.test(caPem.replaceAll('\r\n', '\n')))) throw new Error('Invalid CA certificate');
   // With the demo CA the edge uses MQTT/TLS 18885 and verifies hostname + CA; without it, the localhost-only 18884 demo port.
   return '#pragma once\n'
     + 'constexpr char MQTT_HOST[] = "host.wokwi.internal";\n'
     + `constexpr int MQTT_PORT = ${caPem ? 18885 : 18884};\n`
-    + 'constexpr char MQTT_USER[] = "ESP-C01";\n'
+    + `constexpr char MQTT_USER[] = "${user}";\n`
     + `constexpr char MQTT_PASSWORD[] = "${password}";\n`
     + (caPem ? `constexpr char KG_CA_PEM[] = R"PEM(${caPem.replaceAll('\r\n', '\n')})PEM";\n#define MQTT_CA_CERT KG_CA_PEM\n` : '');
 }

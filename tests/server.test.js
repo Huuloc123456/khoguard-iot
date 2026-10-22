@@ -5,7 +5,7 @@ import { get } from 'node:http';
 import { readConfig } from '../server/config.mjs';
 import { createApp } from '../server/http.mjs';
 import { databaseReady } from '../server/database.mjs';
-import { inventoryMigration, telemetryMigration, eventsMigration, controlMigration, accessMigration, reservationMigration, seedChecksum } from '../db/migrate.mjs';
+import { inventoryMigration, telemetryMigration, eventsMigration, controlMigration, accessMigration, reservationMigration, deviceSourcesMigration, seedChecksum } from '../db/migrate.mjs';
 
 const env = { DB_HOST:'127.0.0.1', DB_PORT:'3306', DB_NAME:'khoguard_demo', DB_USER:'khoguard_runtime', DB_PASSWORD:'a'.repeat(48), DB_MIGRATION_USER:'khoguard_migrate', DB_MIGRATION_PASSWORD:'b'.repeat(48), MQTT_HOST:'127.0.0.1', MQTT_PORT:'18884', MQTT_USERNAME:'khoguard-backend', MQTT_PASSWORD:'c'.repeat(48) };
 test('configuration fails closed without secrets and cannot select another schema/account or LAN bind', () => {
@@ -80,7 +80,7 @@ test('readiness exceptions do not leak credentials and no mutation route is expo
 });
 test('database readiness requires ownership, completed schema and seed; a failed connection is discarded', async () => {
   const state={server_uuid:'server',setup_id:'setup'};
-  const row={...state,checksum:inventoryMigration.checksum,seed_checksum:seedChecksum,telemetry_checksum:telemetryMigration.checksum,events_checksum:eventsMigration.checksum,control_checksum:controlMigration.checksum,access_checksum:accessMigration.checksum,reservation_checksum:reservationMigration.checksum};
+  const row={...state,checksum:inventoryMigration.checksum,seed_checksum:seedChecksum,telemetry_checksum:telemetryMigration.checksum,events_checksum:eventsMigration.checksum,control_checksum:controlMigration.checksum,access_checksum:accessMigration.checksum,reservation_checksum:reservationMigration.checksum,sources_checksum:deviceSourcesMigration.checksum};
   let released=0,destroyed=0;
   const connection={query:async()=>[[row]],release:()=>released++,destroy:()=>destroyed++};
   const pool={getConnection:async()=>connection};
@@ -95,12 +95,19 @@ test('database readiness requires ownership, completed schema and seed; a failed
   assert.equal(await databaseReady(pool,state),false,'M13 account/access schema is required');
   row.access_checksum=accessMigration.checksum; row.reservation_checksum=null;
   assert.equal(await databaseReady(pool,state),false,'M14 slot/reservation schema is required');
-  row.reservation_checksum=reservationMigration.checksum; row.checksum=null;
+  row.reservation_checksum=reservationMigration.checksum; row.sources_checksum=null;
+  assert.equal(await databaseReady(pool,state),false,'zone-node device sources (007) are required');
+  row.sources_checksum=deviceSourcesMigration.checksum; row.checksum=null;
   assert.equal(await databaseReady(pool,state),false);
   connection.query=async()=>{throw new Error('disconnected');};
   assert.equal(await databaseReady(pool,state),false);
   assert.equal(destroyed,1);
-  assert.equal(released,8);
+  assert.equal(released,9);
+});
+
+test('moving zones A/B/D to Wokwi keeps the checksum of the inventory seed applied before 007', () => {
+  // Value stored in infra_meta.seed_registry_v1 by the original seed; it must never change without a new migration.
+  assert.equal(seedChecksum,'88d0267fc3ea15c6a0def0532618e583c348d6cbff492fdc830fd576cbf165d1');
 });
 
 test('control routes: same-origin JSON only, bounded body, door commands only through a live session', async t => {

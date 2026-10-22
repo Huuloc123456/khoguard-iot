@@ -10,8 +10,8 @@ export function parseCommandRequest(doorId,raw) {
   let body;
   try {body=JSON.parse(raw);} catch {invalid('INVALID_COMMAND');}
   if (!body || typeof body!=='object' || Array.isArray(body) || Object.keys(body).join()!=='action' || !['open','close','reset_panic'].includes(body.action)) invalid('INVALID_COMMAND');
-  // Only the Wokwi controller runs local door rules; simulators have no actuator to command.
-  if (device.source!=='wokwi') invalid('NOT_COMMANDABLE');
+  // Only the door controller (ESP-C01) runs local door rules; zone nodes and simulators have no actuator to command.
+  if (!device.door_control) invalid('NOT_COMMANDABLE');
   return {door:doorId,action:body.action,device:device.id};
 }
 

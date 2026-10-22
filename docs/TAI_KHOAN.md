@@ -25,10 +25,10 @@ Chọn **Nguồn dữ liệu → Backend / MQTT** rồi đăng nhập.
 | `khoguard-backend` | `1234` | Backend | Đọc `telemetry`, `events`, `status`, `acks` của mọi thiết bị; ghi `commands` |
 | `khoguard-observer` | `1234` | Script kiểm tra, MQTTX để quan sát | Chỉ đọc 4 topic trên và `commands`; không ghi được gì |
 | `ESP-C01` | `1234` | ESP32 trên Wokwi (khu C, cửa D07/D08) | Ghi `telemetry`, `events`, `status`, `acks` của chính nó; đọc `commands` của chính nó |
-| `SIM-A01` | `1234` | Script mô phỏng khu A | Như ESP-C01, trên topic của chính nó |
-| `SIM-B01` | `1234` | Script mô phỏng khu B | Như trên |
+| `SIM-A01` | `1234` | Nút khu A trên Wokwi (`firmware/wokwi/zone-a`) | Như ESP-C01, trên topic của chính nó |
+| `SIM-B01` | `1234` | Nút khu B trên Wokwi (`firmware/wokwi/zone-b`) | Như trên |
 | `SIM-C02` | `1234` | Script mô phỏng khu C (cửa D09) | Như trên |
-| `SIM-D01` | `1234` | Script mô phỏng khu D | Như trên |
+| `SIM-D01` | `1234` | Nút khu D trên Wokwi (`firmware/wokwi/zone-d`) | Như trên |
 
 - Topic: `khoguard/v1/WH01/devices/<tài khoản thiết bị>/<loại>`.
 - Kết nối TLS dùng CA demo ở `.local/tls/ca.crt`, hostname `localhost` hoặc `127.0.0.1`.

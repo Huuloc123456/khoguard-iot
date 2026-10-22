@@ -1,0 +1,354 @@
+{
+  "version": 1,
+  "author": "KhoGuard",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-esp32-devkit-v1",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht",
+      "top": -10,
+      "left": 190,
+      "attrs": {
+        "temperature": "23",
+        "humidity": "55"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "pullup",
+      "top": -35,
+      "left": 135,
+      "rotate": 90,
+      "attrs": {
+        "value": "10000"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "contact-d10",
+      "top": 200,
+      "left": -220,
+      "attrs": {
+        "value": ""
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-contact-d10",
+      "top": 170,
+      "left": -235,
+      "attrs": {
+        "text": "D10 cửa: HIGH=mở"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "contact-d11",
+      "top": 200,
+      "left": -70,
+      "attrs": {
+        "value": ""
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-contact-d11",
+      "top": 170,
+      "left": -85,
+      "attrs": {
+        "text": "D11 cửa: HIGH=mở"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "contact-d12",
+      "top": 200,
+      "left": 80,
+      "attrs": {
+        "value": ""
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-contact-d12",
+      "top": 170,
+      "left": 65,
+      "attrs": {
+        "text": "D12 cửa: HIGH=mở"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "presence",
+      "top": 200,
+      "left": 230,
+      "attrs": {
+        "value": ""
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-presence",
+      "top": 170,
+      "left": 215,
+      "attrs": {
+        "text": "Hiện diện: HIGH=có người"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn-in",
+      "top": 290,
+      "left": -220,
+      "attrs": {
+        "color": "green",
+        "bounce": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-btn-in",
+      "top": 265,
+      "left": -225,
+      "attrs": {
+        "text": "Vào (+1 người)"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn-out",
+      "top": 290,
+      "left": -70,
+      "attrs": {
+        "color": "red",
+        "bounce": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-btn-out",
+      "top": 265,
+      "left": -75,
+      "attrs": {
+        "text": "Ra (-1 người)"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-warning",
+      "top": 390,
+      "left": -220,
+      "attrs": {
+        "color": "yellow"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-led-warning",
+      "top": 365,
+      "left": -235,
+      "attrs": {
+        "text": "Cửa mở ≥ 30 s"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-critical",
+      "top": 390,
+      "left": -70,
+      "attrs": {
+        "color": "red"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-led-critical",
+      "top": 365,
+      "left": -85,
+      "attrs": {
+        "text": "Cửa mở > 60 s"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-title",
+      "top": 140,
+      "left": -220,
+      "attrs": {
+        "text": "Khu D · SIM-D01 · cửa D10, D11, D12"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "esp:TX0",
+      "$serialMonitor:RX",
+      "",
+      []
+    ],
+    [
+      "esp:RX0",
+      "$serialMonitor:TX",
+      "",
+      []
+    ],
+    [
+      "esp:3V3",
+      "dht:VCC",
+      "red",
+      []
+    ],
+    [
+      "esp:GND.1",
+      "dht:GND",
+      "black",
+      []
+    ],
+    [
+      "esp:D15",
+      "dht:SDA",
+      "green",
+      []
+    ],
+    [
+      "pullup:1",
+      "dht:VCC",
+      "red",
+      []
+    ],
+    [
+      "pullup:2",
+      "dht:SDA",
+      "green",
+      []
+    ],
+    [
+      "contact-d10:2",
+      "esp:RX2",
+      "green",
+      []
+    ],
+    [
+      "contact-d10:1",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "contact-d10:3",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "contact-d11:2",
+      "esp:TX2",
+      "green",
+      []
+    ],
+    [
+      "contact-d11:1",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "contact-d11:3",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "contact-d12:2",
+      "esp:D18",
+      "green",
+      []
+    ],
+    [
+      "contact-d12:1",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "contact-d12:3",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "presence:2",
+      "esp:D19",
+      "green",
+      []
+    ],
+    [
+      "presence:1",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "presence:3",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "btn-in:1.l",
+      "esp:D21",
+      "green",
+      []
+    ],
+    [
+      "btn-in:2.l",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "btn-out:1.l",
+      "esp:D22",
+      "green",
+      []
+    ],
+    [
+      "btn-out:2.l",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "led-warning:A",
+      "esp:D25",
+      "yellow",
+      []
+    ],
+    [
+      "led-warning:C",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "led-critical:A",
+      "esp:D26",
+      "red",
+      []
+    ],
+    [
+      "led-critical:C",
+      "esp:GND.2",
+      "black",
+      []
+    ]
+  ],
+  "dependencies": {}
+}

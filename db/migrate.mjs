@@ -17,9 +17,15 @@ export const accessMigration = {version:'005_access',sql:text('./migrations/005_
 accessMigration.checksum = hash(accessMigration.sql);
 export const reservationMigration = {version:'006_reservations',sql:text('./migrations/006_reservations.sql')};
 reservationMigration.checksum = hash(reservationMigration.sql);
+export const deviceSourcesMigration = {version:'007_device_sources',sql:text('./migrations/007_device_sources.sql')};
+deviceSourcesMigration.checksum = hash(deviceSourcesMigration.sql);
+// The inventory seed checksum is tied to the registry as first seeded. 007_device_sources later moved zones A/B/D to
+// Wokwi and marked ESP-C01 as the only door controller; undo exactly that to recover the seeded registry.
+const V1_SOURCES = {'SIM-A01':'node-simulator','SIM-B01':'node-simulator','SIM-D01':'node-simulator'};
+const seededRegistry = {...registry,devices:registry.devices.map(({door_control,...device})=>V1_SOURCES[device.id] ? {...device,source:V1_SOURCES[device.id]} : device)};
 const seedText = text('./seeds/inventory.json');
 const labels = JSON.parse(seedText);
-export const seedChecksum = hash(JSON.stringify(registry)+seedText);
+export const seedChecksum = hash(JSON.stringify(seededRegistry)+seedText);
 export const inventorySeed = {
   warehouse:{id:registry.warehouse_id,name:labels.warehouse_name},
   zones:registry.zones.map(id=>({id,warehouse_id:registry.warehouse_id,name:labels.zone_names[id]})),
@@ -114,8 +120,10 @@ async function applyAfter(connection,state,previous,migration,tables) {
     assert.equal(migrationAction(base[0],previous.checksum),'skip',`Apply ${previous.version} first`);
     const [rows]=await connection.execute('SELECT checksum, status FROM schema_migrations WHERE version = ?',[migration.version]);
     if (migrationAction(rows[0],migration.checksum)==='skip') return {applied:false};
-    const [existing]=await connection.execute(`SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN (${tables.map(()=>'?').join(', ')})`,tables);
-    assert.equal(existing.length,0,`${migration.version} table collision; refusing changes`);
+    if (tables.length) {
+      const [existing]=await connection.execute(`SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN (${tables.map(()=>'?').join(', ')})`,tables);
+      assert.equal(existing.length,0,`${migration.version} table collision; refusing changes`);
+    }
     await connection.execute('INSERT INTO schema_migrations (version, checksum, status) VALUES (?, ?, ?)',[migration.version,migration.checksum,'applying']);
     for (const statement of migration.sql.split(';').map(sql=>sql.trim()).filter(Boolean)) await connection.query(statement);
     await connection.execute('UPDATE schema_migrations SET status = ?, applied_at = CURRENT_TIMESTAMP WHERE version = ?',['complete',migration.version]);
@@ -127,3 +135,4 @@ export const applyEvents = (connection,state) => applyAfter(connection,state,tel
 export const applyControl = (connection,state) => applyAfter(connection,state,eventsMigration,controlMigration,['door_commands','alerts','alert_acks']);
 export const applyAccess = (connection,state) => applyAfter(connection,state,controlMigration,accessMigration,['users','user_sessions','auth_audit','access_cards','access_audit']);
 export const applyReservations = (connection,state) => applyAfter(connection,state,accessMigration,reservationMigration,['slots','reservations']);
+export const applyDeviceSources = (connection,state) => applyAfter(connection,state,reservationMigration,deviceSourcesMigration,[]);

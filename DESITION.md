@@ -265,3 +265,19 @@ Mỗi quyết định mới thêm DEC-xxx với ngày, trạng thái, lý do và
 - Kiểm tra định dạng đổi từ "48 ký tự hex" / "≥ 12 ký tự" thành `SECRET_PATTERN` = 4–128 chữ/số (`server/config.mjs`). Vẫn chỉ chữ/số vì mật khẩu được ghi vào `kg_secrets.h` (C++) và câu SQL; test chống chèn C++/SQL giữ nguyên.
 - MySQL: mỗi tài khoản dự án tự `ALTER USER CURRENT_USER()` bằng mật khẩu cũ, không dùng tài khoản admin (`mysql-admin.env` để trống). **Không** đổi tài khoản admin MySQL hay service Mosquitto 1883 vì dùng chung với ứng dụng khác (DEC-007).
 - Cài mới vẫn sinh mật khẩu ngẫu nhiên; `1234` chỉ là giá trị đang dùng trong `.local` của máy demo. Hệ quả: ai trên máy này đọc được tài liệu là đăng nhập được broker/DB/dashboard; chấp nhận vì mọi dịch vụ chỉ nghe 127.0.0.1. Đưa ra mạng phải đổi lại mật khẩu dài ngẫu nhiên.
+
+## DEC-042 — Mô phỏng khu A/B/D sinh động
+
+- Ngày 13/10/2026; người dùng yêu cầu, đã chạy thật với backend. `demo:warehouse` mặc định cho SIM-A01, SIM-B01, SIM-D01 tự đóng mở cửa (mỗi lượt 2 s có 2 % mở; 10 % lượt mở kéo dài 35–75 s), số người đổi từng người một (0–4), và sự cố nhiệt định kỳ: kho B lên 9,5 °C (từ giây 60, lặp mỗi 5 phút), kho A lên 31,5 °C (từ giây 180, lặp mỗi 7 phút), giữ 20 s rồi hạ về dưới ngưỡng 1 °C.
+- Thiết bị mô phỏng tự tính báo động cửa mở (≥ 30 s cảnh báo, > 60 s nghiêm trọng) giống `controller.h`, gửi trong `alarms`; backend chỉ phản ánh như với ESP-C01 (DEC-022). Cảnh báo nhiệt do backend tính theo ngưỡng khu như cũ. Cửa đổi trạng thái gửi thêm event `door`.
+- Logic nằm trong `scripts/sim-behaviour.mjs` (hàm thuần, PRNG theo seed, đồng hồ ảo) để test được; `--steady` giữ hành vi tĩnh cũ. SIM-C02 (D09) và ESP-C01 không đổi để không lẫn với demo an toàn khu C.
+- Hệ quả: trong lúc demo sẽ có cảnh báo A/B/D tự bật/tắt. Đó là dữ liệu mô phỏng, không phải lỗi.
+
+## DEC-043 — Nút khu ESP32 trên Wokwi cho khu A, B, D
+
+- Ngày 14/10/2026; người dùng chọn làm cả 3 khu. Thêm firmware "nút khu" (`firmware/lib/khoguard_zone`, `src/zone_main.cpp`), build 3 bản theo env PlatformIO và 3 project Wokwi `firmware/wokwi/zone-a|b|d`. Mỗi bản chỉ chứa mật khẩu MQTT của khu đó. Script Node mặc định chỉ còn chạy cửa D09 (SIM-C02).
+- Giữ nguyên mã thiết bị `SIM-A01/B01/D01` vì tài khoản MQTT, ACL và lịch sử MySQL đều gắn với chúng; chỉ đổi `source` sang `wokwi` trong `contracts/devices.json` và bằng migration `007_device_sources`. Checksum seed (`seed_registry_v1`) vẫn tính trên registry lúc seed: `db/migrate.mjs` hoàn lại đúng thay đổi của 007 trước khi băm; có test khóa giá trị checksum.
+- Quyền gửi lệnh tách khỏi nguồn: chỉ thiết bị có `door_control` (ESP-C01) nhận lệnh cửa; trước đây điều kiện là `source = wokwi`.
+- Nút khu không có khóa/rèm quang/panic nên báo `null`, không báo "thông". Cảnh báo cửa mở do nút khu tự tính (giống DEC-022); số người dùng nút Vào/Ra, chưa xác minh sau khi bật cho tới khi hiện diện LOW (giống DEC-017).
+- Phương án dự phòng: `demo:warehouse --with-fake-zones` (hoặc `run.bat web`/`fake`) giả lập 3 khu bằng Node ở chế độ sinh động DEC-042, nhưng giao diện vẫn ghi Wokwi; phải nói rõ khi demo.
+- Sự cố khi áp dụng: lần chạy đầu migration 007 lỗi vì dòng chú thích có dấu `;` mà trình chạy migration cắt câu theo `;`. Câu UPDATE chưa chạy; đã kiểm tra bảng `devices` không đổi, xóa đúng dòng nhật ký 007 trạng thái `applying` rồi chạy lại thành công. Chú thích trong file migration không được chứa `;`.

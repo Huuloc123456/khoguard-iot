@@ -25,11 +25,11 @@
     {"id":"D12","zone":"D","state":"closed","beam_clear":true,"panic_latched":false,"local_inputs_healthy":true,"open_seconds":0,"updated_at":"2026-10-12T02:00:00.000Z"}
   ],
   "devices": [
-    {"id":"SIM-A01","zone":"A","source":"node-simulator","state":"online","freshness":"fresh","last_seen_at":"2026-10-12T02:00:00.000Z","boot_id":"boot-example-001","session_id":"session-example-001","controller_revision":42},
-    {"id":"SIM-B01","zone":"B","source":"node-simulator","state":"online","freshness":"fresh","last_seen_at":"2026-10-12T02:00:00.000Z","boot_id":"boot-example-001","session_id":"session-example-001","controller_revision":42},
+    {"id":"SIM-A01","zone":"A","source":"wokwi","state":"online","freshness":"fresh","last_seen_at":"2026-10-12T02:00:00.000Z","boot_id":"boot-example-001","session_id":"session-example-001","controller_revision":42},
+    {"id":"SIM-B01","zone":"B","source":"wokwi","state":"online","freshness":"fresh","last_seen_at":"2026-10-12T02:00:00.000Z","boot_id":"boot-example-001","session_id":"session-example-001","controller_revision":42},
     {"id":"ESP-C01","zone":"C","source":"wokwi","state":"online","freshness":"fresh","last_seen_at":"2026-10-12T02:00:00.000Z","boot_id":"boot-example-001","session_id":"session-example-001","controller_revision":42},
     {"id":"SIM-C02","zone":"C","source":"node-simulator","state":"online","freshness":"fresh","last_seen_at":"2026-10-12T02:00:00.000Z","boot_id":"boot-example-001","session_id":"session-example-001","controller_revision":42},
-    {"id":"SIM-D01","zone":"D","source":"node-simulator","state":"online","freshness":"fresh","last_seen_at":"2026-10-12T02:00:00.000Z","boot_id":"boot-example-001","session_id":"session-example-001","controller_revision":42}
+    {"id":"SIM-D01","zone":"D","source":"wokwi","state":"online","freshness":"fresh","last_seen_at":"2026-10-12T02:00:00.000Z","boot_id":"boot-example-001","session_id":"session-example-001","controller_revision":42}
   ],
   "alerts": [
     {"id":"door","zone":"C","code":"DOOR_OPEN_WARNING","title":"Cửa D07 mở quá thời gian","detail":"Đã mở 42 giây · Ngưỡng cảnh báo 30 giây","level":"warning","state":"active","acknowledged":false,"raised_at":"2026-10-12T02:00:00.000Z"},

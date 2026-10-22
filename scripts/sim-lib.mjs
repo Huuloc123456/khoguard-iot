@@ -20,7 +20,7 @@ export class SimDevice {
     this.spec = registry.devices.find(d => d.id === id);
     if (!this.spec) throw new Error(`unknown device ${id}`);
     Object.assign(this, { id, config, accounts, clock, label, seq: { telemetry: 0, events: 0, acks: 0 }, revision: 1, client: null });
-    this.state = { temperature: null, humidity: 55, count: 0, presence: false, doors: Object.fromEntries(this.spec.doors.map(d => [d, door(d, this.spec.source === 'wokwi' ? { locked: true } : {})])) };
+    this.state = { temperature: null, humidity: 55, count: 0, presence: false, doors: Object.fromEntries(this.spec.doors.map(d => [d, door(d, this.spec.door_control ? { locked: true } : {})])) };
     this.newBoot();
   }
   newBoot() { this.boot = `${this.label}-${randomUUID()}`; this.session = `s-${randomUUID()}`; this.seq = { telemetry: 0, events: 0, acks: 0 }; }
@@ -49,6 +49,7 @@ export class SimDevice {
     const s = this.state, p = { controller_revision: this.revision, doors: Object.values(s.doors) };
     if (this.spec.environment) p.environment = { temperature_c: s.temperature, humidity_pct: s.humidity };
     if (this.spec.occupancy) p.occupancy = { current_occupants: s.count, count_verified: true, presence: s.presence };
+    if (s.alarms?.length) p.alarms = s.alarms;
     return p;
   }
   telemetry() { return this.publish(this.envelope('telemetry', this.telemetryPayload())); }

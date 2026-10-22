@@ -238,7 +238,7 @@ test('snapshot rejects slot over-allocation, duplicate IDs and inverted temperat
     s => { s.doors[1].id = s.doors[0].id; },
     s => { s.zones[0].range = [30, 18]; },
     s => { s.doors[0].zone = 'C'; },
-    s => { s.devices[0].source = 'wokwi'; },
+    s => { s.devices[0].source = 'node-simulator'; },
   ];
   for (const mutate of mutations) {
     const value = copy(snapshot);

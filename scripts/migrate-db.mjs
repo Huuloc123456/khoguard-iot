@@ -1,7 +1,7 @@
 import mysql from 'mysql2/promise';
 import { readConfig } from '../server/config.mjs';
 import { loadOwnership } from '../server/database.mjs';
-import { applyInventory, applyTelemetry, applyEvents, applyControl, applyAccess, applyReservations } from '../db/migrate.mjs';
+import { applyInventory, applyTelemetry, applyEvents, applyControl, applyAccess, applyReservations, applyDeviceSources } from '../db/migrate.mjs';
 
 let connection;
 try {
@@ -20,6 +20,8 @@ try {
   console.log(`Access migration ${access.applied ? 'applied' : 'already complete'}; accounts come from npm run auth:setup.`);
   const reservations=await applyReservations(connection,state);
   console.log(`Slot/reservation migration ${reservations.applied ? 'applied with demo-seed occupancy' : 'already complete'}; existing reservations preserved.`);
+  const sources=await applyDeviceSources(connection,state);
+  console.log(`Device source migration ${sources.applied ? 'applied: zones A/B/D are Wokwi zone nodes' : 'already complete'}; device IDs and history unchanged.`);
 } catch (error) {
   console.error(`Migration failed (${error.code ?? 'CONFIG_OR_OWNERSHIP'})${error.code === 'CONFIG' ? `: ${error.message}` : ''}. No credentials/SQL logged; check configuration, ownership and schema_migrations before retry.`);
   process.exitCode = 1;

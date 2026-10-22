@@ -36,3 +36,25 @@ test('each firmware output pin drives one labelled LED to ground, separate from 
   }
   assert.equal(new Set([...outputs,...inputs,15]).size,outputs.length+inputs.length+1);
 });
+
+test('each zone-node Wokwi project wires the pins of zn_config.h and points at its own PlatformIO build', () => {
+  const config = readFileSync(new URL('../firmware/lib/khoguard_zone/src/zn_config.h', import.meta.url), 'utf8');
+  const pin = name => Number(new RegExp(`${name}\\s*=\\s*(\\d+)`).exec(config)[1]);
+  const contacts = /CONTACT_PINS\[3\]\s*=\s*\{([\d,\s]+)\}/.exec(config)[1].split(',').map(Number);
+  const alias = { 16: 'esp:RX2', 17: 'esp:TX2' };
+  const esp = n => alias[n] ?? `esp:D${n}`;
+  for (const [dir, env, doors] of [['zone-a', 'zone_a', ['D01', 'D02', 'D03']], ['zone-b', 'zone_b', ['D04', 'D05', 'D06']], ['zone-d', 'zone_d', ['D10', 'D11', 'D12']]]) {
+    const zone = JSON.parse(readFileSync(new URL(`../firmware/wokwi/${dir}/diagram.json`, import.meta.url)));
+    const wired = from => zone.connections.filter(c => c[0] === from).map(c => c[1]);
+    doors.forEach((door, i) => assert.deepEqual(wired(`contact-${door.toLowerCase()}:2`), [esp(contacts[i])], `${dir} ${door}`));
+    assert.deepEqual(wired('presence:2'), [esp(pin('PRESENCE_PIN'))]);
+    assert.deepEqual(wired('btn-in:1.l'), [esp(pin('IN_BUTTON_PIN'))]);
+    assert.deepEqual(wired('btn-out:1.l'), [esp(pin('OUT_BUTTON_PIN'))]);
+    assert.deepEqual(wired('led-warning:A'), [esp(pin('WARNING_LED_PIN'))]);
+    assert.deepEqual(wired('led-critical:A'), [esp(pin('CRITICAL_LED_PIN'))]);
+    assert.ok(zone.connections.some(c => c[0] === 'esp:D15' && c[1] === 'dht:SDA'));
+    const toml = readFileSync(new URL(`../firmware/wokwi/${dir}/wokwi.toml`, import.meta.url), 'utf8');
+    assert.match(toml, new RegExp(`firmware-build/${env}/firmware\\.bin`));
+    assert.doesNotMatch(toml, /rfc2217/, 'only ESP-C01 owns the RFC2217 serial port 4000');
+  }
+});
