@@ -13,8 +13,8 @@
     {
       "type": "wokwi-dht22",
       "id": "dht",
-      "top": -10,
-      "left": 190,
+      "top": -60,
+      "left": 710,
       "attrs": {
         "temperature": "-18.4",
         "humidity": "55"
@@ -23,8 +23,8 @@
     {
       "type": "wokwi-resistor",
       "id": "pullup",
-      "top": -35,
-      "left": 135,
+      "top": -60,
+      "left": 790,
       "rotate": 90,
       "attrs": {
         "value": "10000"
@@ -33,136 +33,71 @@
     {
       "type": "wokwi-slide-switch",
       "id": "contact07",
-      "top": 200,
-      "left": -220,
+      "top": -215,
+      "left": 275,
       "attrs": {
         "value": ""
-      },
-      "label": "D07 contact: HIGH=open"
+      }
     },
     {
       "type": "wokwi-slide-switch",
       "id": "contact08",
-      "top": 200,
-      "left": 230,
+      "top": -215,
+      "left": 495,
       "attrs": {
         "value": ""
-      },
-      "label": "D08 contact: HIGH=open"
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-contact07",
-      "top": 170,
-      "left": -235,
-      "attrs": {
-        "text": "D07 contact: HIGH=open"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-contact08",
-      "top": 170,
-      "left": 215,
-      "attrs": {
-        "text": "D08 contact: HIGH=open"
       }
     },
     {
       "type": "wokwi-led",
       "id": "led-lock07",
-      "top": 390,
-      "left": -220,
+      "top": -100,
+      "left": -560,
       "attrs": {
         "color": "green"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-lock07",
-      "top": 365,
-      "left": -235,
-      "attrs": {
-        "text": "D07 khóa"
       }
     },
     {
       "type": "wokwi-led",
       "id": "led-lock08",
-      "top": 390,
-      "left": -70,
+      "top": -100,
+      "left": -330,
       "attrs": {
         "color": "green"
       }
     },
     {
-      "type": "wokwi-text",
-      "id": "label-lock08",
-      "top": 365,
-      "left": -85,
-      "attrs": {
-        "text": "D08 khóa"
-      }
-    },
-    {
       "type": "wokwi-led",
       "id": "led-light",
-      "top": 480,
-      "left": -70,
+      "top": 35,
+      "left": -690,
       "attrs": {
         "color": "white"
       }
     },
     {
-      "type": "wokwi-text",
-      "id": "label-light",
-      "top": 455,
-      "left": -85,
-      "attrs": {
-        "text": "Đèn khẩn cấp"
-      }
-    },
-    {
       "type": "wokwi-led",
       "id": "led-heater",
-      "top": 480,
-      "left": 230,
+      "top": 20,
+      "left": -330,
       "attrs": {
         "color": "red"
       }
     },
     {
-      "type": "wokwi-text",
-      "id": "label-heater",
-      "top": 455,
-      "left": 215,
-      "attrs": {
-        "text": "Sưởi"
-      }
-    },
-    {
       "type": "wokwi-led",
       "id": "led-fan",
-      "top": 480,
-      "left": 380,
+      "top": 20,
+      "left": -280,
       "attrs": {
         "color": "cyan"
       }
     },
     {
-      "type": "wokwi-text",
-      "id": "label-fan",
-      "top": 455,
-      "left": 365,
-      "attrs": {
-        "text": "Quạt"
-      }
-    },
-    {
       "type": "wokwi-pushbutton",
       "id": "panic07",
-      "top": 205,
-      "left": 70,
+      "top": 0,
+      "left": 270,
       "attrs": {
         "color": "red",
         "bounce": "0",
@@ -173,8 +108,8 @@
     {
       "type": "wokwi-pushbutton",
       "id": "panic08",
-      "top": 295,
-      "left": -80,
+      "top": 0,
+      "left": 490,
       "attrs": {
         "color": "red",
         "bounce": "0",
@@ -183,225 +118,108 @@
       }
     },
     {
-      "type": "wokwi-text",
-      "id": "label-panic07",
-      "top": 170,
-      "left": 55,
-      "attrs": {
-        "text": "D07 panic (nhấn, phím 7)"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-panic08",
-      "top": 260,
-      "left": -95,
-      "attrs": {
-        "text": "D08 panic (nhấn, phím 8)"
-      }
-    },
-    {
       "type": "wokwi-pir-motion-sensor",
       "id": "presence",
-      "top": 280,
-      "left": 75,
+      "top": -215,
+      "left": 700,
       "attrs": {
         "delayTime": "10",
         "inhibitTime": "1"
       }
     },
     {
-      "type": "wokwi-text",
-      "id": "label-presence",
-      "top": 260,
-      "left": 55,
-      "attrs": {
-        "text": "Hiện diện PIR (Simulate Motion)"
-      }
-    },
-    {
       "type": "wokwi-relay-module",
       "id": "relay07",
-      "top": 540,
-      "left": -220,
+      "top": -90,
+      "left": -700,
       "attrs": {
         "transistor": "pnp"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-relay07",
-      "top": 515,
-      "left": -235,
-      "attrs": {
-        "text": "Relay khóa D07"
       }
     },
     {
       "type": "wokwi-relay-module",
       "id": "relay08",
-      "top": 540,
-      "left": -70,
+      "top": -90,
+      "left": -470,
       "attrs": {
         "transistor": "pnp"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-relay08",
-      "top": 515,
-      "left": -85,
-      "attrs": {
-        "text": "Relay khóa D08"
       }
     },
     {
       "type": "wokwi-servo",
       "id": "servo07",
-      "top": 380,
-      "left": 80,
+      "top": -210,
+      "left": -700,
       "attrs": {
         "hornColor": "#176d60"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-servo07",
-      "top": 355,
-      "left": 80,
-      "attrs": {
-        "text": "Cánh cửa D07 (servo)"
       }
     },
     {
       "type": "wokwi-servo",
       "id": "servo08",
-      "top": 380,
-      "left": 260,
+      "top": -210,
+      "left": -470,
       "attrs": {
         "hornColor": "#176d60"
       }
     },
     {
-      "type": "wokwi-text",
-      "id": "label-servo08",
-      "top": 355,
-      "left": 260,
-      "attrs": {
-        "text": "Cánh cửa D08 (servo)"
-      }
-    },
-    {
       "type": "wokwi-buzzer",
       "id": "buzzer",
-      "top": 470,
-      "left": 75,
+      "top": 25,
+      "left": -610,
       "attrs": {
         "volume": "0.3"
       }
     },
     {
-      "type": "wokwi-text",
-      "id": "label-buzzer",
-      "top": 455,
-      "left": 75,
-      "attrs": {
-        "text": "Còi"
-      }
-    },
-    {
       "type": "board-mfrc522",
       "id": "rfid",
-      "top": -10,
-      "left": -430,
+      "top": 165,
+      "left": -700,
       "attrs": {}
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-rfid",
-      "top": -40,
-      "left": -440,
-      "attrs": {
-        "text": "Đầu đọc RFID cửa D07 (Blue=DEMO-017, Green=DEMO-018, Red=DEMO-999)"
-      }
     },
     {
       "type": "wokwi-slide-switch",
       "id": "rfid-dir",
-      "top": 130,
-      "left": -400,
+      "top": 195,
+      "left": -420,
       "attrs": {
         "value": "1"
       }
     },
     {
-      "type": "wokwi-text",
-      "id": "label-rfid-dir",
-      "top": 105,
-      "left": -415,
-      "attrs": {
-        "text": "Chiều quẹt: HIGH=VÀO, LOW=RA"
-      }
-    },
-    {
       "type": "wokwi-hc-sr04",
       "id": "sonar07",
-      "top": 190,
-      "left": -90,
+      "top": -150,
+      "left": 260,
       "attrs": {
         "distance": "400"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-beam07",
-      "top": 165,
-      "left": -100,
-      "attrs": {
-        "text": "Rèm quang D07 (HC-SR04): < 100 cm = bị che"
       }
     },
     {
       "type": "wokwi-hc-sr04",
       "id": "sonar08",
-      "top": 285,
-      "left": -260,
+      "top": -150,
+      "left": 480,
       "attrs": {
         "distance": "400"
       }
     },
     {
-      "type": "wokwi-text",
-      "id": "label-beam08",
-      "top": 260,
-      "left": -270,
-      "attrs": {
-        "text": "Rèm quang D08 (HC-SR04): < 100 cm = bị che"
-      }
-    },
-    {
       "type": "wokwi-relay-module",
       "id": "relay-climate",
-      "top": 540,
-      "left": 230,
+      "top": 30,
+      "left": -470,
       "attrs": {
         "transistor": "pnp"
       }
     },
     {
-      "type": "wokwi-text",
-      "id": "label-relay-climate",
-      "top": 515,
-      "left": 215,
-      "attrs": {
-        "text": "Relay sưởi (NO) / quạt (NC)"
-      }
-    },
-    {
       "type": "wokwi-resistor",
       "id": "pulldown07",
-      "top": 240,
-      "left": 125,
+      "top": -5,
+      "left": 330,
       "rotate": 90,
       "attrs": {
         "value": "10000"
@@ -410,11 +228,263 @@
     {
       "type": "wokwi-resistor",
       "id": "pulldown08",
-      "top": 330,
-      "left": -25,
+      "top": -5,
+      "left": 550,
       "rotate": 90,
       "attrs": {
         "value": "10000"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "title",
+      "top": -330,
+      "left": -700,
+      "attrs": {
+        "text": "KHU C · ESP-C01 · cửa D07, D08 (kho lạnh)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "head-in",
+      "top": -290,
+      "left": 260,
+      "attrs": {
+        "text": "ĐẦU VÀO"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "head-out",
+      "top": -290,
+      "left": -700,
+      "attrs": {
+        "text": "ĐẦU RA"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "head-d07",
+      "top": -260,
+      "left": 260,
+      "attrs": {
+        "text": "CỬA D07"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "head-d08",
+      "top": -260,
+      "left": 480,
+      "attrs": {
+        "text": "CỬA D08"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "head-shared",
+      "top": -260,
+      "left": 700,
+      "attrs": {
+        "text": "CHUNG"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-contact07",
+      "top": -238,
+      "left": 260,
+      "attrs": {
+        "text": "Cửa: gạt lên = MỞ"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-beam07",
+      "top": -172,
+      "left": 260,
+      "attrs": {
+        "text": "Rèm quang: kéo < 100 cm = CHE"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-panic07",
+      "top": -22,
+      "left": 260,
+      "attrs": {
+        "text": "Panic D07 (phím 7)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-contact08",
+      "top": -238,
+      "left": 480,
+      "attrs": {
+        "text": "Cửa: gạt lên = MỞ"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-beam08",
+      "top": -172,
+      "left": 480,
+      "attrs": {
+        "text": "Rèm quang: kéo < 100 cm = CHE"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-panic08",
+      "top": -22,
+      "left": 480,
+      "attrs": {
+        "text": "Panic D08 (phím 8)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-presence",
+      "top": -238,
+      "left": 700,
+      "attrs": {
+        "text": "Hiện diện PIR: bấm → Simulate Motion"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-dht",
+      "top": -82,
+      "left": 700,
+      "attrs": {
+        "text": "Nhiệt độ / độ ẩm (DHT22)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-servo07",
+      "top": -238,
+      "left": -700,
+      "attrs": {
+        "text": "Cánh cửa D07 (servo)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-servo08",
+      "top": -238,
+      "left": -470,
+      "attrs": {
+        "text": "Cánh cửa D08 (servo)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-lock07",
+      "top": -118,
+      "left": -700,
+      "attrs": {
+        "text": "Khóa D07: relay → đèn xanh"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-lock08",
+      "top": -118,
+      "left": -470,
+      "attrs": {
+        "text": "Khóa D08: relay → đèn xanh"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-light",
+      "top": 5,
+      "left": -695,
+      "attrs": {
+        "text": "Đèn"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-buzzer",
+      "top": 5,
+      "left": -605,
+      "attrs": {
+        "text": "Còi"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-relay-climate",
+      "top": 5,
+      "left": -470,
+      "attrs": {
+        "text": "Relay sưởi / quạt"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-heater",
+      "top": 5,
+      "left": -335,
+      "attrs": {
+        "text": "Sưởi"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-fan",
+      "top": 5,
+      "left": -285,
+      "attrs": {
+        "text": "Quạt"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "head-rfid",
+      "top": 140,
+      "left": -700,
+      "attrs": {
+        "text": "ĐẦU ĐỌC THẺ – CỬA D07"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-rfid-dir",
+      "top": 170,
+      "left": -430,
+      "attrs": {
+        "text": "Chiều quẹt: gạt lên = VÀO, xuống = RA"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-card-blue",
+      "top": 240,
+      "left": -430,
+      "attrs": {
+        "text": "Thẻ Xanh dương = DEMO-017"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-card-green",
+      "top": 258,
+      "left": -430,
+      "attrs": {
+        "text": "Thẻ Xanh lá = DEMO-018"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-card-red",
+      "top": 276,
+      "left": -430,
+      "attrs": {
+        "text": "Thẻ Đỏ = DEMO-999 (đã thu hồi)"
       }
     }
   ],
