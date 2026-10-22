@@ -88,6 +88,7 @@ Serial in `RFID_EVENT ... result=<0 accepted|1 duplicate|2 unauthorized> count=.
 
 ## Quy tắc an toàn, lệnh và timer (M09–M11)
 
+- Linh kiện Wokwi (DEC-044): khu C có đầu đọc RFID MFRC522 ở D07 (thẻ Blue = DEMO-017, Green = DEMO-018, Red = DEMO-999; công tắc chọn chiều vào/ra), PIR, nút panic đỏ, servo cánh cửa, relay khóa, buzzer; khu A/B/D có PIR và LCD1602. Chân xem `include/config.h` và `MAPPING.md`.
 - Nút khu A/B/D (DEC-043): `src/zone_main.cpp` gọi `lib/khoguard_zone/src`; build 3 bản `zone_a`, `zone_b`, `zone_d` (cùng `npm run firmware:build`), chạy bằng project Wokwi trong `wokwi/zone-a|b|d`.
 - `src/main.cpp` chỉ gọi thư viện `lib/khoguard/src` (state, board, environment, events, edge, rfid, commands, messages, network); `platformio.ini` thêm `-Iinclude` để thư viện thấy `controller.h`.
 - Quy tắc thuần ở `include/controller.h`; test: `g++ -std=gnu++11 firmware/test/safety_test.cpp -o safety_test && ./safety_test` (6 nhóm M09/M10/M11).

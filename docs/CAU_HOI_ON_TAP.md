@@ -34,7 +34,7 @@ Dùng để chuẩn bị trả lời giảng viên sau phần trình bày [KICH_
 ## B. Phần cứng và firmware ESP32
 
 **B1 ⭐ ESP32 đọc những tín hiệu nào, chân nào?**
-> 7 đầu vào kéo lên (`INPUT_PULLUP`): mỗi cửa có contact, beam, panic (D07: 16, 17, 18; D08: 19, 21, 22) và mmWave dùng chung (23). DHT22 ở chân 15. 10 đầu ra LED: khóa ×2, motor mở/đóng ×4, đèn, còi, sưởi, quạt. Test `tests/diagram.test.js` kiểm chân trong mạch Wokwi khớp firmware. — Nguồn: `firmware/lib/khoguard/src/kg_board.h`.
+> 7 đầu vào: mỗi cửa có contact và beam (công tắc), panic (nút đỏ) — D07: 16, 17, 18; D08: 19, 21, 22 — và cảm biến PIR hiện diện dùng chung (23). DHT22 ở chân 15; đầu đọc RFID MFRC522 qua SPI (2, 13, 34, 12) kèm công tắc chọn chiều (35). Đầu ra: 2 relay khóa, 2 servo cánh cửa, buzzer, LED đèn/sưởi/quạt. Test `tests/diagram.test.js` kiểm chân trong mạch Wokwi khớp firmware. — Nguồn: `firmware/include/config.h`.
 
 **B2 ⭐⭐ Chống dội (debounce) thế nào? Tại sao cần?**
 > Mỗi đầu vào phải **giữ nguyên 30 ms** mới được chấp nhận. Trước lần ổn định đầu tiên, đầu vào ở trạng thái **unknown**, và unknown thì chặn đóng. Cần vì công tắc/cảm biến có nhiễu; nếu không chống dội, một xung nhiễu có thể làm tăng revision liên tục hoặc báo sai cửa mở/đóng. — `controller.h`, struct `Input`.
@@ -49,13 +49,13 @@ Dùng để chuẩn bị trả lời giảng viên sau phần trình bày [KICH_
 > Không. Có **hai luồng FreeRTOS**: `loop()` chạy vòng an toàn mỗi ~10 ms; MQTT chạy trong **task riêng** (`networkTask`). QoS1 chờ PUBACK chỉ chặn task mạng. Hai luồng dùng chung trạng thái `Controller` qua **critical section** (`portENTER_CRITICAL`) và một **hàng đợi FreeRTOS** 32 sự kiện. Đã thử dừng broker: đầu ra vẫn đổi đúng, chứng minh bằng log `OUTPUTS` trên Serial.
 
 **B5 ⭐⭐ RFID mô phỏng thế nào? Đọc lặp, quét ra khi chưa vào thì sao?**
-> Wokwi không có đầu đọc RC522 nên gõ dòng `RFID D07 DEMO-017 IN|OUT` vào Serial. Firmware nhớ **trạng thái trong/ngoài của từng thẻ**: quét IN khi đang ở trong là `duplicate`, không tăng; quét OUT khi chưa vào cũng `duplicate`, nên số người **không bao giờ âm**. DEMO-017, DEMO-018 hợp lệ; DEMO-999 bị `unauthorized` nhưng vẫn gửi sự kiện để ghi nhật ký. Dòng dài hơn 63 ký tự bị bỏ và số người chuyển **chưa xác minh** (có thể đã mất một lượt quẹt).
+> Dùng đầu đọc **MFRC522** của Wokwi ở cửa D07: thẻ Xanh dương = DEMO-017, Xanh lá = DEMO-018, Đỏ = DEMO-999; công tắc chọn chiều vào/ra. Dòng Serial `RFID D07 DEMO-017 IN|OUT` vẫn dùng được cho script kiểm thử. Firmware nhớ **trạng thái trong/ngoài của từng thẻ**: quét IN khi đang ở trong là `duplicate`, không tăng; quét OUT khi chưa vào cũng `duplicate`, nên số người **không bao giờ âm**. DEMO-017, DEMO-018 hợp lệ; DEMO-999 bị `unauthorized` nhưng vẫn gửi sự kiện để ghi nhật ký. Dòng dài hơn 63 ký tự bị bỏ và số người chuyển **chưa xác minh** (có thể đã mất một lượt quẹt).
 
 **B6 ⭐⭐⭐ Sau khi mất điện/khởi động lại, ESP32 biết trong kho có bao nhiêu người không?**
 > Không biết, và nhóm **không giả vờ biết**. Số người chuyển **"chưa xác minh"**, gửi lên là `null` chứ không phải 0. Chỉ xác minh lại bằng 0 khi mmWave thông **và** không còn thẻ nào ghi nhận ở trong. Trong lúc chưa xác minh, lệnh đóng bị `INPUT_UNKNOWN`. Đã thử bằng `ESP.restart()` thật trên Wokwi. — DEC-017.
 
 **B7 ⭐⭐ Cửa trong Wokwi không có motor, làm sao biết cửa "đã đóng"?**
-> Công tắc contact đóng vai **cảm biến vị trí**; LED motor là **lệnh chạy**. Lệnh chỉ khởi động chuyển động; cửa "tới nơi" khi contact đổi. Nếu sau **10 giây** chưa tới nơi → dừng motor, ghi lỗi `LOCAL_INPUT_FAILURE`. — DEC-019.
+> Công tắc contact đóng vai **cảm biến vị trí**; servo hiển thị cánh cửa khi motor chạy, nhưng **không** dùng làm cảm biến vì vị trí cửa phải được đo độc lập với lệnh motor (cửa kẹt thì servo vẫn quay). Lệnh chỉ khởi động chuyển động; cửa "tới nơi" khi contact đổi. Nếu sau **10 giây** chưa tới nơi → dừng motor, ghi lỗi `LOCAL_INPUT_FAILURE`. — DEC-019.
 
 **B8 ⭐ Tại sao gửi telemetry 2 giây/lần? Sao không gửi khi có thay đổi?**
 > 2 giây đủ nhanh để giao diện coi dữ liệu là mới (ngưỡng 10 giây cho phép mất vài bản), và đều đặn để backend **phát hiện thiết bị mất tín hiệu**. Thay đổi quan trọng (cửa, panic, RFID, đảo chiều) được gửi **ngay** dưới dạng **event** riêng, không chờ chu kỳ.
@@ -92,7 +92,7 @@ Dùng để chuẩn bị trả lời giảng viên sau phần trình bày [KICH_
 > Mở ≥ 30 giây: cảnh báo (đèn). Mở > 60 giây: nghiêm trọng (còi). Đếm trên thiết bị theo đồng hồ của ESP32. Backend chỉ phản ánh trạng thái cảnh báo theo telemetry, không tự đếm giờ. — DEC-022.
 
 **C9 ⭐⭐⭐ Nếu mmWave bỏ sót người nằm bất động thì hệ thống có nhốt người không?**
-> Có thể — đây là **giới hạn thật** nhóm ghi ở DEC-017. Hệ thống dùng **hai nguồn độc lập** (RFID và mmWave) và beam để giảm rủi ro, nhưng nếu người vào không quẹt thẻ **và** mmWave không thấy thì cả hai đều sai. Thực tế cần thêm: chốt thoát hiểm cơ học mở từ bên trong, camera nhiệt, quy trình kiểm tra trước khi đóng. Mô hình **không** đánh giá được độ nhạy của radar thật.
+> Có thể — đây là **giới hạn thật** nhóm ghi ở DEC-017. Hệ thống dùng **hai nguồn độc lập** (RFID và mmWave) và beam để giảm rủi ro, nhưng nếu người vào không quẹt thẻ **và** mmWave không thấy thì cả hai đều sai. Thực tế cần thêm: chốt thoát hiểm cơ học mở từ bên trong, camera nhiệt, quy trình kiểm tra trước khi đóng. Mô hình **không** đánh giá được độ nhạy của radar thật. Trên Wokwi còn yếu hơn: PIR chỉ bắt **chuyển động**, nên người đứng yên lâu sẽ không được thấy; Wokwi không có radar mmWave.
 
 **C10 ⭐⭐⭐ An toàn dựa vào phần mềm, lỡ ESP32 treo thì sao?**
 > Đúng, phần mềm không đủ cho an toàn tính mạng. Thực tế cần **relay an toàn độc lập, chốt thoát hiểm cơ học, watchdog phần cứng**. Mô hình chứng minh logic điều khiển; nhóm **không** khẳng định đạt chứng nhận an toàn (slide 26).

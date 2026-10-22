@@ -6,7 +6,7 @@ Làm theo từng bước để demo trực tiếp trước giảng viên. Đi k�
 
 | Cách | Khi nào dùng | Nguồn ESP-C01 |
 | --- | --- | --- |
-| **A. Trực tiếp với Wokwi** (chính) | Buổi trình bày; người demo gõ Serial, gạt công tắc, bấm trên dashboard | Firmware ESP32 thật trên Wokwi |
+| **A. Trực tiếp với Wokwi** (chính) | Buổi trình bày; người demo quẹt thẻ RFID, bấm nút/PIR, gạt công tắc cửa, bấm trên dashboard | Firmware ESP32 thật trên Wokwi |
 | **B. Tự động `demo:scenarios`** (dự phòng) | Wokwi trục trặc, hoặc cần chạy nhanh 4 kịch bản | FakeEdge bằng Node (không phải firmware) |
 
 > Trong PowerShell dùng `npm.cmd` thay cho `npm` nếu máy chặn `npm.ps1`.
@@ -73,7 +73,7 @@ MySQL là service Windows, phải đang chạy sẵn (`Get-Service MySQL*`).
 1. Mở 3 cửa sổ VS Code: `code --new-window firmware/wokwi/zone-a` (tương tự `zone-b`, `zone-d`). `run.bat` đã mở sẵn.
 2. Trong từng cửa sổ: **F1 → Wokwi: Start Simulator**.
 3. Serial Monitor phải có `KHOGUARD_ZONE device=SIM-A01 zone=A ...` rồi `MQTT_ONLINE SIM-A01 ...`.
-4. Đầu tiên mỗi khu báo số người *chưa xác minh*; để công tắc **Hiện diện** ở LOW vài giây thì về 0 (đã xác minh).
+4. Đầu tiên mỗi khu báo số người *chưa xác minh*; khi PIR không có chuyển động vài giây thì về 0 (đã xác minh). Màn hình LCD của khu hiện nhiệt độ, độ ẩm, số người và cửa đang mở.
 
 Thao tác trên nút khu:
 
@@ -82,7 +82,7 @@ Thao tác trên nút khu:
 | Mở/đóng cửa | Gạt công tắc `D0x cửa` (HIGH = mở) | Dashboard đổi trạng thái cửa, Nhật ký có sự kiện cửa |
 | Cửa mở lâu | Để cửa mở | Sau 30 s LED vàng sáng và cảnh báo "Cửa … mở từ 30 giây"; sau 60 s LED đỏ, mức nghiêm trọng |
 | Người vào/ra | Bấm nút xanh **Vào** / nút đỏ **Ra** | Số người khu đó tăng/giảm 1 |
-| Có người | Gạt **Hiện diện** lên HIGH | Dashboard hiện có hiện diện |
+| Có người | Bấm vào **PIR** → **Simulate Motion** | Dashboard hiện có hiện diện trong ~10 s |
 | Nhiệt độ ngoài ngưỡng | Bấm DHT22, kéo nhiệt độ (ví dụ khu B lên 10 °C) | Cảnh báo "Nhiệt độ khu B ngoài ngưỡng"; kéo về thì tự hết |
 
 Nút khu không có khóa, rèm quang hay panic nên dashboard hiện các tín hiệu đó là *chưa rõ*, và không gửi được lệnh cửa tới khu A/B/D (chỉ khu C điều khiển được).
@@ -102,20 +102,27 @@ Nút khu không có khóa, rèm quang hay panic nên dashboard hiện các tín 
 
 ## 3. Trạng thái nền trước khi demo
 
-Trên mạch Wokwi, mỗi công tắc có nhãn ghi nghĩa của mức HIGH. Đặt như sau:
+Mạch khu C (DEC-044) gồm:
+- **Giữ công tắc:** cửa (contact) và rèm quang (beam).
+- **Nút đỏ:** panic.
+- **Cảm biến:** PIR (hiện diện), đầu đọc RFID MFRC522 kèm công tắc chọn chiều.
+- **Cơ cấu chấp hành:** 2 servo (cánh cửa), 2 relay khóa (kèm đèn xanh), buzzer (còi), LED đèn/sưởi/quạt.
 
-| Công tắc | Mức | Ý nghĩa |
+Đặt như sau:
+
+| Linh kiện | Trạng thái | Ý nghĩa |
 | --- | --- | --- |
-| `D07 contact`, `D08 contact` | **LOW** | Hai cửa đóng |
-| `D07 beam`, `D08 beam` | **HIGH** | Rèm quang thông |
-| `D07 panic`, `D08 panic` | **LOW** | Không khẩn cấp |
-| `Presence` | **LOW** | Không thấy người |
+| Công tắc `D07 contact`, `D08 contact` | **LOW** | Hai cửa đóng |
+| Công tắc `D07 beam`, `D08 beam` | **HIGH** | Rèm quang thông |
+| Nút `D07 PANIC`, `D08 PANIC` | Không bấm | Không khẩn cấp |
+| PIR | Không bấm *Simulate Motion* trong ~10 s | Không thấy người |
+| Công tắc `Chiều quẹt` | **HIGH** | Quẹt thẻ là **vào** |
 
 Kết quả cần có:
 
-- **LED:** hai LED *khóa* xanh sáng, *Quạt* sáng; motor, đèn, còi, sưởi tắt.
+- **Wokwi:** hai relay khóa đóng và hai đèn xanh *khóa* sáng; *Quạt* sáng; hai servo ở 0° (cửa đóng); đèn, buzzer, sưởi tắt. Serial có `RFID_READER ready`.
 - **Dashboard khu C:** **0 người (đã xác minh)**, D07/D08 *Đóng · Đã khóa*.
-- **Nếu số người là "chưa xác minh"** (vừa reboot hoặc còn thẻ ở trong): gõ `RFID D07 DEMO-017 OUT` / `RFID D07 DEMO-018 OUT` cho thẻ còn trong, giữ Presence LOW, chờ vài giây.
+- **Nếu số người là "chưa xác minh"** (vừa reboot hoặc còn thẻ ở trong): gạt `Chiều quẹt` sang LOW (ra), quẹt các thẻ còn ở trong, gạt lại HIGH, chờ PIR hết tín hiệu.
 
 ---
 
@@ -138,13 +145,17 @@ Mỗi kịch bản ghi **Làm**, **Thấy trên Wokwi/Serial**, **Thấy trên d
 
 ### Demo 1 — Ra/vào bằng RFID (≈ 45 giây)
 
+Bấm vào **đầu đọc RFID** trên mạch để mở bảng điều khiển: chọn thẻ rồi bấm **Tap**. Thẻ **Xanh dương = DEMO-017**, **Xanh lá = DEMO-018**, **Đỏ = DEMO-999** (đã thu hồi). Công tắc `Chiều quẹt`: HIGH = vào, LOW = ra.
+
 | # | Làm | Thấy |
 | --- | --- | --- |
-| 1 | Serial Monitor gõ `RFID D07 DEMO-017 IN` + Enter | Serial: `RFID_EVENT door=D07 card=DEMO-017 dir=in result=0 count=1 verified=1`. Dashboard khu C: **1 người** |
-| 2 | Gõ lại `RFID D07 DEMO-017 IN` | `result=1` (duplicate), **vẫn 1 người** |
-| 3 | (Tùy chọn) gõ `RFID D07 DEMO-999 IN` | `result=2` (unauthorized), số người không đổi; Nhật ký vẫn ghi thẻ bị từ chối |
+| 1 | `Chiều quẹt` HIGH, chọn thẻ **Xanh dương**, bấm **Tap** | Serial: `RFID_EVENT door=D07 card=DEMO-017 dir=in result=0 count=1 verified=1`. Dashboard khu C: **1 người** |
+| 2 | Bấm **Tap** thẻ Xanh dương lần nữa | `result=1` (duplicate), **vẫn 1 người** |
+| 3 | (Tùy chọn) chọn thẻ **Đỏ**, **Tap** | `result=2` (unauthorized), số người không đổi; Nhật ký vẫn ghi thẻ bị từ chối |
 | 4 | Đợi 2 s, dashboard D07 bấm **Đóng cửa** | Dashboard: *Bị từ chối: RFID còn người trong kho* (OCCUPIED). Serial: `COMMAND … D07 close -> OCCUPIED` |
-| 5 | Gõ `RFID D07 DEMO-017 OUT` | `count=0 verified=1`. Dashboard: **0 người** |
+| 5 | Gạt `Chiều quẹt` LOW, **Tap** thẻ Xanh dương, gạt lại HIGH | `dir=out count=0 verified=1`. Dashboard: **0 người** |
+
+Nếu đầu đọc không phản hồi (Serial báo `RFID_READER missing`), vẫn demo được bằng cách gõ vào Serial Monitor `RFID D07 DEMO-017 IN` / `OUT`.
 
 **Câu nói:** "Đọc lặp không tăng số người. Còn người thì chính ESP32 từ chối đóng, kể cả khi lệnh tới từ dashboard."
 
@@ -152,11 +163,11 @@ Mỗi kịch bản ghi **Làm**, **Thấy trên Wokwi/Serial**, **Thấy trên d
 
 | # | Làm | Thấy |
 | --- | --- | --- |
-| 1 | Gạt **Presence → HIGH** | Dashboard: cảnh báo *RFID báo 0 người nhưng mmWave còn tín hiệu ở khu C* |
-| 2 | Đợi 2 s, D07 bấm **Đóng cửa** | *Bị từ chối: mmWave còn phát hiện người trong kho* (PRESENCE_DETECTED) |
-| 3 | Gạt **Presence → LOW** | Cảnh báo tự hết sau một chu kỳ |
+| 1 | Bấm vào **PIR**, chọn **Simulate Motion** | Dashboard: cảnh báo *RFID báo 0 người nhưng mmWave còn tín hiệu ở khu C* |
+| 2 | Trong vòng 10 s, D07 bấm **Đóng cửa** (bấm Simulate Motion lại nếu cần giữ tín hiệu) | *Bị từ chối: mmWave còn phát hiện người trong kho* (PRESENCE_DETECTED) |
+| 3 | Không bấm gì thêm | PIR tự về LOW sau 10 s; cảnh báo tự hết |
 
-**Câu nói:** "RFID có thể sai, ví dụ người đi theo không quẹt thẻ. Hai nguồn độc lập phải cùng nói *không có người* mới được đóng."
+**Câu nói:** "RFID có thể sai, ví dụ người đi theo không quẹt thẻ. Hai nguồn độc lập phải cùng nói *không có người* mới được đóng." Nếu bị hỏi: PIR chỉ bắt **chuyển động**, người đứng yên lâu có thể không thấy; thiết kế thật dùng radar mmWave, Wokwi không có linh kiện này.
 
 ### Demo 3 — Khẩn cấp (panic) và đặt lại (≈ 90 giây)
 
@@ -164,17 +175,18 @@ Bắt đầu với cửa D07 **đóng**.
 
 | # | Làm | Thấy |
 | --- | --- | --- |
-| 1 | Gạt **D07 panic → HIGH** | **LED:** *khóa* D07 và D08 tắt; *D07 motor mở* sáng; *Đèn*, *Còi*, *Sưởi* sáng; *Quạt* tắt. **Serial:** `INPUT_EVENT door=D07 panic=1 …` và dòng `OUTPUTS …`. **Dashboard:** cảnh báo khẩn cấp, D07 *Khẩn cấp đang chốt* |
-| 2 | Trong **10 giây**, gạt **D07 contact → HIGH** (cửa đã mở tới nơi) | *D07 motor mở* tắt, D07 hiện *Mở · Không khóa* |
-| 3 | Gạt **D07 panic → LOW** (nhả nút) | Panic **vẫn chốt**: đèn, còi, sưởi vẫn sáng |
+| 1 | Bấm nút đỏ **D07 PANIC** (hoặc phím `7` khi mạch đang được chọn) | **Wokwi:** hai relay nhả, đèn *khóa* tắt; servo D07 quay sang 90° (cửa mở ra); *Đèn*, *Sưởi* sáng, **buzzer kêu**; *Quạt* tắt. **Serial:** `INPUT_EVENT door=D07 panic=1 …` và `OUTPUTS …`. **Dashboard:** cảnh báo khẩn cấp, D07 *Khẩn cấp đang chốt* |
+| 2 | Trong **10 giây**, gạt **D07 contact → HIGH** (cảm biến báo cửa đã mở tới nơi) | Motor dừng, D07 hiện *Mở · Không khóa* |
+| 3 | (Nút đã tự nhả sau khi bấm) | Panic **vẫn chốt**: đèn, buzzer, sưởi vẫn bật |
 | 4 | Ở cảnh báo khẩn cấp, bấm **Tiếp nhận** | Hiện *Đã tiếp nhận* nhưng D07 **vẫn** *Khẩn cấp đang chốt* |
 | 5 | D07 bấm **Đóng cửa** | *Bị từ chối: nút khẩn cấp đang chốt hoặc chưa nhả* (PANIC_ACTIVE) |
 | 6 | Đợi 2 s, D07 bấm **Đặt lại khẩn cấp** | *Đã áp dụng tại thiết bị*. Sưởi tắt, quạt sáng lại. Đèn/còi có thể **vẫn sáng** nếu D07 đã mở quá 30/60 s: đó là cảnh báo cửa mở lâu, sẽ tắt khi đóng cửa |
-| 7 | Đợi 2 s, D07 bấm **Đóng cửa** | *Đã áp dụng tại thiết bị*, LED *D07 motor đóng* sáng, D07 *Đang đóng* |
-| 8 | Trong **10 giây**, gạt **D07 contact → LOW** | Motor tắt, *khóa D07* sáng lại, đèn/còi tắt; dashboard *Đóng · Đã khóa* |
+| 7 | Đợi 2 s, D07 bấm **Đóng cửa** | *Đã áp dụng tại thiết bị*, servo D07 quay về 0°, D07 *Đang đóng* |
+| 8 | Trong **10 giây**, gạt **D07 contact → LOW** | Motor dừng, relay khóa D07 đóng lại và đèn *khóa* sáng, đèn/buzzer tắt; dashboard *Đóng · Đã khóa* |
 
 **Lưu ý:**
-- Nếu bấm **Đặt lại khẩn cấp** khi panic còn HIGH, lệnh bị từ chối (PANIC_ACTIVE). Có thể làm cố ý để chứng minh nút phải được nhả trước.
+- Muốn chứng minh "nút phải được nhả trước": **giữ chuột** trên nút D07 PANIC rồi bấm **Đặt lại khẩn cấp** trên dashboard → bị từ chối (PANIC_ACTIVE).
+- Servo chỉ để **nhìn** cánh cửa. Vị trí cửa vẫn do công tắc contact (cảm biến độc lập với motor) báo, nên vẫn phải gạt contact.
 - Quên gạt contact trong 10 giây thì Serial in `SAFETY_EVENT door=D07 travel timeout LOCAL_INPUT_FAILURE` và motor dừng. Đây là cơ chế bảo vệ khi cửa kẹt, giải thích được, không phải lỗi.
 
 **Câu nói:** "Panic nhả khóa cả hai cửa, bỏ qua liên động. Tiếp nhận cảnh báo chỉ ghi nhận, không xóa panic. Xóa cần nút đã nhả **và** người có quyền ra lệnh. Mất broker thì toàn bộ phản ứng này vẫn chạy trên ESP32; nhóm đã kiểm chứng ở lượt nghiệm thu."
@@ -202,16 +214,16 @@ Từ chối vì **vượt 95%** (`CAPACITY_LIMIT`) cần đẩy kho gần đầy
 3. Gạt D07 contact về LOW.
 
 **5b. Rèm quang làm cửa đảo chiều (≈ 30 giây)**
-1. D07 mở (contact HIGH), không người, presence LOW, beam HIGH.
-2. Bấm **Đóng cửa** D07 → *D07 motor đóng* sáng.
+1. D07 mở (contact HIGH), không người, PIR không tín hiệu, beam HIGH.
+2. Bấm **Đóng cửa** D07 → servo D07 bắt đầu quay về 0°.
 3. **Ngay lập tức** gạt **D07 beam → LOW** (bị che).
-4. Thấy Serial `SAFETY_EVENT door=D07 closing reversed BEAM_BLOCKED`, motor đóng tắt.
+4. Thấy servo quay ngược lại 90° và Serial `SAFETY_EVENT door=D07 closing reversed BEAM_BLOCKED`.
 5. Gạt beam về HIGH.
 
 **5c. Cửa mở lâu**
 1. Để D07 mở (contact HIGH).
 2. Sau **30 giây** LED *Đèn khẩn cấp* sáng và dashboard cảnh báo cửa mở lâu.
-3. Sau **60 giây** *Còi* sáng, mức nghiêm trọng.
+3. Sau **60 giây** buzzer kêu, mức nghiêm trọng.
 4. Đóng lại (contact LOW): cảnh báo tự hết.
 
 **5d. Nhật ký và CSV**

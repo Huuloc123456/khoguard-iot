@@ -8,6 +8,7 @@ void setup() {
   kg::state::begin();
   kg::environment::begin();
   kg::board::begin();
+  kg::rfid::begin();
   if (!kg::events::begin()) return;
   kg::network::start();
 }

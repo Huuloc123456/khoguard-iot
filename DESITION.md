@@ -281,3 +281,10 @@ Mỗi quyết định mới thêm DEC-xxx với ngày, trạng thái, lý do và
 - Nút khu không có khóa/rèm quang/panic nên báo `null`, không báo "thông". Cảnh báo cửa mở do nút khu tự tính (giống DEC-022); số người dùng nút Vào/Ra, chưa xác minh sau khi bật cho tới khi hiện diện LOW (giống DEC-017).
 - Phương án dự phòng: `demo:warehouse --with-fake-zones` (hoặc `run.bat web`/`fake`) giả lập 3 khu bằng Node ở chế độ sinh động DEC-042, nhưng giao diện vẫn ghi Wokwi; phải nói rõ khi demo.
 - Sự cố khi áp dụng: lần chạy đầu migration 007 lỗi vì dòng chú thích có dấu `;` mà trình chạy migration cắt câu theo `;`. Câu UPDATE chưa chạy; đã kiểm tra bảng `devices` không đổi, xóa đúng dòng nhật ký 007 trạng thái `applying` rồi chạy lại thành công. Chú thích trong file migration không được chứa `;`.
+
+## DEC-044 — Linh kiện Wokwi thay công tắc (đợt 1)
+
+- Ngày 22/10/2026; người dùng chọn đợt 1. Wokwi đã có đầu đọc **MFRC522** (`board-mfrc522`), nên phần "Wokwi không có RC522" của DEC-016 không còn đúng. Khu C: MFRC522 ở cửa D07 kèm công tắc chọn chiều, PIR thay công tắc hiện diện, nút nhấn đỏ thay công tắc panic, 2 servo thay 4 LED motor, 2 relay khóa (đèn xanh là tải), buzzer 2 kHz thay LED còi. Khu A/B/D: PIR thay công tắc hiện diện, thêm LCD1602 I2C.
+- **Giữ công tắc** cho contact (Wokwi không có cảm biến từ, và vị trí cửa phải được đo độc lập với motor: servo chỉ để nhìn) và rèm quang (đợt 2 sẽ thử HC-SR04).
+- Chân: SPI mặc định trùng input nên MFRC522 dùng GPIO matrix (SCK 2, MOSI 13, MISO 34, SS 12), RST nối 3V3; GPIO12 là chân strapping, chỉ chấp nhận được trong mô phỏng. Panic dùng `INPUT_PULLDOWN` nên nhấn vẫn đọc HIGH, `controller.h` không đổi. Thẻ mẫu Wokwi Blue/Green/Red ánh xạ DEMO-017/018/999; thẻ khác báo `UID-<hex>` và bị từ chối. Dòng Serial RFID vẫn nhận để script nghiệm thu chạy được.
+- Hệ quả: **PIR chỉ bắt chuyển động** (giữ HIGH 10 s sau mỗi lần), yếu hơn mmWave; bài mắc kẹt > 5 phút phải bấm lặp Simulate Motion hoặc tạm tăng `delayTime`. Bằng chứng Wokwi cũ làm với công tắc; phải nghiệm thu lại với mạch mới. Firmware build cả 4 bản, test C++ và JS đạt; **chưa chạy trên Wokwi** lúc ghi mục này.

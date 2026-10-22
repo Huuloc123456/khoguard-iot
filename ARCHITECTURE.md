@@ -207,7 +207,7 @@ khoguard-iot/
 │   ├── wokwi/zone-a|b|d/     Project Wokwi của 3 nút khu (mạch + wokwi.toml)
 │   ├── test/controller_test.cpp  Test debounce, RFID, số người (M07–M08)
 │   ├── test/safety_test.cpp      Test cổng đóng, panic, liên động, timer, lệnh (M09–M11)
-│   ├── diagram.json          Mạch Wokwi: ESP32, DHT22, 7 công tắc, 10 LED
+│   ├── diagram.json          Mạch Wokwi: ESP32, DHT22, MFRC522, PIR, nút panic, servo, relay, buzzer
 │   └── wokwi.toml            Firmware, gateway 9011, Serial RFC2217 :4000
 │
 ├── server/                   BACKEND
@@ -414,26 +414,27 @@ Luôn có đủ 4 khu, 12 cửa, 5 thiết bị. Thiếu dữ liệu thì giá t
 | --- | --- | --- | --- |
 | 16 (RX2) | slide switch `contact07` | Cửa D07 **mở** | 0 |
 | 17 (TX2) | slide switch `beam07` | Rèm quang D07 **thông** | 1 |
-| 18 | slide switch `panic07` | Nút khẩn cấp D07 **đang nhấn** | 2 |
+| 18 | nút nhấn đỏ `panic07` (nối 3V3, `INPUT_PULLDOWN`) | Nút khẩn cấp D07 **đang nhấn** | 2 |
 | 19 | slide switch `contact08` | Cửa D08 **mở** | 3 |
 | 21 | slide switch `beam08` | Rèm quang D08 **thông** | 4 |
-| 22 | slide switch `panic08` | Nút khẩn cấp D08 **đang nhấn** | 5 |
-| 23 | slide switch `presence` | mmWave **có người** | 6 |
+| 22 | nút nhấn đỏ `panic08` | Nút khẩn cấp D08 **đang nhấn** | 5 |
+| 23 | cảm biến PIR `presence` (giữ HIGH 10 s sau mỗi chuyển động) | Có người (thay cho mmWave) | 6 |
 | 15 | DHT22 (+ trở kéo 10 kΩ) | Nhiệt độ/độ ẩm | — |
+| 2 / 13 / 34 / 12 | MFRC522 `rfid`: SCK / MOSI / MISO / SDA(SS); RST nối 3V3 | Đầu đọc thẻ ở cửa D07 | — |
+| 35 | slide switch `rfid-dir` | Chiều quẹt: HIGH = vào | — |
 
-Mỗi công tắc: chân giữa (2) nối GPIO, chân 1 nối GND, chân 3 nối 3V3. GPIO đặt `INPUT_PULLUP`.
+Công tắc: chân giữa (2) nối GPIO, chân 1 nối GND, chân 3 nối 3V3; GPIO đặt `INPUT_PULLUP` (panic: `INPUT_PULLDOWN`). Cửa và rèm quang vẫn là công tắc: Wokwi không có cảm biến từ, và vị trí cửa phải do cảm biến **độc lập** với motor báo.
 
-| GPIO | LED | Output |
+| GPIO | Linh kiện | Output |
 | --- | --- | --- |
-| 25 / 26 | xanh lá | Khóa D07 / D08 đang khóa |
-| 27 / 14 | xanh dương / cam | Motor D07 mở / đóng |
-| 2 / 13 | xanh dương / cam | Motor D08 mở / đóng |
-| 32 | trắng | Đèn khẩn cấp |
-| 33 | đỏ | Còi |
-| 4 | đỏ | Sưởi |
-| 5 | cyan | Quạt lạnh |
+| 25 / 26 | relay `relay07` / `relay08` (pnp: IN HIGH → NO), tải là đèn xanh | Khóa D07 / D08 đang khóa |
+| 27 / 14 | servo `servo07` / `servo08` | Cánh cửa D07 / D08: chạy theo motor, đứng yên thì theo contact (chỉ để nhìn) |
+| 32 | LED trắng | Đèn khẩn cấp |
+| 33 | buzzer (2 kHz) | Còi |
+| 4 | LED đỏ | Sưởi |
+| 5 | LED cyan | Quạt lạnh |
 
-Wokwi **không có** đầu đọc RC522, nên RFID được mô phỏng bằng dòng Serial (mục 8.5).
+Thẻ mẫu MFRC522 của Wokwi: Blue = DEMO-017, Green = DEMO-018, Red = DEMO-999 (bảng `RFID_CARDS` trong `include/config.h`). Dòng Serial ở mục 8.5 vẫn được nhận để chạy script nghiệm thu (DEC-044).
 
 ### 8.2 Mô hình chạy (2 luồng)
 
@@ -442,7 +443,7 @@ flowchart TB
   subgraph LOOP["loop() — lõi Arduino, mỗi 10 ms"]
     R["digitalRead 7 input"] --> U["controller.update(): debounce 30 ms,<br/>chốt panic, xác minh số người"]
     U --> T["controller.tick(): đảo chiều, timeout hành trình,<br/>panic mở cửa, timer cửa mở / mắc kẹt"]
-    T --> O["outputs() → digitalWrite 10 LED<br/>+ in OUTPUTS khi đổi"]
+    T --> O["outputs() → relay, servo, buzzer, LED<br/>+ in OUTPUTS khi đổi"]
     O --> E["Phát hiện thay đổi → đưa EdgeEvent vào queue (32)"]
     E --> S["readRfid(): đọc dòng Serial"]
     S --> D["Mỗi 2 s: đọc DHT22"]
@@ -538,7 +539,7 @@ void loop()  { kg::edge::step(); kg::rfid::poll(); kg::environment::poll(); dela
 | Module | Vai trò |
 | --- | --- |
 | `kg_state` | Trạng thái dùng chung giữa `loop` và task mạng: `Controller`, `sampleLock`, `bootId`/`sessionId`, mẫu DHT |
-| `kg_board` | Bảng chân `INPUT_PINS`/`OUTPUT_PINS`/`DHT_PIN`, đọc 7 input, ghi 10 LED + log `OUTPUTS` |
+| `kg_board` | Đọc 7 input (panic dùng pull-down), ghi relay khóa, servo cánh cửa, buzzer, LED + log `OUTPUTS`; chân lấy từ `include/config.h` |
 | `kg_environment` | DHT22: đọc mỗi 2 s, `SENSOR_HEARTBEAT` |
 | `kg_events` | Queue 32 event, `enqueue` (đánh `seq`, `EVENT_GAP`), so trạng thái trước/sau để sinh `INPUT_EVENT`/`SAFETY_EVENT` |
 | `kg_edge` | Một nhịp an toàn: đọc input → `update`/`tick` trong khóa → ghi output → báo event |
@@ -562,7 +563,7 @@ Firmware thứ hai, build thành 3 bản (`platformio.ini` env `zone_a`, `zone_b
 | Module | Vai trò |
 | --- | --- |
 | `zn_config` | Chọn khu theo `-DKG_ZONE_A/B/D`: mã thiết bị, mã cửa, bảng chân |
-| `zn_node` | 3 công tắc cửa, công tắc hiện diện, nút Vào/Ra đếm người, DHT22; chống dội 30 ms bằng `kg::Input` của `controller.h`; tự tính cảnh báo cửa mở ≥ 30 s / > 60 s và bật LED |
+| `zn_node` | 3 công tắc cửa, PIR hiện diện, nút Vào/Ra đếm người, DHT22; chống dội 30 ms bằng `kg::Input` của `controller.h`; tự tính cảnh báo cửa mở ≥ 30 s / > 60 s và bật LED |
 | `zn_network` | WiFi, Last Will, telemetry 2 s, sự kiện cửa; TLS như ESP-C01; không nhận lệnh |
 
 Nút khu không có khóa, rèm quang hay panic: telemetry gửi `beam_clear`/`panic_latched` là `null` (chưa rõ), không giả là "thông". Số người sau khi bật là *chưa xác minh* cho tới khi công tắc hiện diện ở LOW. Backend chỉ cho gửi lệnh tới thiết bị có `door_control` trong `contracts/devices.json` (ESP-C01).

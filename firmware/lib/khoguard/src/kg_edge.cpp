@@ -16,7 +16,7 @@ void step() {
   const auto after=state::controller;
   portEXIT_CRITICAL(&state::sampleLock);
   // Outputs follow local rules only; broker/backend loss never changes them.
-  board::writeOutputs(after.outputs(now),now);
+  board::writeOutputs(after,after.outputs(now),now);
   events::reportChanges(before,after);
 }
 }  // namespace edge

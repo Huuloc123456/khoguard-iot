@@ -207,7 +207,7 @@ async function step(id, test, title, run, { always = false } = {}) {
 async function waitBaseline(reason) {
   const t = lastTelemetry();
   if (t && baselineOk(t.payload)) return;
-  ask(`${reason}: D07/D08 đóng (contact LOW), beam HIGH, panic LOW, presence LOW.`);
+  ask(`${reason}: D07/D08 đóng (contact LOW), beam HIGH, không bấm nút panic, PIR không tín hiệu (chờ 10 s sau lần Simulate Motion cuối).`);
   await telemetryWait(baselineOk, MANUAL_MS, 'trạng thái nền an toàn');
 }
 const rfid = async (line, expect, count) => {
@@ -276,7 +276,7 @@ try {
   });
 
   await step('S2a', 'T05/KB2', 'RFID 0 nhưng mmWave còn người: chặn đóng + cảnh báo', async () => {
-    ask('Gạt công tắc PRESENCE sang HIGH (có người).');
+    ask('Bấm vào PIR → Simulate Motion (có người); bấm lại mỗi vài giây nếu bước này kéo dài quá 10 s.');
     await telemetryWait(p => p.occupancy.presence === true && p.occupancy.current_occupants === 0 && p.occupancy.count_verified, MANUAL_MS, 'presence = true');
     const c = await command('D07', 'close');
     assert.equal(c.status, 'rejected'); assert.equal(c.reason, 'PRESENCE_DETECTED');
@@ -285,7 +285,7 @@ try {
     return { command: c.reason, alert: a.find(x => x.state === 'active').id };
   });
   await step('S2b', 'T05/KB2', 'Hết hiện diện: cảnh báo tự hết, đóng được', async () => {
-    ask('Gạt PRESENCE về LOW.');
+    ask('Ngừng bấm Simulate Motion (nếu đã đổi delayTime thì trả về 10); PIR tự về LOW.');
     await telemetryWait(p => p.occupancy.presence === false, MANUAL_MS, 'presence = false');
     await delay(2500);
     const a = await alertsOf('PRESENCE_MISMATCH');
@@ -304,7 +304,7 @@ try {
   });
   await step('S3b', 'T10', 'Rèm quang bị chặn khi đang đóng → đảo chiều', async () => {
     await settled();
-    say('  Harness sẽ gửi lệnh ĐÓNG D07 sau 5 giây. Khi LED cam "D07 motor đóng" sáng, gạt BEAM07 sang LOW trong vòng 8 giây.');
+    say('  Harness sẽ gửi lệnh ĐÓNG D07 sau 5 giây. Khi servo D07 bắt đầu quay về 0°, gạt BEAM07 sang LOW trong vòng 8 giây.');
     for (let i = 5; i > 0; i--) { process.stdout.write(`  ${i}… `); await delay(1000); }
     const mark = serialMark(), since = Date.now();
     const created = await post('/api/doors/D07/commands', { action: 'close' });
@@ -322,7 +322,7 @@ try {
 
   await step('S4a', 'T07/KB3', 'Panic D07 từ trạng thái đóng: chốt, nhả khóa, mở, output khẩn cấp', async () => {
     const mark = serialMark(), since = Date.now();
-    ask('Gạt PANIC07 sang HIGH.');
+    ask('Bấm nút đỏ PANIC07.');
     const ev = await eventWait(p => p.event_type === 'panic' && p.door_id === 'D07', since, MANUAL_MS);
     const inp = await serialWait(/^INPUT_EVENT door=D07 panic=1/, mark);
     const out = await serialWait(/^OUTPUTS .*lock=00 motor07=10 .*light=1 buzzer=1 heater=1 fan=0/, mark);
@@ -350,7 +350,7 @@ try {
   await step('S4d', 'T07', 'Cửa mở hẳn; nhả nút vẫn chốt; lệnh đóng bị PANIC_ACTIVE', async () => {
     ask('Gạt CONTACT07 sang HIGH (cửa D07 đã mở hẳn).');
     await telemetryWait(p => door(p, 'D07').state === 'open', MANUAL_MS, 'D07 mở');
-    await confirm('Gạt PANIC07 về LOW (nhả nút).');
+    await confirm('Nút PANIC07 đã nhả (không giữ chuột trên nút).');
     await delay(1000);
     const t = await telemetryWait(() => true, 6000, 'telemetry');
     assert.equal(door(t.payload, 'D07').panic_latched, true, 'nhả nút không được tự xóa chốt');
@@ -362,17 +362,17 @@ try {
   await step('S5a', 'T11', 'Panic D08 khi D07 đang mở: thoát hiểm thắng liên động', async () => {
     // Also runnable on its own (--from=S5a): the escape-over-interlock case needs D07 open first.
     if (door(lastTelemetry().payload, 'D07').state !== 'open') {
-      ask('Gạt CONTACT07 sang HIGH (cửa D07 mở). Chưa gạt PANIC08.');
+      ask('Gạt CONTACT07 sang HIGH (cửa D07 mở). Chưa bấm PANIC08.');
       await telemetryWait(p => door(p, 'D07').state === 'open', MANUAL_MS, 'D07 mở');
     }
     const mark = serialMark();
-    ask('Chỉ gạt PANIC08 sang HIGH (giữ CONTACT07 ở HIGH).');
+    ask('Chỉ bấm nút đỏ PANIC08 (giữ CONTACT07 ở HIGH).');
     const out = await serialWait(/^OUTPUTS .*motor08=10 /, mark, MANUAL_MS);
     await telemetryWait(p => door(p, 'D08').panic_latched === true && door(p, 'D07').state === 'open', 8000, 'D08 chốt');
     return out.text;
   });
   await step('S5b', 'T07', 'Nhả hai nút, đặt lại từng cửa bằng lệnh có quyền', async () => {
-    ask('Gạt PANIC08 về LOW và CONTACT08 sang HIGH (cửa D08 đã mở).');
+    ask('Gạt CONTACT08 sang HIGH (cửa D08 đã mở); nút PANIC08 đã tự nhả.');
     await telemetryWait(p => door(p, 'D08').state === 'open', MANUAL_MS, 'D08 mở');
     await delay(1000);
     const r7 = await resetUntilApplied('D07'), r8 = await resetUntilApplied('D08');
@@ -397,7 +397,7 @@ try {
   });
   await step('S6b', 'T08', 'Panic khi broker dừng: output an toàn cục bộ vẫn áp dụng', async () => {
     const mark = serialMark();
-    ask('Broker đã dừng. Gạt PANIC07 sang HIGH. Quan sát LED: khóa tắt, motor mở D07 xanh, đèn/còi/sưởi bật, quạt tắt.');
+    ask('Broker đã dừng. Bấm nút đỏ PANIC07. Quan sát: relay khóa nhả, servo D07 mở, đèn/sưởi bật, buzzer kêu, quạt tắt.');
     const inp = await serialWait(/^INPUT_EVENT door=D07 panic=1/, mark, MANUAL_MS);
     const out = await serialWait(/^OUTPUTS .*lock=00 motor07=10 .*light=1 buzzer=1 heater=1 fan=0/, mark);
     assert.equal(await portOpen(config.mqtt.port), false, 'broker phải còn dừng lúc panic');
@@ -420,7 +420,7 @@ try {
       event_id: ev.message.event_id, event_uptime_ms: ev.message.uptime_ms, stored_id: stored.id };
   });
   await step('S6d', 'T08', 'Dọn: nhả nút, đặt lại, đóng cửa', async () => {
-    ask('Gạt CONTACT07 sang HIGH (cửa đã mở), rồi PANIC07 về LOW — harness sẽ đặt lại.');
+    ask('Gạt CONTACT07 sang HIGH (cửa đã mở); nút PANIC07 đã tự nhả — harness sẽ đặt lại.');
     await telemetryWait(p => door(p, 'D07').state === 'open', MANUAL_MS, 'D07 mở');
     const r = await resetUntilApplied('D07');
     ask('Gạt CONTACT07 về LOW.');
@@ -495,7 +495,7 @@ try {
   });
   await step('S9', 'T12/M11', 'Người mắc kẹt: presence liên tục khi hai cửa đóng >5 phút', async () => {
     const mark = serialMark();
-    ask('Gạt PRESENCE sang HIGH và để nguyên khoảng 5 phút 10 giây (hai cửa vẫn đóng).');
+    ask('Giữ PIR có tín hiệu khoảng 5 phút 10 giây (hai cửa vẫn đóng): bấm Simulate Motion lại trước khi hết 10 s, hoặc tạm đặt delayTime của PIR = 330 trong diagram.json.');
     const seen = await telemetryWait(p => p.occupancy.presence === true, MANUAL_MS, 'presence = true');
     say('   Đang chờ 5 phút theo đồng hồ thiết bị…');
     const trapped = await serialWait(/^OUTPUTS .*light=1 buzzer=1 heater=1 fan=0/, mark, 320000);
@@ -505,7 +505,7 @@ try {
     await telemetryWait(p => (p.alarms ?? []).some(a => a.code === 'TRAPPED_PERSON'), 8000, 'alarm TRAPPED_PERSON');
     await delay(1500);
     assert.ok((await alertsOf('TRAPPED_PERSON')).some(a => a.state === 'active'), 'thiếu cảnh báo TRAPPED_PERSON');
-    ask('Gạt PRESENCE về LOW.');
+    ask('Ngừng bấm Simulate Motion (nếu đã đổi delayTime thì trả về 10); PIR tự về LOW.');
     await waitBaseline('Trả về trạng thái nền');
     const cleared = await serialWait(/^OUTPUTS .*heater=0 fan=1/, mark, 8000);
     return { trapped_after_ms: afterMs, serial: [trapped.text, cleared.text] };

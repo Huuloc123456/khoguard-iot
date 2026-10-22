@@ -9,13 +9,12 @@ namespace board {
 // Slot order is the controller contract: per door contact, beam, panic; then shared presence.
 // static: a namespace-scope reference has external linkage in C++11, so without it every .cpp redefines it.
 static constexpr const auto &INPUT_PINS = config::INPUT_PINS;
-// LEDs: lock D07/D08, motor open/close D07, motor open/close D08, light, buzzer, heater, fan.
-static constexpr const auto &OUTPUT_PINS = config::OUTPUT_PINS;
 constexpr int DHT_PIN = config::DHT_PIN;
 
 void begin();
 std::array<bool,7> readInputs();
-// Drives the LEDs and logs an OUTPUTS line whenever any level changes.
-void writeOutputs(const kg::Outputs &out, uint32_t now);
+// Drives lock relays, door servos, buzzer and LEDs, and logs an OUTPUTS line whenever any level changes.
+// The controller is passed so the servo can show the door leaf; the contact switch stays the position sensor.
+void writeOutputs(const kg::Controller &controller, const kg::Outputs &out, uint32_t now);
 }  // namespace board
 }  // namespace kg

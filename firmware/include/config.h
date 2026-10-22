@@ -59,9 +59,40 @@ constexpr uint32_t NETWORK_TASK_DELAY_MS = 20;    // vong lap task MQTT
 
 // ---- GPIO: khop firmware/diagram.json (tests/diagram.test.js kiem tra) ----
 // Thu tu slot input la hop dong cua Controller: moi cua gom contact, beam, panic; cuoi cung la presence dung chung.
+// contact/beam: cong tac gat (HIGH = mo / thong). panic: nut nhan do noi 3V3, chan dung INPUT_PULLDOWN nen nhan = HIGH.
+// presence: cam bien PIR (OUT HIGH khi co chuyen dong, giu HIGH trong delayTime) (DEC-044).
 constexpr int INPUT_PINS[] = {16, 17, 18, 19, 21, 22, 23};
-// LED: khoa D07/D08, motor mo/dong D07, motor mo/dong D08, den, coi, suoi, quat.
-constexpr int OUTPUT_PINS[] = {25, 26, 27, 14, 2, 13, 32, 33, 4, 5};
+constexpr int PANIC_SLOTS[] = {2, 5};
+// Dau ra: relay giu khoa D07/D08 (den xanh la tai cua relay), servo canh cua D07/D08, den, buzzer, suoi, quat.
+constexpr int LOCK_RELAY_PINS[] = {25, 26};
+constexpr int DOOR_SERVO_PINS[] = {27, 14};
+constexpr int LIGHT_PIN = 32;
+constexpr int BUZZER_PIN = 33;
+constexpr int HEATER_PIN = 4;
+constexpr int FAN_PIN = 5;
 constexpr int DHT_PIN = 15;
+// Servo chi de nhin: 0 do = dong, 90 do = mo. Vi tri cua van do cong tac contact bao (cam bien doc lap voi motor).
+constexpr int SERVO_CLOSED_DEG = 0;
+constexpr int SERVO_OPEN_DEG = 90;
+constexpr uint32_t SERVO_TRAVEL_MS = 1500;  // thoi gian canh servo quay het 90 do
+constexpr uint32_t BUZZER_HZ = 2000;
+
+// ---- RFID MFRC522 (dat o cua D07) ----
+// SPI mac dinh (18/19/23) trung chan input nen dung GPIO matrix; RST noi thang 3V3 vi het chan trong.
+// GPIO12 la chan strapping: tren board that phai giu LOW luc khoi dong; trong Wokwi khong anh huong.
+constexpr int RFID_SCK_PIN = 2;
+constexpr int RFID_MOSI_PIN = 13;
+constexpr int RFID_MISO_PIN = 34;  // GPIO34 chi la input, du cho MISO
+constexpr int RFID_SS_PIN = 12;
+constexpr int RFID_DIRECTION_PIN = 35;  // cong tac gat: HIGH = vao, LOW = ra (GPIO35 khong co dien tro keo trong)
+constexpr unsigned RFID_DOOR = 0;       // chi so cua trong Controller: 0 = D07
+constexpr uint32_t RFID_POLL_MS = 100;
+// The mau cua Wokwi -> ma the trong bang CARDS cua controller.h. The khac bao "UID-<hex>" va bi tu choi.
+struct RfidCard {uint8_t uid[4]; const char *card;};
+constexpr RfidCard RFID_CARDS[] = {
+  {{0x01, 0x02, 0x03, 0x04}, "DEMO-017"},  // Blue Card
+  {{0x11, 0x22, 0x33, 0x44}, "DEMO-018"},  // Green Card
+  {{0xAA, 0xBB, 0xCC, 0xDD}, "DEMO-999"},  // Red Card (the bi thu hoi)
+};
 }  // namespace config
 }  // namespace kg

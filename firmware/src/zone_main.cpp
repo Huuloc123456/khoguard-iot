@@ -5,10 +5,12 @@
 void setup() {
   Serial.begin(115200);
   kg::zone::begin();
+  kg::zone::display::begin();
   kg::zone::network::start();
 }
 
 void loop() {
   kg::zone::step();
+  kg::zone::display::update(millis());
   delay(10);
 }

@@ -85,24 +85,6 @@
       }
     },
     {
-      "type": "wokwi-slide-switch",
-      "id": "presence",
-      "top": 200,
-      "left": 230,
-      "attrs": {
-        "value": ""
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-presence",
-      "top": 170,
-      "left": 215,
-      "attrs": {
-        "text": "Hiện diện: HIGH=có người"
-      }
-    },
-    {
       "type": "wokwi-pushbutton",
       "id": "btn-in",
       "top": 290,
@@ -183,6 +165,43 @@
       "left": -220,
       "attrs": {
         "text": "Khu A · SIM-A01 · cửa D01, D02, D03"
+      }
+    },
+    {
+      "type": "wokwi-pir-motion-sensor",
+      "id": "presence",
+      "top": 190,
+      "left": 230,
+      "attrs": {
+        "delayTime": "10",
+        "inhibitTime": "1"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-presence",
+      "top": 170,
+      "left": 215,
+      "attrs": {
+        "text": "Hiện diện PIR (Simulate Motion)"
+      }
+    },
+    {
+      "type": "wokwi-lcd1602",
+      "id": "lcd",
+      "top": 380,
+      "left": 120,
+      "attrs": {
+        "pins": "i2c"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-lcd",
+      "top": 355,
+      "left": 120,
+      "attrs": {
+        "text": "Màn hình tại khu (I2C 0x27)"
       }
     }
   ],
@@ -284,24 +303,6 @@
       []
     ],
     [
-      "presence:2",
-      "esp:D19",
-      "green",
-      []
-    ],
-    [
-      "presence:1",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "presence:3",
-      "esp:3V3",
-      "red",
-      []
-    ],
-    [
       "btn-in:1.l",
       "esp:D21",
       "green",
@@ -345,6 +346,48 @@
     ],
     [
       "led-critical:C",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "presence:OUT",
+      "esp:D19",
+      "green",
+      []
+    ],
+    [
+      "presence:VCC",
+      "esp:VIN",
+      "red",
+      []
+    ],
+    [
+      "presence:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "lcd:SDA",
+      "esp:D32",
+      "blue",
+      []
+    ],
+    [
+      "lcd:SCL",
+      "esp:D33",
+      "purple",
+      []
+    ],
+    [
+      "lcd:VCC",
+      "esp:VIN",
+      "red",
+      []
+    ],
+    [
+      "lcd:GND",
       "esp:GND.2",
       "black",
       []

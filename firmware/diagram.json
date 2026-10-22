@@ -52,16 +52,6 @@
     },
     {
       "type": "wokwi-slide-switch",
-      "id": "panic07",
-      "top": 200,
-      "left": 80,
-      "attrs": {
-        "value": ""
-      },
-      "label": "D07 panic"
-    },
-    {
-      "type": "wokwi-slide-switch",
       "id": "contact08",
       "top": 200,
       "left": 230,
@@ -79,26 +69,6 @@
         "value": "1"
       },
       "label": "D08 beam: HIGH=clear"
-    },
-    {
-      "type": "wokwi-slide-switch",
-      "id": "panic08",
-      "top": 290,
-      "left": -70,
-      "attrs": {
-        "value": ""
-      },
-      "label": "D08 panic"
-    },
-    {
-      "type": "wokwi-slide-switch",
-      "id": "presence",
-      "top": 290,
-      "left": 80,
-      "attrs": {
-        "value": ""
-      },
-      "label": "Presence: HIGH=person"
     },
     {
       "type": "wokwi-text",
@@ -120,15 +90,6 @@
     },
     {
       "type": "wokwi-text",
-      "id": "label-panic07",
-      "top": 170,
-      "left": 65,
-      "attrs": {
-        "text": "D07 panic"
-      }
-    },
-    {
-      "type": "wokwi-text",
       "id": "label-contact08",
       "top": 170,
       "left": 215,
@@ -143,24 +104,6 @@
       "left": -235,
       "attrs": {
         "text": "D08 beam: HIGH=clear"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-panic08",
-      "top": 260,
-      "left": -85,
-      "attrs": {
-        "text": "D08 panic"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-presence",
-      "top": 260,
-      "left": 65,
-      "attrs": {
-        "text": "Presence: HIGH=person"
       }
     },
     {
@@ -201,78 +144,6 @@
     },
     {
       "type": "wokwi-led",
-      "id": "led-open07",
-      "top": 390,
-      "left": 80,
-      "attrs": {
-        "color": "blue"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-open07",
-      "top": 365,
-      "left": 65,
-      "attrs": {
-        "text": "D07 motor mở"
-      }
-    },
-    {
-      "type": "wokwi-led",
-      "id": "led-close07",
-      "top": 390,
-      "left": 230,
-      "attrs": {
-        "color": "orange"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-close07",
-      "top": 365,
-      "left": 215,
-      "attrs": {
-        "text": "D07 motor đóng"
-      }
-    },
-    {
-      "type": "wokwi-led",
-      "id": "led-open08",
-      "top": 390,
-      "left": 380,
-      "attrs": {
-        "color": "blue"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-open08",
-      "top": 365,
-      "left": 365,
-      "attrs": {
-        "text": "D08 motor mở"
-      }
-    },
-    {
-      "type": "wokwi-led",
-      "id": "led-close08",
-      "top": 480,
-      "left": -220,
-      "attrs": {
-        "color": "orange"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-close08",
-      "top": 455,
-      "left": -235,
-      "attrs": {
-        "text": "D08 motor đóng"
-      }
-    },
-    {
-      "type": "wokwi-led",
       "id": "led-light",
       "top": 480,
       "left": -70,
@@ -287,24 +158,6 @@
       "left": -85,
       "attrs": {
         "text": "Đèn khẩn cấp"
-      }
-    },
-    {
-      "type": "wokwi-led",
-      "id": "led-buzzer",
-      "top": 480,
-      "left": 80,
-      "attrs": {
-        "color": "red"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-buzzer",
-      "top": 455,
-      "left": 65,
-      "attrs": {
-        "text": "Còi"
       }
     },
     {
@@ -341,6 +194,191 @@
       "left": 365,
       "attrs": {
         "text": "Quạt"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "panic07",
+      "top": 205,
+      "left": 70,
+      "attrs": {
+        "color": "red",
+        "bounce": "0",
+        "label": "D07 PANIC",
+        "key": "7"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "panic08",
+      "top": 295,
+      "left": -80,
+      "attrs": {
+        "color": "red",
+        "bounce": "0",
+        "label": "D08 PANIC",
+        "key": "8"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-panic07",
+      "top": 170,
+      "left": 55,
+      "attrs": {
+        "text": "D07 panic (nhấn, phím 7)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-panic08",
+      "top": 260,
+      "left": -95,
+      "attrs": {
+        "text": "D08 panic (nhấn, phím 8)"
+      }
+    },
+    {
+      "type": "wokwi-pir-motion-sensor",
+      "id": "presence",
+      "top": 280,
+      "left": 75,
+      "attrs": {
+        "delayTime": "10",
+        "inhibitTime": "1"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-presence",
+      "top": 260,
+      "left": 55,
+      "attrs": {
+        "text": "Hiện diện PIR (Simulate Motion)"
+      }
+    },
+    {
+      "type": "wokwi-relay-module",
+      "id": "relay07",
+      "top": 540,
+      "left": -220,
+      "attrs": {
+        "transistor": "pnp"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-relay07",
+      "top": 515,
+      "left": -235,
+      "attrs": {
+        "text": "Relay khóa D07"
+      }
+    },
+    {
+      "type": "wokwi-relay-module",
+      "id": "relay08",
+      "top": 540,
+      "left": -70,
+      "attrs": {
+        "transistor": "pnp"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-relay08",
+      "top": 515,
+      "left": -85,
+      "attrs": {
+        "text": "Relay khóa D08"
+      }
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "servo07",
+      "top": 380,
+      "left": 80,
+      "attrs": {
+        "hornColor": "#176d60"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-servo07",
+      "top": 355,
+      "left": 80,
+      "attrs": {
+        "text": "Cánh cửa D07 (servo)"
+      }
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "servo08",
+      "top": 380,
+      "left": 260,
+      "attrs": {
+        "hornColor": "#176d60"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-servo08",
+      "top": 355,
+      "left": 260,
+      "attrs": {
+        "text": "Cánh cửa D08 (servo)"
+      }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "buzzer",
+      "top": 470,
+      "left": 75,
+      "attrs": {
+        "volume": "0.3"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-buzzer",
+      "top": 455,
+      "left": 75,
+      "attrs": {
+        "text": "Còi"
+      }
+    },
+    {
+      "type": "board-mfrc522",
+      "id": "rfid",
+      "top": -10,
+      "left": -430,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-rfid",
+      "top": -40,
+      "left": -440,
+      "attrs": {
+        "text": "Đầu đọc RFID cửa D07 (Blue=DEMO-017, Green=DEMO-018, Red=DEMO-999)"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "rfid-dir",
+      "top": 130,
+      "left": -400,
+      "attrs": {
+        "value": "1"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-rfid-dir",
+      "top": 105,
+      "left": -415,
+      "attrs": {
+        "text": "Chiều quẹt: HIGH=VÀO, LOW=RA"
       }
     }
   ],
@@ -424,24 +462,6 @@
       []
     ],
     [
-      "panic07:2",
-      "esp:D18",
-      "green",
-      []
-    ],
-    [
-      "panic07:1",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "panic07:3",
-      "esp:3V3",
-      "red",
-      []
-    ],
-    [
       "contact08:2",
       "esp:D19",
       "green",
@@ -478,109 +498,13 @@
       []
     ],
     [
-      "panic08:2",
-      "esp:D22",
-      "green",
-      []
-    ],
-    [
-      "panic08:1",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "panic08:3",
-      "esp:3V3",
-      "red",
-      []
-    ],
-    [
-      "presence:2",
-      "esp:D23",
-      "green",
-      []
-    ],
-    [
-      "presence:1",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "presence:3",
-      "esp:3V3",
-      "red",
-      []
-    ],
-    [
-      "led-lock07:A",
-      "esp:D25",
-      "green",
-      []
-    ],
-    [
       "led-lock07:C",
       "esp:GND.2",
       "black",
       []
     ],
     [
-      "led-lock08:A",
-      "esp:D26",
-      "green",
-      []
-    ],
-    [
       "led-lock08:C",
-      "esp:GND.2",
-      "black",
-      []
-    ],
-    [
-      "led-open07:A",
-      "esp:D27",
-      "blue",
-      []
-    ],
-    [
-      "led-open07:C",
-      "esp:GND.2",
-      "black",
-      []
-    ],
-    [
-      "led-close07:A",
-      "esp:D14",
-      "orange",
-      []
-    ],
-    [
-      "led-close07:C",
-      "esp:GND.2",
-      "black",
-      []
-    ],
-    [
-      "led-open08:A",
-      "esp:D2",
-      "blue",
-      []
-    ],
-    [
-      "led-open08:C",
-      "esp:GND.2",
-      "black",
-      []
-    ],
-    [
-      "led-close08:A",
-      "esp:D13",
-      "orange",
-      []
-    ],
-    [
-      "led-close08:C",
       "esp:GND.2",
       "black",
       []
@@ -593,18 +517,6 @@
     ],
     [
       "led-light:C",
-      "esp:GND.2",
-      "black",
-      []
-    ],
-    [
-      "led-buzzer:A",
-      "esp:D33",
-      "red",
-      []
-    ],
-    [
-      "led-buzzer:C",
       "esp:GND.2",
       "black",
       []
@@ -631,6 +543,216 @@
       "led-fan:C",
       "esp:GND.2",
       "black",
+      []
+    ],
+    [
+      "panic07:1.l",
+      "esp:D18",
+      "green",
+      []
+    ],
+    [
+      "panic07:2.l",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "panic08:1.l",
+      "esp:D22",
+      "green",
+      []
+    ],
+    [
+      "panic08:2.l",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "presence:OUT",
+      "esp:D23",
+      "green",
+      []
+    ],
+    [
+      "presence:VCC",
+      "esp:VIN",
+      "red",
+      []
+    ],
+    [
+      "presence:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "relay07:IN",
+      "esp:D25",
+      "green",
+      []
+    ],
+    [
+      "relay07:VCC",
+      "esp:VIN",
+      "red",
+      []
+    ],
+    [
+      "relay07:GND",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "relay07:COM",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "relay07:NO",
+      "led-lock07:A",
+      "green",
+      []
+    ],
+    [
+      "relay08:IN",
+      "esp:D26",
+      "green",
+      []
+    ],
+    [
+      "relay08:VCC",
+      "esp:VIN",
+      "red",
+      []
+    ],
+    [
+      "relay08:GND",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "relay08:COM",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "relay08:NO",
+      "led-lock08:A",
+      "green",
+      []
+    ],
+    [
+      "servo07:PWM",
+      "esp:D27",
+      "orange",
+      []
+    ],
+    [
+      "servo07:V+",
+      "esp:VIN",
+      "red",
+      []
+    ],
+    [
+      "servo07:GND",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "servo08:PWM",
+      "esp:D14",
+      "orange",
+      []
+    ],
+    [
+      "servo08:V+",
+      "esp:VIN",
+      "red",
+      []
+    ],
+    [
+      "servo08:GND",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "buzzer:2",
+      "esp:D33",
+      "red",
+      []
+    ],
+    [
+      "buzzer:1",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "rfid:SDA",
+      "esp:D12",
+      "purple",
+      []
+    ],
+    [
+      "rfid:SCK",
+      "esp:D2",
+      "purple",
+      []
+    ],
+    [
+      "rfid:MOSI",
+      "esp:D13",
+      "purple",
+      []
+    ],
+    [
+      "rfid:MISO",
+      "esp:D34",
+      "purple",
+      []
+    ],
+    [
+      "rfid:RST",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "rfid:3.3V",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "rfid:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "rfid-dir:2",
+      "esp:D35",
+      "green",
+      []
+    ],
+    [
+      "rfid-dir:1",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "rfid-dir:3",
+      "esp:3V3",
+      "red",
       []
     ]
   ],
