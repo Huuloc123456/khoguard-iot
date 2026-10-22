@@ -396,6 +396,26 @@
       "attrs": {
         "text": "Relay sưởi (NO) / quạt (NC)"
       }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "pulldown07",
+      "top": 240,
+      "left": 125,
+      "rotate": 90,
+      "attrs": {
+        "value": "10000"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "pulldown08",
+      "top": 330,
+      "left": -25,
+      "rotate": 90,
+      "attrs": {
+        "value": "10000"
+      }
     }
   ],
   "connections": [
@@ -805,6 +825,30 @@
       "relay-climate:NC",
       "led-fan:A",
       "cyan",
+      []
+    ],
+    [
+      "pulldown07:1",
+      "esp:D18",
+      "green",
+      []
+    ],
+    [
+      "pulldown07:2",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "pulldown08:1",
+      "esp:D22",
+      "green",
+      []
+    ],
+    [
+      "pulldown08:2",
+      "esp:GND.1",
+      "black",
       []
     ]
   ],

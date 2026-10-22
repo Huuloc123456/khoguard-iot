@@ -59,7 +59,8 @@ constexpr uint32_t NETWORK_TASK_DELAY_MS = 20;    // vong lap task MQTT
 
 // ---- GPIO: khop firmware/diagram.json (tests/diagram.test.js kiem tra) ----
 // Thu tu slot input la hop dong cua Controller: moi cua gom contact, beam, panic; cuoi cung la presence dung chung.
-// contact: cong tac gat (HIGH = mo). panic: nut nhan do noi 3V3, chan dung INPUT_PULLDOWN nen nhan = HIGH.
+// contact: cong tac gat (HIGH = mo). panic: nut nhan do noi 3V3 + tro keo xuong 10k ra GND, nhan = HIGH
+// (Wokwi chi mo phong dien tro keo noi o chan RTC; 18/22 khong phai chan RTC nen INPUT_PULLDOWN chi la du phong).
 // presence: cam bien PIR (OUT HIGH khi co chuyen dong, giu HIGH trong delayTime) (DEC-044).
 // beam: cam bien sieu am HC-SR04, chan ECHO noi vao slot beam; "thong" = co echo va xa hon BEAM_BLOCKED_CM (DEC-045).
 constexpr int INPUT_PINS[] = {16, 17, 18, 19, 21, 22, 23};

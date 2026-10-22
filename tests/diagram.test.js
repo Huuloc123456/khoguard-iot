@@ -110,3 +110,43 @@ test('each zone-node Wokwi project wires the pins of zn_config.h and points at i
     assert.doesNotMatch(toml, /rfc2217/, 'only ESP-C01 owns the RFC2217 serial port 4000');
   }
 });
+
+// Pin names of every Wokwi part we use (wokwi-elements / docs.wokwi.com). A wire to an unknown pin is silently dropped.
+const PART_PINS={
+  'wokwi-esp32-devkit-v1':['VIN','GND.2','D13','D12','D14','D27','D26','D25','D33','D32','D35','D34','VN','VP','EN',
+    '3V3','GND.1','D15','D2','D4','RX2','TX2','D5','D18','D19','D21','RX0','TX0','D22','D23'],
+  'wokwi-dht22':['VCC','SDA','NC','GND'], 'wokwi-resistor':['1','2'], 'wokwi-slide-switch':['1','2','3'],
+  'wokwi-pushbutton':['1.l','1.r','2.l','2.r'], 'wokwi-pir-motion-sensor':['VCC','OUT','GND'], 'wokwi-led':['A','C'],
+  'wokwi-relay-module':['VCC','GND','IN','NC','COM','NO'], 'wokwi-servo':['GND','V+','PWM'], 'wokwi-buzzer':['1','2'],
+  'board-mfrc522':['3.3V','RST','GND','IRQ','MISO','MOSI','SCK','SDA'], 'wokwi-hc-sr04':['VCC','TRIG','ECHO','GND'],
+  'wokwi-lcd1602':['GND','VCC','SDA','SCL'],
+};
+const diagrams=[['firmware/diagram.json',diagram],
+  ...['zone-a','zone-b','zone-d'].map(dir=>[`firmware/wokwi/${dir}/diagram.json`,JSON.parse(readFileSync(new URL(`../firmware/wokwi/${dir}/diagram.json`,import.meta.url)))])];
+
+test('every wire in the four Wokwi diagrams ends on a real pin of an existing part',()=>{
+  for (const [name,d] of diagrams) {
+    const types=new Map(d.parts.map(p=>[p.id,p.type]));
+    for (const endpoint of d.connections.flatMap(c=>c.slice(0,2))) {
+      const [id,pin]=endpoint.split(/:(.+)/);
+      if (id==='$serialMonitor') {assert.ok(['RX','TX'].includes(pin),`${name} ${endpoint}`);continue;}
+      assert.ok(types.has(id),`${name}: wire to missing part ${endpoint}`);
+      const pins=PART_PINS[types.get(id)];
+      assert.ok(pins,`${name}: no pin list for part type ${types.get(id)}`);
+      assert.ok(pins.includes(pin),`${name}: ${types.get(id)} has no pin "${pin}" (${endpoint})`);
+    }
+  }
+});
+
+// Wokwi simulates the ESP32's internal pull resistors only on RTC GPIOs (docs.wokwi.com/guides/esp32), so a push button
+// on GPIO 18/21/22 needs an external resistor or the input floats when the button is released.
+const pulled=(d,gpio,rail)=>d.parts.filter(p=>p.type==='wokwi-resistor').some(r=>{
+  const ends=d.connections.filter(c=>c[0].startsWith(`${r.id}:`)).map(c=>c[1]);
+  return ends.includes(gpio) && ends.some(e=>rail.test(e));
+});
+test('push buttons on non-RTC GPIOs have an external pull resistor to the released level',()=>{
+  for (const gpio of ['esp:D18','esp:D22']) assert.ok(pulled(diagram,gpio,/^esp:GND/),`ESP-C01 panic ${gpio} needs a pull-down to GND`);
+  for (const [name,d] of diagrams.slice(1)) {
+    for (const gpio of ['esp:D21','esp:D22']) assert.ok(pulled(d,gpio,/^esp:3V3$/),`${name} button ${gpio} needs a pull-up to 3V3`);
+  }
+});

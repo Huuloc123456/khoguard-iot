@@ -24,7 +24,7 @@ constexpr const char *DOOR_IDS[3] = {"D10", "D11", "D12"};
 // Wiring of firmware/wokwi/zone-*/diagram.json (checked by tests/diagram.test.js).
 constexpr int CONTACT_PINS[3] = {16,17,18};   // slide switch, HIGH = door open
 constexpr int PRESENCE_PIN = 19;              // PIR OUT, HIGH = motion (DEC-044)
-constexpr int IN_BUTTON_PIN = 21;             // push button to GND, pressed = LOW
+constexpr int IN_BUTTON_PIN = 21;             // push button to GND + external 10k pull-up (Wokwi has no internal pull on non-RTC pins), pressed = LOW
 constexpr int OUT_BUTTON_PIN = 22;
 constexpr int DHT_PIN = 15;
 constexpr int WARNING_LED_PIN = 25;           // a door open for 30 s or more
