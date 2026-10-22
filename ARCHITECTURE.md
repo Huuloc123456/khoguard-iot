@@ -413,17 +413,17 @@ Luôn có đủ 4 khu, 12 cửa, 5 thiết bị. Thiếu dữ liệu thì giá t
 | GPIO | Linh kiện Wokwi | Ý nghĩa (mức HIGH) | Chỉ số input |
 | --- | --- | --- | --- |
 | 16 (RX2) | slide switch `contact07` | Cửa D07 **mở** | 0 |
-| 17 (TX2) | slide switch `beam07` | Rèm quang D07 **thông** | 1 |
+| 17 (TX2) | HC-SR04 `sonar07` chân ECHO | Rèm quang D07 **thông** (có echo, ≥ 100 cm) | 1 |
 | 18 | nút nhấn đỏ `panic07` (nối 3V3, `INPUT_PULLDOWN`) | Nút khẩn cấp D07 **đang nhấn** | 2 |
 | 19 | slide switch `contact08` | Cửa D08 **mở** | 3 |
-| 21 | slide switch `beam08` | Rèm quang D08 **thông** | 4 |
+| 21 | HC-SR04 `sonar08` chân ECHO | Rèm quang D08 **thông** | 4 |
 | 22 | nút nhấn đỏ `panic08` | Nút khẩn cấp D08 **đang nhấn** | 5 |
 | 23 | cảm biến PIR `presence` (giữ HIGH 10 s sau mỗi chuyển động) | Có người (thay cho mmWave) | 6 |
 | 15 | DHT22 (+ trở kéo 10 kΩ) | Nhiệt độ/độ ẩm | — |
 | 2 / 13 / 34 / 12 | MFRC522 `rfid`: SCK / MOSI / MISO / SDA(SS); RST nối 3V3 | Đầu đọc thẻ ở cửa D07 | — |
 | 35 | slide switch `rfid-dir` | Chiều quẹt: HIGH = vào | — |
 
-Công tắc: chân giữa (2) nối GPIO, chân 1 nối GND, chân 3 nối 3V3; GPIO đặt `INPUT_PULLUP` (panic: `INPUT_PULLDOWN`). Cửa và rèm quang vẫn là công tắc: Wokwi không có cảm biến từ, và vị trí cửa phải do cảm biến **độc lập** với motor báo.
+Công tắc: chân giữa (2) nối GPIO, chân 1 nối GND, chân 3 nối 3V3; GPIO đặt `INPUT_PULLUP` (panic: `INPUT_PULLDOWN`). Cửa vẫn là công tắc: Wokwi không có cảm biến từ, và vị trí cửa phải do cảm biến **độc lập** với motor báo. Rèm quang là 2 HC-SR04 (DEC-045): chung một chân TRIG (GPIO5, phát mỗi 60 ms), mỗi ECHO đo bằng ngắt riêng nên vòng lặp an toàn không phải chờ; không có echo quá 250 ms thì coi là **bị che**.
 
 | GPIO | Linh kiện | Output |
 | --- | --- | --- |
@@ -431,8 +431,8 @@ Công tắc: chân giữa (2) nối GPIO, chân 1 nối GND, chân 3 nối 3V3; 
 | 27 / 14 | servo `servo07` / `servo08` | Cánh cửa D07 / D08: chạy theo motor, đứng yên thì theo contact (chỉ để nhìn) |
 | 32 | LED trắng | Đèn khẩn cấp |
 | 33 | buzzer (2 kHz) | Còi |
-| 4 | LED đỏ | Sưởi |
-| 5 | LED cyan | Quạt lạnh |
+| 4 | relay `relay-climate` (pnp): NO → LED đỏ sưởi, NC → LED cyan quạt | Sưởi bật / quạt bật (quạt luôn = !sưởi) |
+| 5 | TRIG chung của 2 HC-SR04 | Phát xung đo rèm quang |
 
 Thẻ mẫu MFRC522 của Wokwi: Blue = DEMO-017, Green = DEMO-018, Red = DEMO-999 (bảng `RFID_CARDS` trong `include/config.h`). Dòng Serial ở mục 8.5 vẫn được nhận để chạy script nghiệm thu (DEC-044).
 

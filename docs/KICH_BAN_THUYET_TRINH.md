@@ -18,7 +18,7 @@ Theo [CHECKLIST_DEMO.md](CHECKLIST_DEMO.md), tóm tắt:
 
 1. MySQL, broker dự án (18884/18885), backend 3001, Vite 5173, gateway Wokwi 9011, `demo:warehouse` đều chạy.
 2. Mở Wokwi Simulator, đăng nhập dashboard bằng tài khoản **operator**, cả 5 thiết bị hiển thị `fresh`.
-3. Trạng thái nền: không bấm nút panic, cửa D07/D08 đóng, beam clear, PIR không tín hiệu, công tắc *Chiều quẹt* ở HIGH (vào), không có thẻ ở trong.
+3. Trạng thái nền: không bấm nút panic, cửa D07/D08 đóng, hai HC-SR04 ở 400 cm, PIR không tín hiệu, công tắc *Chiều quẹt* ở HIGH (vào), không có thẻ ở trong.
 4. Sắp sẵn 3 cửa sổ: PowerPoint (trình chiếu), trình duyệt trang **Giám sát cửa**, VS Code tab **Wokwi** + Serial Monitor.
 5. Dán sẵn vào clipboard/ghi chú: `RFID D07 DEMO-017 IN` và `RFID D07 DEMO-017 OUT`.
 6. **Phương án dự phòng:** nếu Wokwi hoặc broker trục trặc, không sửa trên sân khấu — dùng ảnh trong slide 19–22 và nói rõ đó là ảnh bằng chứng từ lượt nghiệm thu ngày 13/10/2026.
@@ -97,7 +97,7 @@ Theo [CHECKLIST_DEMO.md](CHECKLIST_DEMO.md), tóm tắt:
 
 **Lời nói:**
 > Firmware đọc bảy đầu vào: mỗi cửa có **công tắc vị trí (contact), rèm quang (beam) và nút panic**; cộng một cảm biến **hiện diện mmWave** dùng chung. Nhiệt ẩm đo bằng DHT22.
-> Trên Wokwi, thẻ được quẹt qua **đầu đọc RFID MFRC522** đặt ở cửa D07, có công tắc chọn chiều vào/ra. Hiện diện dùng **cảm biến PIR**; vì PIR chỉ bắt chuyển động, thiết kế thật dùng radar mmWave. Khóa cửa là **relay**, cánh cửa là **servo**, còi là **buzzer**; đèn, sưởi, quạt là LED.
+> Trên Wokwi, thẻ được quẹt qua **đầu đọc RFID MFRC522** đặt ở cửa D07, có công tắc chọn chiều vào/ra. Hiện diện dùng **cảm biến PIR**; vì PIR chỉ bắt chuyển động, thiết kế thật dùng radar mmWave. Rèm quang là **cảm biến siêu âm HC-SR04** (có vật gần hơn 1 m là bị che). Khóa cửa là **relay**, cánh cửa là **servo**, còi là **buzzer**; đèn, sưởi, quạt là LED.
 > Mọi tín hiệu đều được **chống dội 30 ms**; trước khi ổn định, firmware coi tín hiệu là **chưa rõ** chứ không coi là an toàn.
 
 ↪ "Với các tín hiệu đó, quy tắc đóng cửa là…"
@@ -323,8 +323,8 @@ Theo [CHECKLIST_DEMO.md](CHECKLIST_DEMO.md), tóm tắt:
 | Còn < 15 phút | Dùng bản rút gọn 15 slide trong [NOI_DUNG_SLIDE.md](NOI_DUNG_SLIDE.md#gợi-ý-rút-gọn-còn-15-slide); demo chỉ làm bước 1, 3, 4 của slide 19 và bước 1 của slide 20. |
 | Demo lỗi | Nói: "Phần này nhóm đã ghi bằng chứng ở lượt nghiệm thu" → chuyển sang ảnh trên slide, không gỡ lỗi trước hội đồng. |
 | Dashboard báo `stale` | ESP chưa gửi telemetry mới: kiểm tra gateway; nếu không kịp, demo bằng Serial Monitor (vẫn thấy `RFID_EVENT`, `OUTPUTS`, `COMMAND`). |
-| Dư thời gian | Demo thêm rèm quang: bấm Đóng D07 rồi gạt beam → cửa tự đảo chiều, Serial in `SAFETY_EVENT … closing reversed BEAM_BLOCKED`. |
+| Dư thời gian | Demo thêm rèm quang: bấm Đóng D07 rồi kéo khoảng cách HC-SR04 D07 xuống dưới 100 cm → cửa tự đảo chiều, Serial in `SAFETY_EVENT … closing reversed BEAM_BLOCKED`. |
 
 ## Sau buổi trình bày
 
-Trả trạng thái nền theo mục "Sau demo" trong [CHECKLIST_DEMO.md](CHECKLIST_DEMO.md): reset panic, chờ PIR hết tín hiệu, beam clear, hủy giữ chỗ demo.
+Trả trạng thái nền theo mục "Sau demo" trong [CHECKLIST_DEMO.md](CHECKLIST_DEMO.md): reset panic, chờ PIR hết tín hiệu, HC-SR04 về 400 cm, hủy giữ chỗ demo.

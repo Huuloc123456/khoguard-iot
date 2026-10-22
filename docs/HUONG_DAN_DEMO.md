@@ -103,17 +103,18 @@ Nút khu không có khóa, rèm quang hay panic nên dashboard hiện các tín 
 ## 3. Trạng thái nền trước khi demo
 
 Mạch khu C (DEC-044) gồm:
-- **Giữ công tắc:** cửa (contact) và rèm quang (beam).
+- **Giữ công tắc:** cửa (contact).
+- **Rèm quang:** 2 cảm biến siêu âm HC-SR04 (DEC-045): vật gần hơn 100 cm = rèm bị che.
 - **Nút đỏ:** panic.
 - **Cảm biến:** PIR (hiện diện), đầu đọc RFID MFRC522 kèm công tắc chọn chiều.
-- **Cơ cấu chấp hành:** 2 servo (cánh cửa), 2 relay khóa (kèm đèn xanh), buzzer (còi), LED đèn/sưởi/quạt.
+- **Cơ cấu chấp hành:** 2 servo (cánh cửa), 2 relay khóa (kèm đèn xanh), buzzer (còi), LED đèn, 1 relay chuyển giữa đèn sưởi (NO) và đèn quạt (NC).
 
 Đặt như sau:
 
 | Linh kiện | Trạng thái | Ý nghĩa |
 | --- | --- | --- |
 | Công tắc `D07 contact`, `D08 contact` | **LOW** | Hai cửa đóng |
-| Công tắc `D07 beam`, `D08 beam` | **HIGH** | Rèm quang thông |
+| HC-SR04 rèm quang D07, D08 | Khoảng cách **400 cm** (mặc định) | Rèm quang thông |
 | Nút `D07 PANIC`, `D08 PANIC` | Không bấm | Không khẩn cấp |
 | PIR | Không bấm *Simulate Motion* trong ~10 s | Không thấy người |
 | Công tắc `Chiều quẹt` | **HIGH** | Quẹt thẻ là **vào** |
@@ -214,11 +215,11 @@ Từ chối vì **vượt 95%** (`CAPACITY_LIMIT`) cần đẩy kho gần đầy
 3. Gạt D07 contact về LOW.
 
 **5b. Rèm quang làm cửa đảo chiều (≈ 30 giây)**
-1. D07 mở (contact HIGH), không người, PIR không tín hiệu, beam HIGH.
+1. D07 mở (contact HIGH), không người, PIR không tín hiệu, HC-SR04 D07 ở 400 cm.
 2. Bấm **Đóng cửa** D07 → servo D07 bắt đầu quay về 0°.
-3. **Ngay lập tức** gạt **D07 beam → LOW** (bị che).
-4. Thấy servo quay ngược lại 90° và Serial `SAFETY_EVENT door=D07 closing reversed BEAM_BLOCKED`.
-5. Gạt beam về HIGH.
+3. **Ngay lập tức** bấm vào **HC-SR04 D07**, kéo khoảng cách xuống **dưới 100 cm** (có vật trong khung cửa).
+4. Thấy Serial `SONAR D07 cm=… blocked`, servo quay ngược lại 90° và `SAFETY_EVENT door=D07 closing reversed BEAM_BLOCKED`.
+5. Kéo khoảng cách về 400 cm.
 
 **5c. Cửa mở lâu**
 1. Để D07 mở (contact HIGH).
@@ -282,7 +283,7 @@ Xong thì bật lại T4 và Wokwi.
 ## 8. Sau demo — trả trạng thái
 
 1. Nhả hết panic (LOW). Nếu còn chốt thì bấm **Đặt lại khẩn cấp** cho cửa đó.
-2. Presence LOW, beam HIGH, contact LOW (cửa đóng); quẹt OUT các thẻ còn trong.
+2. PIR không tín hiệu, HC-SR04 về 400 cm, contact LOW (cửa đóng); quẹt ra các thẻ còn trong.
 3. Trang **Nhận hàng**: **Hủy** các giữ chỗ demo còn hiệu lực.
 4. Kiểm tra cảnh báo đã *hết* khi điều kiện kết thúc. Cả 5 thiết bị `fresh`.
 5. Tắt Wokwi Simulator trong VS Code, rồi nhấp đúp `close.bat` (hoặc Ctrl+C từng cửa sổ theo thứ tự ngược T5 → T1). **Không** reset cơ sở dữ liệu để dọn lịch sử.

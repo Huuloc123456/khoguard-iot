@@ -18,10 +18,18 @@ test('each ESP-C01 input part drives exactly the controller slot assigned to it 
   const pins=list('INPUT_PINS');
   // Slot order is the controller contract: per door contact, beam, panic; then shared presence.
   assert.deepEqual(pins.length,7);
-  for (const [slot,id] of [[0,'contact07'],[1,'beam07'],[3,'contact08'],[4,'beam08']]) {
+  for (const [slot,id] of [[0,'contact07'],[3,'contact08']]) {
     assert.equal(part(id)?.type,'wokwi-slide-switch',id);
     assert.deepEqual(wired(`${id}:2`),[esp(pins[slot])],id);
   }
+  // DEC-045: light curtains are HC-SR04 sensors; ECHO uses the beam slot pin, one shared TRIG pin fires both.
+  assert.deepEqual(list('BEAM_SLOTS'),[1,4]);
+  for (const [slot,id] of [[1,'sonar07'],[4,'sonar08']]) {
+    assert.equal(part(id)?.type,'wokwi-hc-sr04',id);
+    assert.deepEqual(wired(`${id}:ECHO`),[esp(pins[slot])],id);
+    assert.deepEqual(wired(`${id}:TRIG`),[esp(scalar('SONAR_TRIG_PIN'))],id);
+  }
+  for (const old of ['beam07','beam08']) assert.equal(part(old),undefined,`old beam switch ${old} removed`);
   // Panic buttons close to 3V3; the firmware uses INPUT_PULLDOWN so a press reads HIGH like the old switch.
   assert.deepEqual(list('PANIC_SLOTS'),[2,5]);
   for (const [slot,id] of [[2,'panic07'],[5,'panic08']]) {
@@ -49,11 +57,16 @@ test('ESP-C01 outputs: lock relays, door servos, buzzer and indicator LEDs on th
   }
   assert.equal(part('buzzer')?.type,'wokwi-buzzer');
   assert.deepEqual(wired('buzzer:2'),[esp(scalar('BUZZER_PIN'))]);
-  for (const [id,name] of [['light','LIGHT_PIN'],['heater','HEATER_PIN'],['fan','FAN_PIN']]) {
-    assert.equal(part(`led-${id}`)?.type,'wokwi-led',id);
-    assert.deepEqual(wired(`led-${id}:A`),[esp(scalar(name))],id);
-    assert.ok(diagram.parts.some(p=>p.type==='wokwi-text' && p.id===`label-${id}`));
-  }
+  assert.equal(part('led-light')?.type,'wokwi-led');
+  assert.deepEqual(wired('led-light:A'),[esp(scalar('LIGHT_PIN'))]);
+  // Fan is always the opposite of the heater (controller.h), so one changeover relay drives both lamps.
+  assert.equal(part('relay-climate')?.type,'wokwi-relay-module');
+  assert.equal(part('relay-climate').attrs.transistor,'pnp');
+  assert.deepEqual(wired('relay-climate:IN'),[esp(scalar('CLIMATE_RELAY_PIN'))]);
+  assert.deepEqual(wired('relay-climate:COM'),['esp:3V3']);
+  assert.deepEqual(wired('relay-climate:NO'),['led-heater:A']);
+  assert.deepEqual(wired('relay-climate:NC'),['led-fan:A']);
+  for (const id of ['light','heater','fan']) assert.ok(diagram.parts.some(p=>p.type==='wokwi-text' && p.id===`label-${id}`),id);
   for (const id of ['open07','close07','open08','close08','buzzer']) assert.equal(part(`led-${id}`),undefined,`old LED ${id} removed`);
 });
 test('ESP-C01 MFRC522 reader and direction switch use the configured SPI pins, separate from every other pin',()=>{
@@ -64,7 +77,7 @@ test('ESP-C01 MFRC522 reader and direction switch use the configured SPI pins, s
   assert.equal(part('rfid-dir')?.type,'wokwi-slide-switch');
   assert.deepEqual(wired('rfid-dir:2'),[esp(scalar('RFID_DIRECTION_PIN'))]);
   const used=[...list('INPUT_PINS'),...list('LOCK_RELAY_PINS'),...list('DOOR_SERVO_PINS'),
-    ...['LIGHT_PIN','BUZZER_PIN','HEATER_PIN','FAN_PIN','DHT_PIN',...Object.values(spi),'RFID_DIRECTION_PIN'].map(scalar)];
+    ...['LIGHT_PIN','BUZZER_PIN','CLIMATE_RELAY_PIN','SONAR_TRIG_PIN','DHT_PIN',...Object.values(spi),'RFID_DIRECTION_PIN'].map(scalar)];
   assert.equal(new Set(used).size,used.length,'every GPIO has one role');
   // Wokwi preset cards: Blue, Green and Red are mapped to the controller's card table.
   for (const card of ['DEMO-017','DEMO-018','DEMO-999']) assert.match(config,new RegExp(`"${card}"`));

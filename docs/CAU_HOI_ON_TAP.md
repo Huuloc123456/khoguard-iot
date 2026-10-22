@@ -34,7 +34,7 @@ Dùng để chuẩn bị trả lời giảng viên sau phần trình bày [KICH_
 ## B. Phần cứng và firmware ESP32
 
 **B1 ⭐ ESP32 đọc những tín hiệu nào, chân nào?**
-> 7 đầu vào: mỗi cửa có contact và beam (công tắc), panic (nút đỏ) — D07: 16, 17, 18; D08: 19, 21, 22 — và cảm biến PIR hiện diện dùng chung (23). DHT22 ở chân 15; đầu đọc RFID MFRC522 qua SPI (2, 13, 34, 12) kèm công tắc chọn chiều (35). Đầu ra: 2 relay khóa, 2 servo cánh cửa, buzzer, LED đèn/sưởi/quạt. Test `tests/diagram.test.js` kiểm chân trong mạch Wokwi khớp firmware. — Nguồn: `firmware/include/config.h`.
+> 7 đầu vào: mỗi cửa có contact (công tắc), beam (cảm biến siêu âm HC-SR04, có vật < 100 cm = bị che), panic (nút đỏ) — D07: 16, 17, 18; D08: 19, 21, 22 — và cảm biến PIR hiện diện dùng chung (23). DHT22 ở chân 15; đầu đọc RFID MFRC522 qua SPI (2, 13, 34, 12) kèm công tắc chọn chiều (35). Đầu ra: 2 relay khóa, 2 servo cánh cửa, buzzer, LED đèn, và 1 relay chuyển giữa đèn sưởi/quạt (quạt luôn ngược sưởi, nên dồn được để lấy chân cho HC-SR04). Test `tests/diagram.test.js` kiểm chân trong mạch Wokwi khớp firmware. — Nguồn: `firmware/include/config.h`.
 
 **B2 ⭐⭐ Chống dội (debounce) thế nào? Tại sao cần?**
 > Mỗi đầu vào phải **giữ nguyên 30 ms** mới được chấp nhận. Trước lần ổn định đầu tiên, đầu vào ở trạng thái **unknown**, và unknown thì chặn đóng. Cần vì công tắc/cảm biến có nhiễu; nếu không chống dội, một xung nhiễu có thể làm tăng revision liên tục hoặc báo sai cửa mở/đóng. — `controller.h`, struct `Input`.

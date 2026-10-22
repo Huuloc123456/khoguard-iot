@@ -59,17 +59,24 @@ constexpr uint32_t NETWORK_TASK_DELAY_MS = 20;    // vong lap task MQTT
 
 // ---- GPIO: khop firmware/diagram.json (tests/diagram.test.js kiem tra) ----
 // Thu tu slot input la hop dong cua Controller: moi cua gom contact, beam, panic; cuoi cung la presence dung chung.
-// contact/beam: cong tac gat (HIGH = mo / thong). panic: nut nhan do noi 3V3, chan dung INPUT_PULLDOWN nen nhan = HIGH.
+// contact: cong tac gat (HIGH = mo). panic: nut nhan do noi 3V3, chan dung INPUT_PULLDOWN nen nhan = HIGH.
 // presence: cam bien PIR (OUT HIGH khi co chuyen dong, giu HIGH trong delayTime) (DEC-044).
+// beam: cam bien sieu am HC-SR04, chan ECHO noi vao slot beam; "thong" = co echo va xa hon BEAM_BLOCKED_CM (DEC-045).
 constexpr int INPUT_PINS[] = {16, 17, 18, 19, 21, 22, 23};
 constexpr int PANIC_SLOTS[] = {2, 5};
-// Dau ra: relay giu khoa D07/D08 (den xanh la tai cua relay), servo canh cua D07/D08, den, buzzer, suoi, quat.
+constexpr int BEAM_SLOTS[] = {1, 4};
+constexpr int SONAR_TRIG_PIN = 5;           // mot xung TRIG chung cho ca hai HC-SR04
+constexpr uint32_t SONAR_PERIOD_MS = 60;    // khoang cach giua hai lan phat (HC-SR04 can >= 60 ms)
+constexpr uint32_t SONAR_TIMEOUT_MS = 250;  // khong co echo moi trong thoi gian nay -> coi la bi che (an toan khi hong)
+constexpr uint32_t BEAM_BLOCKED_CM = 100;   // vat gan hon 1 m trong khung cua = rem bi che
+// Dau ra: relay giu khoa D07/D08 (den xanh la tai cua relay), servo canh cua D07/D08, den, buzzer.
 constexpr int LOCK_RELAY_PINS[] = {25, 26};
 constexpr int DOOR_SERVO_PINS[] = {27, 14};
 constexpr int LIGHT_PIN = 32;
 constexpr int BUZZER_PIN = 33;
-constexpr int HEATER_PIN = 4;
-constexpr int FAN_PIN = 5;
+// Quat luon nguoc voi suoi (controller.h: fan = !emergency, heater = emergency), nen mot relay chuyen mach lo ca hai:
+// NO -> den suoi, NC -> den quat. Chan GPIO5 cu cua quat duoc dung lam TRIG cho HC-SR04 (DEC-045).
+constexpr int CLIMATE_RELAY_PIN = 4;
 constexpr int DHT_PIN = 15;
 // Servo chi de nhin: 0 do = dong, 90 do = mo. Vi tri cua van do cong tac contact bao (cam bien doc lap voi motor).
 constexpr int SERVO_CLOSED_DEG = 0;

@@ -288,3 +288,10 @@ Mỗi quyết định mới thêm DEC-xxx với ngày, trạng thái, lý do và
 - **Giữ công tắc** cho contact (Wokwi không có cảm biến từ, và vị trí cửa phải được đo độc lập với motor: servo chỉ để nhìn) và rèm quang (đợt 2 sẽ thử HC-SR04).
 - Chân: SPI mặc định trùng input nên MFRC522 dùng GPIO matrix (SCK 2, MOSI 13, MISO 34, SS 12), RST nối 3V3; GPIO12 là chân strapping, chỉ chấp nhận được trong mô phỏng. Panic dùng `INPUT_PULLDOWN` nên nhấn vẫn đọc HIGH, `controller.h` không đổi. Thẻ mẫu Wokwi Blue/Green/Red ánh xạ DEMO-017/018/999; thẻ khác báo `UID-<hex>` và bị từ chối. Dòng Serial RFID vẫn nhận để script nghiệm thu chạy được.
 - Hệ quả: **PIR chỉ bắt chuyển động** (giữ HIGH 10 s sau mỗi lần), yếu hơn mmWave; bài mắc kẹt > 5 phút phải bấm lặp Simulate Motion hoặc tạm tăng `delayTime`. Bằng chứng Wokwi cũ làm với công tắc; phải nghiệm thu lại với mạch mới. Firmware build cả 4 bản, test C++ và JS đạt; **chưa chạy trên Wokwi** lúc ghi mục này.
+
+## DEC-045 — Rèm quang bằng HC-SR04 (đợt 2)
+
+- Ngày 22/10/2026; tiếp DEC-044. Hai công tắc rèm quang của khu C thành 2 cảm biến siêu âm HC-SR04: vật gần hơn 100 cm trong khung cửa = bị che; không có echo mới trong 250 ms cũng coi là bị che (an toàn khi hỏng). `controller.h` không đổi, chỉ nhận "thông/bị che" như trước.
+- Board ESP32 DevKit V1 của Wokwi đã hết chân xuất (chỉ còn VP/VN là chân đọc), mà HC-SR04 cần TRIG. Vì `fan = !emergency` và `heater = emergency` trong `controller.h`, quạt luôn ngược sưởi nên một relay chuyển mạch lái cả hai (NO = đèn sưởi, NC = đèn quạt); GPIO5 cũ của quạt thành TRIG chung cho 2 cảm biến. ECHO dùng đúng chân cũ của công tắc rèm quang (17, 21) và đo bằng ngắt, nên vòng lặp an toàn không chờ echo.
+- Không thêm LCD cho khu C vì không còn chân I2C; Serial và dashboard vẫn đủ. Phương án loại: đổi sang board ESP32 khác nhiều chân hơn (phải đổi toàn bộ tên chân trong mạch và test).
+- Hệ quả: nếu sau này quạt và sưởi cần bật độc lập thì phải tách lại relay và tìm chân khác. Build, test JS và C++ đạt; chưa chạy trên Wokwi.

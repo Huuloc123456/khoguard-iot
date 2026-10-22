@@ -18,6 +18,40 @@ bool panicSlot(unsigned slot) {
   return false;
 }
 
+// HC-SR04 light curtains (DEC-045): one shared TRIG pulse, each ECHO measured by its own interrupt so the safety
+// loop never waits for an echo. 32-bit fields are written by the ISR and read atomically by the loop.
+struct Sonar {
+  int pin;
+  volatile uint32_t riseUs, widthUs, echoAtMs;
+};
+Sonar sonars[2] = {{config::INPUT_PINS[config::BEAM_SLOTS[0]], 0, 0, 0}, {config::INPUT_PINS[config::BEAM_SLOTS[1]], 0, 0, 0}};
+uint32_t firedAt = 0;
+
+void IRAM_ATTR onEcho(void *arg) {
+  Sonar &sonar = *static_cast<Sonar *>(arg);
+  if (digitalRead(sonar.pin) == HIGH) sonar.riseUs = micros();
+  else {sonar.widthUs = micros() - sonar.riseUs; sonar.echoAtMs = millis();}
+}
+
+// Clear only with a recent echo from farther than BEAM_BLOCKED_CM; a missing echo counts as blocked (fail-safe).
+bool beamClear(unsigned door, uint32_t now) {
+  const uint32_t echoAt = sonars[door].echoAtMs, width = sonars[door].widthUs;
+  return echoAt != 0 && now - echoAt <= config::SONAR_TIMEOUT_MS && width / 58 >= config::BEAM_BLOCKED_CM;
+}
+
+void fireSonars(uint32_t now) {
+  if (now - firedAt < config::SONAR_PERIOD_MS) return;
+  firedAt = now;
+  digitalWrite(config::SONAR_TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(config::SONAR_TRIG_PIN, LOW);
+}
+
+int beamSlotDoor(unsigned slot) {
+  for (unsigned d = 0; d < 2; d++) if (int(slot) == config::BEAM_SLOTS[d]) return int(d);
+  return -1;
+}
+
 void writeServo(unsigned door, float angle) {
   const int degrees = int(angle + 0.5f);
   if (degrees == servoWritten[door]) return;
@@ -36,9 +70,10 @@ float servoTarget(const kg::Controller &c, unsigned door, float current) {
 }  // namespace
 
 void begin() {
-  for (unsigned i = 0; i < 7; i++) pinMode(INPUT_PINS[i], panicSlot(i) ? INPUT_PULLDOWN : INPUT_PULLUP);
+  for (unsigned i = 0; i < 7; i++) pinMode(INPUT_PINS[i], panicSlot(i) ? INPUT_PULLDOWN : beamSlotDoor(i) >= 0 ? INPUT : INPUT_PULLUP);
+  for (Sonar &sonar : sonars) attachInterruptArg(digitalPinToInterrupt(sonar.pin), onEcho, &sonar, CHANGE);
   for (int pin : config::LOCK_RELAY_PINS) {pinMode(pin, OUTPUT); digitalWrite(pin, LOW);}
-  for (int pin : {config::LIGHT_PIN, config::HEATER_PIN, config::FAN_PIN}) {pinMode(pin, OUTPUT); digitalWrite(pin, LOW);}
+  for (int pin : {config::LIGHT_PIN, config::CLIMATE_RELAY_PIN, config::SONAR_TRIG_PIN}) {pinMode(pin, OUTPUT); digitalWrite(pin, LOW);}
   for (unsigned d = 0; d < 2; d++) {
     ledcSetup(SERVO_CHANNELS[d], 50, SERVO_RESOLUTION);
     ledcAttachPin(config::DOOR_SERVO_PINS[d], SERVO_CHANNELS[d]);
@@ -50,16 +85,29 @@ void begin() {
 }
 
 std::array<bool,7> readInputs() {
+  const uint32_t now = millis();
+  fireSonars(now);
   std::array<bool,7> raw;
-  for(unsigned i=0;i<raw.size();i++) raw[i]=digitalRead(INPUT_PINS[i])==HIGH;
+  for(unsigned i=0;i<raw.size();i++) {
+    const int door = beamSlotDoor(i);
+    raw[i] = door >= 0 ? beamClear(unsigned(door), now) : digitalRead(INPUT_PINS[i])==HIGH;
+  }
+  // Serial evidence of what each curtain sees, printed only when its clear/blocked reading flips.
+  static int shown[2] = {-1, -1};
+  for (unsigned d = 0; d < 2; d++) {
+    const bool clear = raw[config::BEAM_SLOTS[d]];
+    if (int(clear) == shown[d]) continue;
+    shown[d] = clear;
+    Serial.printf("SONAR %s cm=%lu %s\r\n", config::DOOR_IDS[d], static_cast<unsigned long>(sonars[d].widthUs / 58), clear ? "clear" : "blocked");
+  }
   return raw;
 }
 
 void writeOutputs(const kg::Controller &controller, const kg::Outputs &out, uint32_t now) {
   for (unsigned d = 0; d < 2; d++) digitalWrite(config::LOCK_RELAY_PINS[d], out.lock[d] ? HIGH : LOW);
   digitalWrite(config::LIGHT_PIN, out.light ? HIGH : LOW);
-  digitalWrite(config::HEATER_PIN, out.heater ? HIGH : LOW);
-  digitalWrite(config::FAN_PIN, out.fan ? HIGH : LOW);
+  // The changeover relay lights the heater (NO) or the fan (NC); controller.h guarantees fan == !heater.
+  digitalWrite(config::CLIMATE_RELAY_PIN, out.heater ? HIGH : LOW);
   if (out.buzzer != buzzing) {
     buzzing = out.buzzer;
     ledcWriteTone(BUZZER_CHANNEL, buzzing ? config::BUZZER_HZ : 0);

@@ -42,16 +42,6 @@
     },
     {
       "type": "wokwi-slide-switch",
-      "id": "beam07",
-      "top": 200,
-      "left": -70,
-      "attrs": {
-        "value": "1"
-      },
-      "label": "D07 beam: HIGH=clear"
-    },
-    {
-      "type": "wokwi-slide-switch",
       "id": "contact08",
       "top": 200,
       "left": 230,
@@ -59,16 +49,6 @@
         "value": ""
       },
       "label": "D08 contact: HIGH=open"
-    },
-    {
-      "type": "wokwi-slide-switch",
-      "id": "beam08",
-      "top": 290,
-      "left": -220,
-      "attrs": {
-        "value": "1"
-      },
-      "label": "D08 beam: HIGH=clear"
     },
     {
       "type": "wokwi-text",
@@ -81,29 +61,11 @@
     },
     {
       "type": "wokwi-text",
-      "id": "label-beam07",
-      "top": 170,
-      "left": -85,
-      "attrs": {
-        "text": "D07 beam: HIGH=clear"
-      }
-    },
-    {
-      "type": "wokwi-text",
       "id": "label-contact08",
       "top": 170,
       "left": 215,
       "attrs": {
         "text": "D08 contact: HIGH=open"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "label-beam08",
-      "top": 260,
-      "left": -235,
-      "attrs": {
-        "text": "D08 beam: HIGH=clear"
       }
     },
     {
@@ -380,6 +342,60 @@
       "attrs": {
         "text": "Chiều quẹt: HIGH=VÀO, LOW=RA"
       }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "sonar07",
+      "top": 190,
+      "left": -90,
+      "attrs": {
+        "distance": "400"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-beam07",
+      "top": 165,
+      "left": -100,
+      "attrs": {
+        "text": "Rèm quang D07 (HC-SR04): < 100 cm = bị che"
+      }
+    },
+    {
+      "type": "wokwi-hc-sr04",
+      "id": "sonar08",
+      "top": 285,
+      "left": -260,
+      "attrs": {
+        "distance": "400"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-beam08",
+      "top": 260,
+      "left": -270,
+      "attrs": {
+        "text": "Rèm quang D08 (HC-SR04): < 100 cm = bị che"
+      }
+    },
+    {
+      "type": "wokwi-relay-module",
+      "id": "relay-climate",
+      "top": 540,
+      "left": 230,
+      "attrs": {
+        "transistor": "pnp"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-relay-climate",
+      "top": 515,
+      "left": 215,
+      "attrs": {
+        "text": "Relay sưởi (NO) / quạt (NC)"
+      }
     }
   ],
   "connections": [
@@ -444,24 +460,6 @@
       []
     ],
     [
-      "beam07:2",
-      "esp:TX2",
-      "green",
-      []
-    ],
-    [
-      "beam07:1",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "beam07:3",
-      "esp:3V3",
-      "red",
-      []
-    ],
-    [
       "contact08:2",
       "esp:D19",
       "green",
@@ -475,24 +473,6 @@
     ],
     [
       "contact08:3",
-      "esp:3V3",
-      "red",
-      []
-    ],
-    [
-      "beam08:2",
-      "esp:D21",
-      "green",
-      []
-    ],
-    [
-      "beam08:1",
-      "esp:GND.1",
-      "black",
-      []
-    ],
-    [
-      "beam08:3",
       "esp:3V3",
       "red",
       []
@@ -522,21 +502,9 @@
       []
     ],
     [
-      "led-heater:A",
-      "esp:D4",
-      "red",
-      []
-    ],
-    [
       "led-heater:C",
       "esp:GND.2",
       "black",
-      []
-    ],
-    [
-      "led-fan:A",
-      "esp:D5",
-      "cyan",
       []
     ],
     [
@@ -753,6 +721,90 @@
       "rfid-dir:3",
       "esp:3V3",
       "red",
+      []
+    ],
+    [
+      "sonar07:ECHO",
+      "esp:TX2",
+      "green",
+      []
+    ],
+    [
+      "sonar07:TRIG",
+      "esp:D5",
+      "orange",
+      []
+    ],
+    [
+      "sonar07:VCC",
+      "esp:VIN",
+      "red",
+      []
+    ],
+    [
+      "sonar07:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "sonar08:ECHO",
+      "esp:D21",
+      "green",
+      []
+    ],
+    [
+      "sonar08:TRIG",
+      "esp:D5",
+      "orange",
+      []
+    ],
+    [
+      "sonar08:VCC",
+      "esp:VIN",
+      "red",
+      []
+    ],
+    [
+      "sonar08:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "relay-climate:IN",
+      "esp:D4",
+      "green",
+      []
+    ],
+    [
+      "relay-climate:VCC",
+      "esp:VIN",
+      "red",
+      []
+    ],
+    [
+      "relay-climate:GND",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "relay-climate:COM",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "relay-climate:NO",
+      "led-heater:A",
+      "red",
+      []
+    ],
+    [
+      "relay-climate:NC",
+      "led-fan:A",
+      "cyan",
       []
     ]
   ],

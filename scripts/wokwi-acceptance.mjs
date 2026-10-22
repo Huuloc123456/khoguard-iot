@@ -207,7 +207,7 @@ async function step(id, test, title, run, { always = false } = {}) {
 async function waitBaseline(reason) {
   const t = lastTelemetry();
   if (t && baselineOk(t.payload)) return;
-  ask(`${reason}: D07/D08 đóng (contact LOW), beam HIGH, không bấm nút panic, PIR không tín hiệu (chờ 10 s sau lần Simulate Motion cuối).`);
+  ask(`${reason}: D07/D08 đóng (contact LOW), hai HC-SR04 ở 400 cm, không bấm nút panic, PIR không tín hiệu (chờ 10 s sau lần Simulate Motion cuối).`);
   await telemetryWait(baselineOk, MANUAL_MS, 'trạng thái nền an toàn');
 }
 const rfid = async (line, expect, count) => {
@@ -304,18 +304,18 @@ try {
   });
   await step('S3b', 'T10', 'Rèm quang bị chặn khi đang đóng → đảo chiều', async () => {
     await settled();
-    say('  Harness sẽ gửi lệnh ĐÓNG D07 sau 5 giây. Khi servo D07 bắt đầu quay về 0°, gạt BEAM07 sang LOW trong vòng 8 giây.');
+    say('  Harness sẽ gửi lệnh ĐÓNG D07 sau 5 giây. Khi servo D07 bắt đầu quay về 0°, kéo HC-SR04 D07 xuống dưới 100 cm trong vòng 8 giây.');
     for (let i = 5; i > 0; i--) { process.stdout.write(`  ${i}… `); await delay(1000); }
     const mark = serialMark(), since = Date.now();
     const created = await post('/api/doors/D07/commands', { action: 'close' });
     assert.equal(created.status, 202);
-    say('\x07\n>>> GẠT BEAM07 SANG LOW NGAY.');
+    say('\x07\n>>> KÉO HC-SR04 D07 XUỐNG DƯỚI 100 CM NGAY.');
     const hit = await serialWait(/^SAFETY_EVENT door=D07 closing reversed BEAM_BLOCKED/, mark, 12000);
     const ev = await eventWait(p => p.event_type === 'door' && p.door_id === 'D07' && p.reason === 'BEAM_BLOCKED', since);
     return { serial: hit.text, event_state: ev.payload.state };
   });
   await step('S3c', 'T10', 'Trả rèm quang và đóng D07 bằng tay', async () => {
-    ask('Gạt BEAM07 về HIGH rồi CONTACT07 về LOW (cửa đóng).');
+    ask('Kéo HC-SR04 D07 về 400 cm rồi gạt CONTACT07 về LOW (cửa đóng).');
     await waitBaseline('Trả về trạng thái nền');
     return 'baseline';
   });

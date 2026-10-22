@@ -59,13 +59,16 @@ Prefix `khoguard/v1/WH01/devices/ESP-C01/`
 
 | Mảng | Vị trí | GPIO | Ý nghĩa |
 |---|---|---|---|
-| `INPUT_PINS` | 0–2 | 16, 17, 18 | D07: contact (công tắc, HIGH = mở), beam (công tắc, HIGH = thông), panic (nút đỏ) |
+| `INPUT_PINS` | 0–2 | 16, 17, 18 | D07: contact (công tắc, HIGH = mở), beam (ECHO của HC-SR04), panic (nút đỏ) |
 | | 3–5 | 19, 21, 22 | D08: contact, beam, panic |
 | | 6 | 23 | presence: cảm biến PIR (HIGH = có chuyển động) |
 | `PANIC_SLOTS` | 2, 5 | 18, 22 | nút panic nối 3V3, chân dùng `INPUT_PULLDOWN` |
 | `LOCK_RELAY_PINS` | 0–1 | 25, 26 | relay khóa D07, D08 (đèn xanh là tải của relay) |
 | `DOOR_SERVO_PINS` | 0–1 | 27, 14 | servo cánh cửa D07, D08 (chỉ để nhìn; vị trí cửa vẫn do contact báo) |
-| `LIGHT_PIN`, `BUZZER_PIN`, `HEATER_PIN`, `FAN_PIN` | – | 32, 33, 4, 5 | đèn (LED), còi (buzzer 2 kHz), sưởi (LED), quạt (LED) |
+| `BEAM_SLOTS` | 1, 4 | 17, 21 | rèm quang là HC-SR04: thông = có echo trong 250 ms và ≥ `BEAM_BLOCKED_CM` (100 cm) |
+| `SONAR_TRIG_PIN` | – | 5 | TRIG chung, phát mỗi 60 ms |
+| `LIGHT_PIN`, `BUZZER_PIN` | – | 32, 33 | đèn (LED), còi (buzzer 2 kHz) |
+| `CLIMATE_RELAY_PIN` | – | 4 | relay chuyển mạch: NO = đèn sưởi, NC = đèn quạt (quạt luôn ngược sưởi) |
 | `DHT_PIN` | – | 15 | DHT22 |
 | `RFID_SCK/MOSI/MISO/SS_PIN` | – | 2, 13, 34, 12 | đầu đọc MFRC522 ở cửa D07 (SPI qua GPIO matrix, RST nối 3V3) |
 | `RFID_DIRECTION_PIN` | – | 35 | công tắc chọn chiều quẹt: HIGH = vào, LOW = ra |
