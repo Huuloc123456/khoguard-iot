@@ -3,13 +3,14 @@
 #include <array>
 #include <cstring>
 #include <cctype>
+#include "config.h"
 namespace kg {
 struct Input {
   bool known=false,value=false,candidate=false,started=false;
   uint32_t changedAt=0;
   bool update(bool raw,uint32_t now) {
     if(!started || raw!=candidate) {started=true;candidate=raw;changedAt=now;}
-    if(uint32_t(now-changedAt)<30 || (known && value==candidate)) return false;
+    if(uint32_t(now-changedAt)<config::INPUT_DEBOUNCE_MS || (known && value==candidate)) return false;
     value=candidate;known=true;return true;
   }
 };

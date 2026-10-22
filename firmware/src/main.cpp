@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "config.h"
 #include "khoguard.h"
 
 // The firmware lives in lib/khoguard; this file only wires the modules into Arduino's setup/loop.
@@ -15,5 +16,5 @@ void loop() {
   kg::edge::step();
   kg::rfid::poll();
   kg::environment::poll();
-  delay(10);
+  delay(kg::config::LOOP_DELAY_MS);
 }

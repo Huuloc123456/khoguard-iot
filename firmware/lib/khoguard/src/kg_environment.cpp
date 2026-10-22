@@ -17,7 +17,7 @@ void begin() {
 
 void poll() {
   static uint32_t readAt = millis();
-  if (millis() - readAt >= 2000) {
+  if (millis() - readAt >= config::SENSOR_PERIOD_MS) {
     readAt = millis();
     float h = dht.readHumidity();
     float t = dht.readTemperature();

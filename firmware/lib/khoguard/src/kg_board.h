@@ -1,15 +1,17 @@
 #pragma once
 #include <array>
+#include "config.h"
 #include "controller.h"
 
-// GPIO wiring of diagram.json (checked by tests/diagram.test.js).
+// GPIO wiring of diagram.json; the pin numbers live in include/config.h (checked by tests/diagram.test.js).
 namespace kg {
 namespace board {
 // Slot order is the controller contract: per door contact, beam, panic; then shared presence.
-constexpr int INPUT_PINS[] = {16,17,18,19,21,22,23};
+// static: a namespace-scope reference has external linkage in C++11, so without it every .cpp redefines it.
+static constexpr const auto &INPUT_PINS = config::INPUT_PINS;
 // LEDs: lock D07/D08, motor open/close D07, motor open/close D08, light, buzzer, heater, fan.
-constexpr int OUTPUT_PINS[] = {25,26,27,14,2,13,32,33,4,5};
-constexpr int DHT_PIN = 15;
+static constexpr const auto &OUTPUT_PINS = config::OUTPUT_PINS;
+constexpr int DHT_PIN = config::DHT_PIN;
 
 void begin();
 std::array<bool,7> readInputs();

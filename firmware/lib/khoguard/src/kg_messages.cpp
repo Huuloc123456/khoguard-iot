@@ -6,8 +6,8 @@ namespace kg {
 namespace messages {
 void envelope(JsonDocument &doc, const char *kind, uint64_t seq, bool will) {
   doc["schema_version"] = 1;
-  doc["warehouse_id"] = "WH01";
-  doc["device_id"] = "ESP-C01";
+  doc["warehouse_id"] = config::WAREHOUSE_ID;
+  doc["device_id"] = config::DEVICE_ID;
   doc["boot_id"] = state::bootId;
   doc["session_id"] = state::sessionId;
   doc["seq"] = seq;
@@ -16,7 +16,7 @@ void envelope(JsonDocument &doc, const char *kind, uint64_t seq, bool will) {
   doc["clock_synced"] = false;
   doc["sent_at"] = nullptr;
   doc["uptime_ms"] = will ? uint64_t(0) : uint64_t(esp_timer_get_time() / 1000);
-  doc["payload"]["zone_id"] = "C";
+  doc["payload"]["zone_id"] = config::ZONE_ID;
 }
 
 void telemetry(JsonDocument &doc, uint64_t seq) {
@@ -30,7 +30,7 @@ void telemetry(JsonDocument &doc, uint64_t seq) {
   at = state::sampleAt;
   c = state::controller;
   portEXIT_CRITICAL(&state::sampleLock);
-  const bool fresh = millis() - at <= 5000;
+  const bool fresh = millis() - at <= config::SENSOR_STALE_MS;
   JsonObject payload = doc["payload"].as<JsonObject>();
   payload["controller_revision"] = c.revision;
   if (fresh && isfinite(t) && t >= -100 && t <= 100) payload["environment"]["temperature_c"] = t;
@@ -48,7 +48,7 @@ void telemetry(JsonDocument &doc, uint64_t seq) {
   const kg::Outputs outputs=c.outputs(now);
   JsonArray doors = payload["doors"].to<JsonArray>();
   unsigned index=0;
-  for (const char *id : {"D07", "D08"}) {
+  for (const char *id : config::DOOR_IDS) {
     JsonObject door = doors.add<JsonObject>();
     door["door_id"] = id;
     static const char* const states[]={"unknown","open","closed","opening","closing"};
@@ -64,7 +64,7 @@ void telemetry(JsonDocument &doc, uint64_t seq) {
   }
   JsonArray active = payload["alarms"].to<JsonArray>();
   for(unsigned d=0;d<2;d++) {
-    const char* id=d==0 ? "D07":"D08";
+    const char* id=config::DOOR_IDS[d];
     if(alarms.doorCritical[d]) {JsonObject a=active.add<JsonObject>();a["code"]="DOOR_OPEN_CRITICAL";a["door_id"]=id;}
     else if(alarms.doorWarning[d]) {JsonObject a=active.add<JsonObject>();a["code"]="DOOR_OPEN_WARNING";a["door_id"]=id;}
   }
@@ -80,7 +80,7 @@ void eventFrame(JsonDocument &doc, const events::EdgeEvent &event) {
   doc["uptime_ms"]=event.uptime;
   char id[64];snprintf(id,sizeof(id),"%s:%llu",state::bootId,static_cast<unsigned long long>(event.seq));doc["event_id"]=id;
   auto payload=doc["payload"].as<JsonObject>();
-  payload["door_id"]=event.door==0 ? "D07":"D08";
+  payload["door_id"]=config::DOOR_IDS[event.door];
   if(event.type==events::EventType::rfid) {
     payload["event_type"]="rfid";
     payload["card_id"]=event.card;
@@ -102,7 +102,7 @@ void eventFrame(JsonDocument &doc, const events::EdgeEvent &event) {
 void ackFrame(JsonDocument &doc, const commands::PendingAck &ack, uint64_t seq) {
   envelope(doc,"acks",seq);
   JsonObject p=doc["payload"].as<JsonObject>();
-  p["door_id"]=ack.door==0 ? "D07":"D08";
+  p["door_id"]=config::DOOR_IDS[ack.door];
   p["command_id"]=ack.id;
   if(ack.reason==kg::Reason::none) {p["status"]="applied";p["reason"]=nullptr;}
   else {p["status"]=ack.reason==kg::Reason::COMMAND_EXPIRED ? "expired":"rejected";p["reason"]=kg::reasonName(ack.reason);}
