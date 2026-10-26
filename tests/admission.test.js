@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { capacityDecision, stagingBlocked, pickSlot, parseAdmission, reservationAction, RESERVATION_TTL_MS } from '../server/admission.mjs';
+import { capacityDecision, pickSlot, parseAdmission, reservationAction, RESERVATION_TTL_MS } from '../server/admission.mjs';
 
 test('95% ceiling uses exact integers on occupied + reserved after this reservation, never a rounded percent', () => {
   // 258 usable slots: 95% = 245.1, so 245 used is allowed and 246 is refused.
@@ -18,10 +18,8 @@ test('95% ceiling uses exact integers on occupied + reserved after this reservat
   assert.equal(capacityDecision({capacity:0,occupied:0,reserved:0}).code,'CAPACITY_LIMIT');
 });
 
-test('a congested staging area blocks receiving even when storage is mostly empty', () => {
-  assert.equal(stagingBlocked({capacity:48,occupied:45,reserved:0}),false);
-  assert.equal(stagingBlocked({capacity:48,occupied:46,reserved:0}),true,'46/48 = 95.8%');
-  assert.equal(stagingBlocked({capacity:20,occupied:19,reserved:0}),true,'exactly 95% is congested');
+test('single cold zone refuses goods assigned to retired ambient or chilled zones', () => {
+  for (const temperature_class of ['ambient','chilled']) assert.throws(()=>parseAdmission(JSON.stringify({request_id:'req-12345678',temperature_class,size_class:1,load_kg:100})),{code:'INVALID_ADMISSION'});
 });
 
 test('slot must match temperature, size and load; best fit keeps large slots free', () => {

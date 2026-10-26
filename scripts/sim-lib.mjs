@@ -12,7 +12,7 @@ export function prng(seed) {
   let a = seed >>> 0;
   return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
-export const ZONE_TEMPERATURE = { A: [18, 30], B: [2, 8], C: [-22, -16], D: [18, 28] };
+export const ZONE_TEMPERATURE = { C: [-22, -16] };
 const door = (id, extra = {}) => ({ door_id: id, state: 'closed', beam_clear: true, panic_latched: false, local_inputs_healthy: true, ...extra });
 
 export class SimDevice {

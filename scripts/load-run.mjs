@@ -12,13 +12,12 @@ import { createDbPool } from '../server/database.mjs';
 import { signIn } from './check-session.mjs';
 import { SimDevice, ZONE_TEMPERATURE } from './sim-lib.mjs';
 
-// M16 load test (Agent.md T27). The broker/ACL know 5 devices, so "50 nodes" are 50 virtual senders multiplexed
-// onto the 5 registered device accounts (10 each): the same message rate (25 msg/s), not 50 separate identities.
+// One-zone transport check. Virtual senders share ESP-C01; they are never reported as physical devices.
 // Starts its own backend (stop the normal one and Wokwi ESP-C01 first). Usage: npm run load:test -- --nodes=50 --seconds=60
 const args=Object.fromEntries(process.argv.slice(2).map(a=>{const m=/^--(nodes|seconds|burst)=(\d+)$/.exec(a);if (!m) throw new Error('Use --nodes=50 --seconds=60 --burst=500');return [m[1],Number(m[2])];}));
-const NODES=args.nodes ?? 50, SECONDS=args.seconds ?? 60, BURST=args.burst ?? 500, PERIOD=2000;
+const NODES=args.nodes ?? 1, SECONDS=args.seconds ?? 15, BURST=args.burst ?? 50, PERIOD=2000;
 const config=readConfig(process.env), pool=createDbPool(config.db), base=`http://${config.host}:${config.port}`;
-const ZONE_OF={'SIM-A01':'A','SIM-B01':'B','ESP-C01':'C','SIM-D01':'D'};
+const ZONE_OF={'ESP-C01':'C'};
 let backend,ws;
 const rss=pid=>{
   try {
@@ -35,7 +34,7 @@ try {
   await until(()=>fetch(`${base}/api/ready`).then(r=>r.status),s=>s===200);
   const cookie=await signIn(base,'viewer'), rssStart=rss(backend.pid);
   let virtual=0; const clock=()=>virtual;
-  const devices=['SIM-A01','SIM-B01','ESP-C01','SIM-C02','SIM-D01'].map(id=>new SimDevice(id,{config,clock,label:'load'}));
+  const devices=['ESP-C01'].map(id=>new SimDevice(id,{config,clock,label:'load'}));
   for (const d of devices) {if (d.spec.environment) d.state.temperature=ZONE_TEMPERATURE[d.spec.zone_id][0]+1; await d.connect();}
   const sent=new Map(), shown=[], counters=new Map(devices.map(d=>[d.id,0]));
   let latest=null;

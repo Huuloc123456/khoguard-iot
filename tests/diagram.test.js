@@ -50,7 +50,8 @@ test('ESP-C01 outputs: lock relays, door servos, buzzer and indicator LEDs on th
     assert.equal(part(`relay${door}`).attrs.transistor,'pnp','IN HIGH switches COM to NO');
     assert.deepEqual(wired(`relay${door}:IN`),[esp(relays[i])]);
     // The green lock lamp is the relay's load: it lights only while the relay holds the lock.
-    assert.deepEqual(wired(`relay${door}:NO`),[`led-lock${door}:A`]);
+    assert.deepEqual(wired(`relay${door}:NO`),[`r-lock${door}:1`]);
+    assert.deepEqual(wired(`r-lock${door}:2`),[`led-lock${door}:A`]);
     assert.deepEqual(wired(`relay${door}:COM`),['esp:3V3']);
     assert.equal(part(`servo${door}`)?.type,'wokwi-servo');
     assert.deepEqual(wired(`servo${door}:PWM`),[esp(servos[i])]);
@@ -58,14 +59,15 @@ test('ESP-C01 outputs: lock relays, door servos, buzzer and indicator LEDs on th
   assert.equal(part('buzzer')?.type,'wokwi-buzzer');
   assert.deepEqual(wired('buzzer:2'),[esp(scalar('BUZZER_PIN'))]);
   assert.equal(part('led-light')?.type,'wokwi-led');
-  assert.deepEqual(wired('led-light:A'),[esp(scalar('LIGHT_PIN'))]);
+  assert.deepEqual(wired('led-light:A'),['r-light:1']);
+  assert.deepEqual(wired('r-light:2'),[esp(scalar('LIGHT_PIN'))]);
   // Fan is always the opposite of the heater (controller.h), so one changeover relay drives both lamps.
   assert.equal(part('relay-climate')?.type,'wokwi-relay-module');
   assert.equal(part('relay-climate').attrs.transistor,'pnp');
   assert.deepEqual(wired('relay-climate:IN'),[esp(scalar('CLIMATE_RELAY_PIN'))]);
   assert.deepEqual(wired('relay-climate:COM'),['esp:3V3']);
-  assert.deepEqual(wired('relay-climate:NO'),['led-heater:A']);
-  assert.deepEqual(wired('relay-climate:NC'),['led-fan:A']);
+  assert.deepEqual(wired('relay-climate:NO'),['r-heater:1']);
+  assert.deepEqual(wired('relay-climate:NC'),['r-fan:1']);
   for (const id of ['light','heater','fan']) assert.ok(diagram.parts.some(p=>p.type==='wokwi-text' && p.id===`label-${id}`),id);
   for (const id of ['open07','close07','open08','close08','buzzer']) assert.equal(part(`led-${id}`),undefined,`old LED ${id} removed`);
 });
@@ -83,34 +85,6 @@ test('ESP-C01 MFRC522 reader and direction switch use the configured SPI pins, s
   for (const card of ['DEMO-017','DEMO-018','DEMO-999']) assert.match(config,new RegExp(`"${card}"`));
 });
 
-test('each zone-node Wokwi project wires the pins of zn_config.h and points at its own PlatformIO build', () => {
-  const config = readFileSync(new URL('../firmware/lib/khoguard_zone/src/zn_config.h', import.meta.url), 'utf8');
-  const pin = name => Number(new RegExp(`${name}\\s*=\\s*(\\d+)`).exec(config)[1]);
-  const contacts = /CONTACT_PINS\[3\]\s*=\s*\{([\d,\s]+)\}/.exec(config)[1].split(',').map(Number);
-  const alias = { 16: 'esp:RX2', 17: 'esp:TX2' };
-  const esp = n => alias[n] ?? `esp:D${n}`;
-  for (const [dir, env, doors] of [['zone-a', 'zone_a', ['D01', 'D02', 'D03']], ['zone-b', 'zone_b', ['D04', 'D05', 'D06']], ['zone-d', 'zone_d', ['D10', 'D11', 'D12']]]) {
-    const zone = JSON.parse(readFileSync(new URL(`../firmware/wokwi/${dir}/diagram.json`, import.meta.url)));
-    const wired = from => zone.connections.filter(c => c[0] === from).map(c => c[1]);
-    doors.forEach((door, i) => assert.deepEqual(wired(`contact-${door.toLowerCase()}:2`), [esp(contacts[i])], `${dir} ${door}`));
-    assert.equal(zone.parts.find(p => p.id === 'presence')?.type, 'wokwi-pir-motion-sensor', `${dir} presence is a PIR`);
-    assert.deepEqual(wired('presence:OUT'), [esp(pin('PRESENCE_PIN'))]);
-    const lcd = zone.parts.find(p => p.id === 'lcd');
-    assert.equal(lcd?.type, 'wokwi-lcd1602');
-    assert.equal(lcd.attrs.pins, 'i2c');
-    assert.deepEqual(wired('lcd:SDA'), [esp(pin('LCD_SDA_PIN'))]);
-    assert.deepEqual(wired('lcd:SCL'), [esp(pin('LCD_SCL_PIN'))]);
-    assert.deepEqual(wired('btn-in:1.l'), [esp(pin('IN_BUTTON_PIN'))]);
-    assert.deepEqual(wired('btn-out:1.l'), [esp(pin('OUT_BUTTON_PIN'))]);
-    assert.deepEqual(wired('led-warning:A'), [esp(pin('WARNING_LED_PIN'))]);
-    assert.deepEqual(wired('led-critical:A'), [esp(pin('CRITICAL_LED_PIN'))]);
-    assert.ok(zone.connections.some(c => c[0] === 'esp:D15' && c[1] === 'dht:SDA'));
-    const toml = readFileSync(new URL(`../firmware/wokwi/${dir}/wokwi.toml`, import.meta.url), 'utf8');
-    assert.match(toml, new RegExp(`firmware-build/${env}/firmware\\.bin`));
-    assert.doesNotMatch(toml, /rfc2217/, 'only ESP-C01 owns the RFC2217 serial port 4000');
-  }
-});
-
 // Pin names of every Wokwi part we use (wokwi-elements / docs.wokwi.com). A wire to an unknown pin is silently dropped.
 const PART_PINS={
   'wokwi-esp32-devkit-v1':['VIN','GND.2','D13','D12','D14','D27','D26','D25','D33','D32','D35','D34','VN','VP','EN',
@@ -121,10 +95,9 @@ const PART_PINS={
   'board-mfrc522':['3.3V','RST','GND','IRQ','MISO','MOSI','SCK','SDA'], 'wokwi-hc-sr04':['VCC','TRIG','ECHO','GND'],
   'wokwi-lcd1602':['GND','VCC','SDA','SCL'],
 };
-const diagrams=[['firmware/diagram.json',diagram],
-  ...['zone-a','zone-b','zone-d'].map(dir=>[`firmware/wokwi/${dir}/diagram.json`,JSON.parse(readFileSync(new URL(`../firmware/wokwi/${dir}/diagram.json`,import.meta.url)))])];
+const diagrams=[['firmware/diagram.json',diagram]];
 
-test('every wire in the four Wokwi diagrams ends on a real pin of an existing part',()=>{
+test('every wire in the active Wokwi diagram ends on a real pin of an existing part',()=>{
   for (const [name,d] of diagrams) {
     const types=new Map(d.parts.map(p=>[p.id,p.type]));
     for (const endpoint of d.connections.flatMap(c=>c.slice(0,2))) {
@@ -146,7 +119,13 @@ const pulled=(d,gpio,rail)=>d.parts.filter(p=>p.type==='wokwi-resistor').some(r=
 });
 test('push buttons on non-RTC GPIOs have an external pull resistor to the released level',()=>{
   for (const gpio of ['esp:D18','esp:D22']) assert.ok(pulled(diagram,gpio,/^esp:GND/),`ESP-C01 panic ${gpio} needs a pull-down to GND`);
-  for (const [name,d] of diagrams.slice(1)) {
-    for (const gpio of ['esp:D21','esp:D22']) assert.ok(pulled(d,gpio,/^esp:3V3$/),`${name} button ${gpio} needs a pull-up to 3V3`);
+});
+
+test('every indicator LED has its own 220 ohm series resistor',()=>{
+  for(const name of ['lock07','lock08','light','heater','fan']) {
+    assert.equal(part(`r-${name}`).attrs.value,'220');
+    const ends=diagram.connections.filter(c=>c.slice(0,2).some(e=>e.startsWith(`r-${name}:`)));
+    assert.equal(ends.length,2,`${name}: resistor has exactly two connections`);
+    assert.ok(ends.some(c=>c.includes(`led-${name}:A`)),`${name}: resistor is in series with the anode`);
   }
 });

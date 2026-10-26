@@ -116,8 +116,8 @@ main:focus { outline: none; }
 .panel-heading p { font-size: 11px; color: var(--color-muted); margin-top: 4px; }
 .panel-heading > .muted { font-size: 11px; }
 .count { background: #f1f4f5; border: 1px solid var(--color-line); color: var(--color-muted); font-size: 11px; border-radius: 4px; padding: 2px 7px; margin-left: 8px; }
-.warehouse-plan { margin: 0 20px; border: 1px solid var(--color-line); padding: 16px; background: #fafcfc; border-radius: 4px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: 'A B' 'aisle aisle' 'C D'; gap: 0 22px; }
-.zone-A { grid-area: A; }.zone-B { grid-area: B; }.zone-C { grid-area: C; }.zone-D { grid-area: D; }
+.warehouse-plan { margin: 0 20px; border: 1px solid var(--color-line); padding: 16px; background: #fafcfc; border-radius: 4px; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: 'C' 'aisle'; gap: 0 22px; }
+.zone-C { grid-area: C; }
 .zone { width: 100%; border: 1px solid #dce3e6; border-radius: 4px; padding: 13px 12px 10px; background: #ffffff; text-align: left; display: flex; flex-direction: column; }
 .zone:hover { border-color: #85b6a7; background: #fcfefd; }
 .zone.selected { border-color: var(--color-primary); background: #f2f8f5; }

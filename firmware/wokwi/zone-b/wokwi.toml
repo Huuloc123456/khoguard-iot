@@ -1,8 +1,0 @@
-[wokwi]
-version = 1
-# Zone node SIM-B01 (zone B); build with npm run firmware:build (PlatformIO env zone_b).
-firmware = '../../../.local/firmware-build/zone_b/firmware.bin'
-elf = '../../../.local/firmware-build/zone_b/firmware.elf'
-
-[net]
-gateway = 'ws://127.0.0.1:9011'

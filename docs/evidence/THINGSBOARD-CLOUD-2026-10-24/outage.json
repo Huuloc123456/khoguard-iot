@@ -1,0 +1,37 @@
+{
+  "checked_at": "2026-10-24T02:54:00.518Z",
+  "pass": true,
+  "backend_stopped_at": "2026-10-24T02:53:48.368Z",
+  "cloud_sources": {
+    "SIM_A01_source_available": [
+      {
+        "ts": 1792810438663,
+        "value": "false"
+      }
+    ],
+    "SIM_B01_source_available": [
+      {
+        "ts": 1792810438663,
+        "value": "false"
+      }
+    ],
+    "ESP_C01_source_available": [
+      {
+        "ts": 1792810438663,
+        "value": "false"
+      }
+    ],
+    "SIM_C02_source_available": [
+      {
+        "ts": 1792810438663,
+        "value": "false"
+      }
+    ],
+    "SIM_D01_source_available": [
+      {
+        "ts": 1792810438663,
+        "value": "false"
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+
+> khoguard-iot@0.1.0 verify:all
+> node scripts/verify-all.mjs
+
+Kiểm tra toàn bộ KhoGuard (không in secret):
+(node:11860) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+- unit (npm test): ĐẠT (2 s) ✔ passwords are salted scrypt hashes and verify in constant time (352.2863ms)
+- infra:mqtt:check: ĐẠT (1 s) MQTT PASS: 11 checks — valid delivery, passwords, ACL and MQTT 3.1.1.
+- infra:db:check: ĐẠT (1 s) MySQL PASS: 6 checks — runtime DML, migration DDL, rollback and privilege separation.
+- infra:tls:check: ĐẠT (1 s) M12 TLS PASS: 6 groups.
+- infra:secrets:check: ĐẠT (4 s) Secrets PASS: 10 files ignored by Git, 11 HTTP routes denied with 403; no secret contents read.
+- backend:check: ĐẠT (3 s) Backend PASS: 9 checks, seed/idempotency/guards/FK and live DB/MQTT disconnect-recovery; no shared service stopped.
+- scope:check: ĐẠT (1 s) }
+- telemetry:check: ĐẠT (5 s) M05 telemetry checks passed: 10 groups.
+- events:check: ĐẠT (2 s) M08 event checks passed: 5 groups.
+- control:check: ĐẠT (17 s) M10/M11 control checks passed: 7 groups.
+- auth:check: ĐẠT (10 s) M13 auth checks passed: 5 groups.
+- reservations:check: ĐẠT (2 s) M14 reservation checks passed: 6 groups.
+- writefault:check: ĐẠT (13 s) T24 write-fault checks passed: 3 groups.
+- demo:scenarios: ĐẠT (5 s) M16 demo scenarios passed: 4 scenario(s), 20 steps.
+- recovery:check: ĐẠT (4 s) M12 recovery checks passed: 5 groups.
+- reports:check: ĐẠT (4 s) M15 report checks passed: 4 groups.
+- load:test: ĐẠT (25 s)   "pass": true
+KẾT QUẢ: 17 bước đạt, 1 bỏ qua.

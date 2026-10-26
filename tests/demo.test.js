@@ -4,7 +4,7 @@ import { createDemo, canCloseDoor, getSummary } from '../src/demo.js';
 
 test('initial warehouse totals agree with the displayed zones and doors', () => {
   const summary = getSummary(createDemo());
-  assert.deepEqual(summary, { zones: 4, doors: 12, openDoors: 2, people: 7, occupied: 240, capacity: 308, utilization: 78 });
+  assert.deepEqual(summary, { zones: 1, doors: 2, openDoors: 1, people: 2, occupied: 60, capacity: 78, utilization: 77 });
 });
 
 test('cold-storage door stays blocked for occupancy, presence, beam or panic', () => {
@@ -26,7 +26,7 @@ test('presence scenario blocks closure even when the RFID count is zero', () => 
 test('an accepted arrival adds one person to the initial occupancy', () => {
   const demo = createDemo('arrival');
   assert.equal(demo.zones.find(zone => zone.id === 'C').people, 3);
-  assert.equal(getSummary(demo).people, 8);
+  assert.equal(getSummary(demo).people, 3);
 });
 
 test('panic opens the simulated cold-storage door and records an emergency', () => {
@@ -47,6 +47,6 @@ test('full scenario reaches the warehouse limit without exceeding any zone capac
 test('scenarios do not mutate the initial demo data', () => {
   createDemo('full');
   createDemo('panic');
-  assert.equal(getSummary(createDemo()).occupied, 240);
+  assert.equal(getSummary(createDemo()).occupied, 60);
   assert.equal(createDemo().zones.find(zone => zone.id === 'C').panic, false);
 });

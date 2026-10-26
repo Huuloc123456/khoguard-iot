@@ -7,7 +7,7 @@ export const zoneStatus=zone=>zone.freshness && zone.freshness!=='fresh' ? (zone
 export const lockLabel=door=>door.locked===null || door.locked===undefined ? 'Chưa xác định' : door.locked ? 'Đã khóa':'Không khóa';
 // Acknowledged or resolved alerts no longer need attention; acknowledgement never resolves the condition.
 export const needsAttention=alert=>alert.state!=='resolved' && !alert.acknowledged;
-export const REASONS={OCCUPIED:'RFID còn người trong kho',PRESENCE_DETECTED:'mmWave còn phát hiện người trong kho',BEAM_BLOCKED:'rèm quang đang bị chắn',
+export const REASONS={OCCUPIED:'RFID còn người trong kho',PRESENCE_DETECTED:'PIR còn phát hiện người trong kho',BEAM_BLOCKED:'cảm biến vật cản siêu âm đang bị chắn',
   PANIC_ACTIVE:'nút khẩn cấp đang chốt hoặc chưa nhả',INPUT_UNKNOWN:'tín hiệu cửa/cảm biến chưa xác định hoặc số người chưa xác minh',
   INTERLOCK_ACTIVE:'liên động hai cửa, cửa còn lại chưa đóng',STALE_DATA:'dữ liệu đã cũ',REVISION_MISMATCH:'trạng thái thiết bị vừa thay đổi, hãy xem lại rồi gửi lại',
   COMMAND_EXPIRED:'lệnh hết hạn hoặc thiết bị đã khởi động/kết nối lại',NOT_AUTHORIZED:'không có quyền',LOCAL_INPUT_FAILURE:'lỗi input tại chỗ',NOT_SENT:'broker không nhận lệnh, thiết bị chưa nhận được'};

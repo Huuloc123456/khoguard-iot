@@ -1,44 +1,19 @@
-# Checklist chạy và bàn giao KhoGuard
+# Checklist nghiệm thu một khu
 
-Ngày 13/10/2026. Phạm vi: Wokwi ESP-C01 và Node SIM-*, MySQL, React; mọi output cửa là mô phỏng.
+Kết quả tương tác trực tiếp ngày 25/10/2026. Xem [kịch bản demo đầy đủ](HUONG_DAN_DEMO.md); các dấu `[ ]` là việc còn thiếu, không được suy ra đạt từ kiểm thử tự động.
 
-## Chuẩn bị
+- [x] Wokwi tương tác: một ESP32 ESP-C01, hai cửa D07/D08; website/API/MQTT hoạt động trong phiên demo.
+- [x] MFRC522: Blue `DEMO-017` IN/OUT; Red `DEMO-999` bị từ chối và sự kiện ghi MySQL.
+- [x] PIR có chuyển động chặn đóng; hết tín hiệu thì điều kiện được gỡ.
+- [x] Sonar tĩnh ở dưới 100 cm chặn lệnh đóng riêng cho D07 và D08.
+- [x] Liên động: D07 mở rồi yêu cầu mở D08 bị từ chối.
+- [x] DHT22: nhiệt độ ngoài dải tạo cảnh báo, trở về −19 °C thì gỡ; độ ẩm cập nhật.
+- [x] Cửa mở: cảnh báo sau 30 giây, mức nghiêm trọng sau hơn 60 giây; đóng lại thì gỡ.
+- [x] Panic D07 và D08; khi broker dự án mất, đầu ra Panic cục bộ vẫn hoạt động và event tới MySQL sau reconnect.
+- [ ] Chưa xác nhận đảo chiều khi vật cản xuất hiện trong lúc cửa đang đóng; mới xác nhận chặn lệnh đóng với vật cản có sẵn.
+- [ ] Chưa xác nhận trọn chuỗi nhả nút Panic rồi reset trong cùng phiên; reset khi nút còn giữ đã bị từ chối đúng `PANIC_ACTIVE`.
+- [ ] Chưa kiểm tra mất echo, reboot, nguồn lỗi, dữ liệu stale, chứng chỉ sai và replay lệnh ở lượt nghiệm thu mới.
+- [ ] Chưa kiểm tra trang React/ThingsBoard trên điện thoại trong lượt này.
+- [ ] Chưa nghiệm thu mạch hoặc tải phần cứng thật. Không coi FakeEdge là bằng chứng thiết bị Wokwi.
 
-- [ ] Theo [hướng dẫn cấu hình](HUONG_DAN_CAU_HINH.md) trên máy đủ công cụ; dùng `npm.cmd` nếu PowerShell chặn `npm.ps1`.
-- [ ] MySQL 3306 và broker dự án 18884/18885 chạy; migration và tài khoản dashboard đã tạo.
-- [ ] Bật backend 3001, Vite 5173, gateway 9011, `demo:warehouse` và Wokwi; giữ tab Simulator hiển thị.
-- [ ] Đăng nhập operator; snapshot cho cả 5 thiết bị `fresh`. Kiểm tra nhãn Wokwi/Node và 12 cửa.
-- [ ] Hai nút panic nhả, contact hai cửa phản ánh đúng vị trí, beam clear, mmWave LOW, không có thẻ bên trong. Trạng thái không rõ phải được giữ nguyên là không rõ.
-
-Nếu gateway đã dừng/bật lại và ESP vẫn stale dù Serial có heartbeat: đóng hẳn tab Wokwi, rồi F1 → **Wokwi: Start Simulator**. Với extension 4.0.0, chỉ restart mô phỏng có thể giữ kết nối gateway đã đóng. Bật gateway trước khi mở phiên Simulator mới.
-
-## Bốn demo
-
-| Demo | Thực hiện và kết quả cần thấy |
-| --- | --- |
-| Ra/vào hợp lệ | Serial `RFID D07 DEMO-017 IN`, lặp lại → tăng đúng một; lệnh đóng bị chặn `OCCUPIED`; `RFID D07 DEMO-017 OUT` → về 0. Đối chiếu nhật ký MySQL và ca làm việc hiện tại. |
-| RFID 0 nhưng còn người | mmWave HIGH khi count 0 → lệnh đóng bị chặn `PRESENCE_DETECTED`, có cảnh báo lệch hiện diện. Trả mmWave LOW rồi kiểm tra lại. |
-| Khẩn cấp | Từ cửa đóng, kích hoạt từng panic → mở/nhả khóa và bật output. Tiếp nhận cảnh báo không bỏ latch; nhả nút rồi reset. Thử mất broker chỉ bằng harness `wokwi:acceptance`; không dừng dịch vụ dùng chung. |
-| Kho đầy | `demo:scenarios -- --scenario=4` dùng nguồn giả ESP, nên dừng Wokwi/Node warehouse trước. Script tạo yêu cầu nhận hàng tại ngưỡng và xác nhận bị từ chối; tự dọn dữ liệu test. Khi demo thủ công, dùng thông số từ snapshot, không dùng phần trăm UI đã làm tròn. |
-
-Toàn bộ demo tự động: backend và broker/DB bật, Wokwi và Node warehouse dừng, chạy `npm.cmd run demo:scenarios`. Đây là kiểm thử qua MQTT/DB với FakeEdge; nghiệm thu firmware thật dùng `npm.cmd run wokwi:acceptance` và người gạt công tắc.
-
-## Postman
-
-Import [collection API](postman/khoguard.postman_collection.json). `password` để trống trong file; điền giá trị cục bộ từ `.local/dashboard-users.json`, không lưu mật khẩu trong bản chia sẻ. Postman tự dùng cookie từ response đăng nhập.
-
-1. Chạy folder 01, rồi 02 bằng viewer; readiness và các request đọc phải trả 200.
-2. Khi cần vận hành, đổi username thành operator và đăng nhập lại. Chạy từng request folder 03, điền ID lấy từ response. Lệnh HTTP 202 mới là nhận yêu cầu; đọc trạng thái lệnh và telemetry để biết kết quả.
-3. Không chạy toàn collection bằng Runner vì folder 03 có thao tác cửa và hàng hóa. Folder 04 đăng xuất khi xong.
-
-## Kiểm tra và bàn giao
-
-- [ ] `npm.cmd ci`, `npm.cmd test`, `npm.cmd run build` đạt từ bản mã nguồn sạch. Firmware build sau khi cấu hình secret riêng trên máy nhận.
-- [ ] Dừng backend/Vite/Wokwi/Node warehouse trước `verify:all`, giữ broker và MySQL. Có `writefault:check` trong runner. Nếu thiếu g++ native, chạy hai bộ C++ bằng WSL như báo cáo kiểm tra.
-- [ ] Đọc [nghiệm thu Wokwi ban đầu](evidence/WOKWI-2026-10-13.md), [Wokwi bổ sung T06/reboot/T20](evidence/WOKWI-REMAINING-2026-10-13.md), [lỗi ghi MySQL](evidence/M16-PART2-2026-10-13.md) và [hồi quy sau Claude](evidence/REVIEW-CLAUDE-2026-10-13.md), gồm các mục chưa kiểm chứng.
-- [ ] Chỉ chia sẻ mã nguồn/tài liệu/lockfile, không đóng gói `.local`, `node_modules` hay firmware bin/elf có nhúng secret. Không coi ZIP đầu vào M06–M16 là bản bàn giao mới nhất.
-- [ ] Người nhận chạy lại bốn demo, ghi ngày/máy/kết quả của họ. Checklist này là mẫu; dấu trống không có nghĩa đã nghiệm thu.
-
-## Sau demo
-
-Nhả nút panic, trả beam/mmWave về trạng thái nền, reset panic có quyền, hủy giữ chỗ còn pending do demo tạo. Kiểm tra cảnh báo đã resolved khi điều kiện hết. Bật lại Wokwi và Node warehouse; cả 5 thiết bị phải `fresh`. Không reset DB để dọn lịch sử.
+Tiếp tục theo [hướng dẫn chi tiết](HUONG_DAN_DEMO.md), [sơ đồ và giới hạn linh kiện](LINH_KIEN_VA_NOI_DAY.md). Khi làm demo, kết thúc bằng hai cửa đóng, Panic nhả, sonar thông thoáng và nhiệt độ bình thường.

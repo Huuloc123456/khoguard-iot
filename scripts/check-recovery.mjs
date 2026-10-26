@@ -67,7 +67,7 @@ try {
   await publish(envelope('status',0,{state:'online'}),{retain:true});
   await publish(telemetry(0,false));
   snapshot=await until(()=>json('/api/snapshot'),s=>esp(s).boot_id===boot && esp(s).freshness==='fresh');
-  assert.deepEqual([snapshot.zones[2].occupancy.current_occupants,snapshot.zones[2].occupancy.count_verified],[null,false]);
+  assert.deepEqual([snapshot.zones[0].occupancy.current_occupants,snapshot.zones[0].occupancy.count_verified],[null,false]);
   checks.push('fresh boot reports count unverified (null), never assumed 0');
 
   stage='events while backend down are replayed once';

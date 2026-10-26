@@ -50,9 +50,9 @@ try {
   await publish(device,'ESP-C01',envelope('status',0,{state:'online'}),{retain:true});
   await publish(device,'ESP-C01',telemetry(1,0,false,false));
   await publish(device,'ESP-C01',telemetry(2,0,true,false));
-  let snapshot=await until(()=>json('/api/snapshot'),s=>s.devices.find(d=>d.id==='ESP-C01').boot_id===boot && s.zones[2].occupancy.count_verified);
+  let snapshot=await until(()=>json('/api/snapshot'),s=>s.devices.find(d=>d.id==='ESP-C01').boot_id===boot && s.zones[0].occupancy.count_verified);
   assert.equal(validateSnapshot(snapshot).ok,true);
-  assert.deepEqual(snapshot.zones[2].occupancy,{current_occupants:0,count_verified:true,presence:false});
+  assert.deepEqual(snapshot.zones[0].occupancy,{current_occupants:0,count_verified:true,presence:false});
   checks.push('ESP-C01 frames: unverified count published as null, verified empty room as 0');
 
   stage='RFID ingest';
@@ -71,15 +71,15 @@ try {
   checks.push('RFID accepted/duplicate/unauthorized stored once each; QoS1 redelivery of the same event_id is deduplicated; unconfirmed session ignored');
 
   stage='count 0 with presence';
-  snapshot=await until(()=>json('/api/snapshot'),s=>s.zones[2].occupancy.presence===true && s.zones[2].occupancy.current_occupants===0);
-  assert.deepEqual(snapshot.zones[2].occupancy,{current_occupants:0,count_verified:true,presence:true});
+  snapshot=await until(()=>json('/api/snapshot'),s=>s.zones[0].occupancy.presence===true && s.zones[0].occupancy.current_occupants===0);
+  assert.deepEqual(snapshot.zones[0].occupancy,{current_occupants:0,count_verified:true,presence:true});
   checks.push('count 0 + presence=true is kept as reported, not reconciled away by the backend');
 
   stage='QoS0, foreign and malformed events';
   await publish(device,'ESP-C01',rfid(5,'DEMO-018','in','accepted'),{qos:0});
   await publish(device,'ESP-C01',{...rfid(5,'DEMO-018','in','accepted'),payload:{zone_id:'C',event_type:'rfid',door_id:'D09',card_id:'DEMO-018',direction:'in',result:'accepted'}},{valid:false});
   await publish(device,'ESP-C01',{...rfid(5,'DEMO-018','in','accepted'),payload:{zone_id:'C',event_type:'rfid',door_id:'D07',card_id:'DEMO-018',direction:'in'}},{valid:false});
-  intruder=mqtt.connect({...brokerOptions(config.mqtt),username:'SIM-C02',password:accounts['SIM-C02'],clientId:`kg-events-${randomUUID()}`,reconnectPeriod:0,clean:true});
+  intruder=mqtt.connect({...brokerOptions(config.mqtt),username:'khoguard-observer',password:accounts['khoguard-observer'],clientId:`kg-events-${randomUUID()}`,reconnectPeriod:0,clean:true});
   intruder.on('error',()=>{});await once(intruder,'connect',{signal:AbortSignal.timeout(5000)});
   await intruder.publishAsync(topic('ESP-C01','events'),JSON.stringify(rfid(6,'DEMO-018','in','accepted')),{qos:1}).catch(()=>{});
   stage='gap detection';

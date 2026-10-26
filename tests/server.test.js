@@ -55,8 +55,8 @@ test('snapshot/history routes validate queries, bound rows and return 503 withou
   const store={snapshot:async()=>({revision:1}),history:async query=>({limit:query.limit,device:query.device}),events:async query=>({limit:query.limit,type:query.type})};
   const base=await withApp(t,async()=>({database,mqtt:true}),store);
   assert.deepEqual(await (await fetchAs('viewer',`${base}/api/snapshot`)).json(),{revision:1});
-  const query='device_id=SIM-A01&from=2026-10-13T00:00:00Z&to=2026-10-13T01:00:00Z&limit=2';
-  assert.deepEqual(await (await fetchAs('viewer',`${base}/api/telemetry?${query}`)).json(),{limit:2,device:'SIM-A01'});
+  const query='device_id=ESP-C01&from=2026-10-13T00:00:00Z&to=2026-10-13T01:00:00Z&limit=2';
+  assert.deepEqual(await (await fetchAs('viewer',`${base}/api/telemetry?${query}`)).json(),{limit:2,device:'ESP-C01'});
   assert.deepEqual(await (await fetchAs('viewer',`${base}/api/events?type=rfid&limit=5`)).json(),{limit:5,type:'rfid'});
   for (const path of ['/api/telemetry','/api/snapshot?x=1',`/api/telemetry?${query}&limit=1000`,'/api/events?limit=500','/api/events?zone=C']) assert.equal((await fetchAs('viewer',`${base}${path}`)).status,400);
   database=false;
@@ -129,7 +129,7 @@ test('control routes: same-origin JSON only, bounded body, door commands only th
   await expect(post('/api/doors/D07/commands','action=close',{'content-type':'application/x-www-form-urlencoded'}),415,'UNSUPPORTED_MEDIA_TYPE');
   await expect(post('/api/doors/D07/commands',JSON.stringify({action:'close',pad:'x'.repeat(600)})),413,'BODY_TOO_LARGE');
   await expect(post('/api/doors/D07/commands','{"action":"unlock"}'),400,'INVALID_COMMAND');
-  await expect(post('/api/doors/D01/commands','{"action":"open"}'),409,'NOT_COMMANDABLE');
+  await expect(post('/api/doors/D01/commands','{"action":"open"}'),400,'INVALID_COMMAND');
   await expect(post('/api/doors/D08/commands','{"action":"open"}'),409,'DEVICE_NOT_LIVE');
   await expect(fetchAs('operator',`${base}/api/doors/D07/commands`),405,'METHOD_NOT_ALLOWED');
   mqtt=false;

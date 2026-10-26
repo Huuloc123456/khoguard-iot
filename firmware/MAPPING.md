@@ -65,7 +65,7 @@ Prefix `khoguard/v1/WH01/devices/ESP-C01/`
 | `PANIC_SLOTS` | 2, 5 | 18, 22 | nút panic nối 3V3, chân dùng `INPUT_PULLDOWN` |
 | `LOCK_RELAY_PINS` | 0–1 | 25, 26 | relay khóa D07, D08 (đèn xanh là tải của relay) |
 | `DOOR_SERVO_PINS` | 0–1 | 27, 14 | servo cánh cửa D07, D08 (chỉ để nhìn; vị trí cửa vẫn do contact báo) |
-| `BEAM_SLOTS` | 1, 4 | 17, 21 | rèm quang là HC-SR04: thông = có echo trong 250 ms và ≥ `BEAM_BLOCKED_CM` (100 cm) |
+| `BEAM_SLOTS` | 1, 4 | 17, 21 | vật cản siêu âm là HC-SR04: thông = có echo trong 250 ms và ≥ `BEAM_BLOCKED_CM` (100 cm) |
 | `SONAR_TRIG_PIN` | – | 5 | TRIG chung, phát mỗi 60 ms |
 | `LIGHT_PIN`, `BUZZER_PIN` | – | 32, 33 | đèn (LED), còi (buzzer 2 kHz) |
 | `CLIMATE_RELAY_PIN` | – | 4 | relay chuyển mạch: NO = đèn sưởi, NC = đèn quạt (quạt luôn ngược sưởi) |
@@ -80,3 +80,6 @@ Mọi input đều chống dội `INPUT_DEBOUNCE_MS` (30 ms) trong `kg::Input::u
 ## 4. Thông tin xác thực
 
 `MQTT_HOST`, `MQTT_PORT`, `MQTT_USER`, `MQTT_PASSWORD` (và `MQTT_CA_CERT` khi bật TLS) nằm trong `.local/firmware/kg_secrets.h`, sinh bằng `npm run firmware:prepare`. File này không được commit.
+
+
+Phạm vi hiện hành chỉ khu C và hai cửa D07–D08. [Bảng linh kiện và lưu ý nguồn/ECHO/strapping](../docs/LINH_KIEN_VA_NOI_DAY.md). ECHO nối trực tiếp chỉ dùng mô phỏng Wokwi, không dùng ngoài thực tế.

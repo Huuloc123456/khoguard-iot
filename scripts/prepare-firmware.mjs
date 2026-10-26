@@ -5,7 +5,7 @@ import { local, readJson, firmwareSecrets } from './local-config.mjs';
 
 // One header per firmware image, each with only its own MQTT account (DEC-043): ESP-C01 in .local/firmware,
 // zone nodes in .local/firmware/<platformio env>.
-const IMAGES = [['ESP-C01', ''], ['SIM-A01', 'zone_a'], ['SIM-B01', 'zone_b'], ['SIM-D01', 'zone_d']];
+const IMAGES = [['ESP-C01', '']];
 
 try {
   if (lstatSync(local).isSymbolicLink()) throw new Error('Local directory must not be a link');

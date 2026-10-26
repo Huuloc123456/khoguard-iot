@@ -13,7 +13,7 @@ const users = ['khoguard-backend', 'khoguard-observer', ...registry.devices.map(
 let accounts;
 if (existsSync(accountsFile)) {
   accounts = readJson(accountsFile);
-  if (users.some(user => !SECRET_PATTERN.test(accounts[user] ?? '')) || Object.keys(accounts).length !== users.length) {
+  if (users.some(user => !SECRET_PATTERN.test(accounts[user] ?? ''))) {
     throw new Error('Existing account file does not match registry; do not overwrite credentials');
   }
 } else {
@@ -36,7 +36,7 @@ if (!existsSync(passwordFile)) {
   }
 }
 const hashedUsers = readFileSync(passwordFile, 'utf8').trim().split(/\r?\n/).map(line => line.split(':')[0]);
-if (hashedUsers.length !== users.length || users.some(user => !hashedUsers.includes(user))) throw new Error('Password file is incomplete; do not use it');
+if (users.some(user => !hashedUsers.includes(user))) throw new Error('Password file is incomplete; do not use it');
 writeFileSync(join(directory, 'acl'), buildAcl());
 const tls = join(local, 'tls');
 writeFileSync(join(directory, 'mosquitto.conf'), buildBrokerConfig(directory, existsSync(join(tls, 'server.crt')) ? { tls } : {}));
@@ -47,4 +47,4 @@ if (!existsSync(runtimeFile)) {
 }
 const adminFile = join(local, 'mysql-admin.env');
 if (!existsSync(adminFile)) writeFileSync(adminFile, readFileSync(new URL('../infra/mysql-admin.env.example', import.meta.url)), { flag: 'wx' });
-console.log('MQTT config ready: localhost:18884, 7 accounts, default-deny ACL. Secrets are only in protected .local/.');
+console.log(`MQTT config ready: localhost:18884, ${users.length} active accounts, default-deny ACL. Existing retired credentials are preserved privately but have no ACL grants.`);

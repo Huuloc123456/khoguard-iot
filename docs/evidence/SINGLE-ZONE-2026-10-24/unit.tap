@@ -1,0 +1,782 @@
+
+> khoguard-iot@0.1.0 test
+> node --test --test-reporter=tap
+
+TAP version 13
+# Subtest: 95% ceiling uses exact integers on occupied + reserved after this reservation, never a rounded percent
+ok 1 - 95% ceiling uses exact integers on occupied + reserved after this reservation, never a rounded percent
+  ---
+  duration_ms: 3.0609
+  type: 'test'
+  ...
+# Subtest: single cold zone refuses goods assigned to retired ambient or chilled zones
+ok 2 - single cold zone refuses goods assigned to retired ambient or chilled zones
+  ---
+  duration_ms: 2.5834
+  type: 'test'
+  ...
+# Subtest: slot must match temperature, size and load; best fit keeps large slots free
+ok 3 - slot must match temperature, size and load; best fit keeps large slots free
+  ---
+  duration_ms: 0.7774
+  type: 'test'
+  ...
+# Subtest: admission requests are strictly validated
+ok 4 - admission requests are strictly validated
+  ---
+  duration_ms: 2.2158
+  type: 'test'
+  ...
+# Subtest: reservation ends exactly once; expiry is at 15:00.000 measured by the backend clock
+ok 5 - reservation ends exactly once; expiry is at 15:00.000 measured by the backend clock
+  ---
+  duration_ms: 0.598
+  type: 'test'
+  ...
+# Subtest: passwords are salted scrypt hashes and verify in constant time
+ok 6 - passwords are salted scrypt hashes and verify in constant time
+  ---
+  duration_ms: 340.1371
+  type: 'test'
+  ...
+# Subtest: session cookie is HttpOnly, SameSite=Strict, bounded, and parsing ignores junk
+ok 7 - session cookie is HttpOnly, SameSite=Strict, bounded, and parsing ignores junk
+  ---
+  duration_ms: 3.2677
+  type: 'test'
+  ...
+# Subtest: roles: viewer reads only, operator controls doors/alerts/reservations, admin also reads login audit
+ok 8 - roles: viewer reads only, operator controls doors/alerts/reservations, admin also reads login audit
+  ---
+  duration_ms: 0.5163
+  type: 'test'
+  ...
+# Subtest: shift boundaries at 06:00 and 18:00 Vietnam time; night shift belongs to the date it started
+ok 9 - shift boundaries at 06:00 and 18:00 Vietnam time; night shift belongs to the date it started
+  ---
+  duration_ms: 2.5309
+  type: 'test'
+  ...
+# Subtest: access decision audits shift without ever overriding the edge or blocking exit
+ok 10 - access decision audits shift without ever overriding the edge or blocking exit
+  ---
+  duration_ms: 0.4957
+  type: 'test'
+  ...
+# Subtest: login limiter locks a username for 60 s after 5 failures and resets on success
+ok 11 - login limiter locks a username for 60 s after 5 failures and resets on success
+  ---
+  duration_ms: 0.6461
+  type: 'test'
+  ...
+# Subtest: unknown WMS totals stay null but any known portion still cannot exceed capacity
+ok 12 - unknown WMS totals stay null but any known portion still cannot exceed capacity
+  ---
+  duration_ms: 40.9191
+  type: 'test'
+  ...
+# Subtest: all MQTT examples satisfy the contract without changing input
+ok 13 - all MQTT examples satisfy the contract without changing input
+  ---
+  duration_ms: 18.8128
+  type: 'test'
+  ...
+# Subtest: malformed JSON, invalid UTF-8 and oversized messages are rejected
+ok 14 - malformed JSON, invalid UTF-8 and oversized messages are rejected
+  ---
+  duration_ms: 0.4999
+  type: 'test'
+  ...
+# Subtest: size limit is measured in UTF-8 bytes, not character count
+ok 15 - size limit is measured in UTF-8 bytes, not character count
+  ---
+  duration_ms: 0.3425
+  type: 'test'
+  ...
+# Subtest: wrong version, types, missing fields and unexpected fields fail validation
+ok 16 - wrong version, types, missing fields and unexpected fields fail validation
+  ---
+  duration_ms: 3.3443
+  type: 'test'
+  ...
+# Subtest: null means unknown and never gets coerced to zero or false
+ok 17 - null means unknown and never gets coerced to zero or false
+  ---
+  duration_ms: 0.4594
+  type: 'test'
+  ...
+# Subtest: a verified count must contain a non-negative integer
+ok 18 - a verified count must contain a non-negative integer
+  ---
+  duration_ms: 1.0561
+  type: 'test'
+  ...
+# Subtest: timestamps must be UTC, and clock status must agree with sent_at
+ok 19 - timestamps must be UTC, and clock status must agree with sent_at
+  ---
+  duration_ms: 1.092
+  type: 'test'
+  ...
+# Subtest: leap seconds and sub-millisecond timestamps are outside the application clock contract
+ok 20 - leap seconds and sub-millisecond timestamps are outside the application clock contract
+  ---
+  duration_ms: 0.7288
+  type: 'test'
+  ...
+# Subtest: invalid topic, warehouse and message kind are rejected
+ok 21 - invalid topic, warehouse and message kind are rejected
+  ---
+  duration_ms: 1.0752
+  type: 'test'
+  ...
+# Subtest: topic and payload must identify the same registered device and zone
+ok 22 - topic and payload must identify the same registered device and zone
+  ---
+  duration_ms: 0.7722
+  type: 'test'
+  ...
+# Subtest: door assignments and telemetry ownership cannot be forged
+ok 23 - door assignments and telemetry ownership cannot be forged
+  ---
+  duration_ms: 0.7205
+  type: 'test'
+  ...
+# Subtest: a telemetry snapshot cannot contain a door ID twice
+ok 24 - a telemetry snapshot cannot contain a door ID twice
+  ---
+  duration_ms: 0.3531
+  type: 'test'
+  ...
+# Subtest: telemetry contains all measurements and doors owned by the device
+ok 25 - telemetry contains all measurements and doors owned by the device
+  ---
+  duration_ms: 0.7285
+  type: 'test'
+  ...
+# Subtest: RFID requires direction/card, panic requires input, and door events require state
+ok 26 - RFID requires direction/card, panic requires input, and door events require state
+  ---
+  duration_ms: 0.9949
+  type: 'test'
+  ...
+# Subtest: RFID events state the edge decision so refused and repeated scans stay auditable
+ok 27 - RFID events state the edge decision so refused and repeated scans stay auditable
+  ---
+  duration_ms: 1.3317
+  type: 'test'
+  ...
+# Subtest: M09-M11 edge telemetry may report locks, door-open time, local alarms and outputs, but only for its own doors
+ok 28 - M09-M11 edge telemetry may report locks, door-open time, local alarms and outputs, but only for its own doors
+  ---
+  duration_ms: 2.3311
+  type: 'test'
+  ...
+# Subtest: commands require a synchronized clock and an expiry after issue within 30 seconds
+ok 29 - commands require a synchronized clock and an expiry after issue within 30 seconds
+  ---
+  duration_ms: 7.8119
+  type: 'test'
+  ...
+# Subtest: a rejected acknowledgment includes a reason, while applied acknowledgment has none
+ok 30 - a rejected acknowledgment includes a reason, while applied acknowledgment has none
+  ---
+  duration_ms: 0.506
+  type: 'test'
+  ...
+# Subtest: snapshot example supports one zone, two doors and known provenance
+ok 31 - snapshot example supports one zone, two doors and known provenance
+  ---
+  duration_ms: 0.4029
+  type: 'test'
+  ...
+# Subtest: registry has exactly one owner per door and one environment/occupancy owner per zone
+ok 32 - registry has exactly one owner per door and one environment/occupancy owner per zone
+  ---
+  duration_ms: 0.2747
+  type: 'test'
+  ...
+# Subtest: snapshot rejects slot over-allocation, duplicate IDs and inverted temperature range
+ok 33 - snapshot rejects slot over-allocation, duplicate IDs and inverted temperature range
+  ---
+  duration_ms: 4.3053
+  type: 'test'
+  ...
+# Subtest: offline device cannot be described as fresh
+ok 34 - offline device cannot be described as fresh
+  ---
+  duration_ms: 1.6215
+  type: 'test'
+  ...
+# Subtest: snapshot includes disconnected devices instead of hiding them
+ok 35 - snapshot includes disconnected devices instead of hiding them
+  ---
+  duration_ms: 0.3705
+  type: 'test'
+  ...
+# Subtest: freshness has a ten-second boundary and rejects future receive times
+ok 36 - freshness has a ten-second boundary and rejects future receive times
+  ---
+  duration_ms: 1.6396
+  type: 'test'
+  ...
+# Subtest: validation leaves the current UI demo independent of MQTT fixtures
+ok 37 - validation leaves the current UI demo independent of MQTT fixtures
+  ---
+  duration_ms: 4.1896
+  type: 'test'
+  ...
+# Subtest: alerts come from edge alarms and reported state, with door-open escalation in one alert
+ok 38 - alerts come from edge alarms and reported state, with door-open escalation in one alert
+  ---
+  duration_ms: 3.839
+  type: 'test'
+  ...
+# Subtest: temperature uses hysteresis; missing reading is a sensor alert, never 0 °C
+ok 39 - temperature uses hysteresis; missing reading is a sensor alert, never 0 °C
+  ---
+  duration_ms: 49.0313
+  type: 'test'
+  ...
+# Subtest: alert plan raises, updates level, resolves and reopens a recently resolved alert instead of spamming rows
+ok 40 - alert plan raises, updates level, resolves and reopens a recently resolved alert instead of spamming rows
+  ---
+  duration_ms: 1.0476
+  type: 'test'
+  ...
+# Subtest: command requests only accept known actions on registered doors
+ok 41 - command requests only accept known actions on registered doors
+  ---
+  duration_ms: 1.9334
+  type: 'test'
+  ...
+# Subtest: commands are bound to the live device session/revision, expire and accept one final ack
+ok 42 - commands are bound to the live device session/revision, expire and accept one final ack
+  ---
+  duration_ms: 10.7686
+  type: 'test'
+  ...
+# Subtest: initial warehouse totals agree with the displayed zones and doors
+ok 43 - initial warehouse totals agree with the displayed zones and doors
+  ---
+  duration_ms: 3.4019
+  type: 'test'
+  ...
+# Subtest: cold-storage door stays blocked for occupancy, presence, beam or panic
+ok 44 - cold-storage door stays blocked for occupancy, presence, beam or panic
+  ---
+  duration_ms: 0.5759
+  type: 'test'
+  ...
+# Subtest: presence scenario blocks closure even when the RFID count is zero
+ok 45 - presence scenario blocks closure even when the RFID count is zero
+  ---
+  duration_ms: 2.1584
+  type: 'test'
+  ...
+# Subtest: an accepted arrival adds one person to the initial occupancy
+ok 46 - an accepted arrival adds one person to the initial occupancy
+  ---
+  duration_ms: 0.5547
+  type: 'test'
+  ...
+# Subtest: panic opens the simulated cold-storage door and records an emergency
+ok 47 - panic opens the simulated cold-storage door and records an emergency
+  ---
+  duration_ms: 0.3757
+  type: 'test'
+  ...
+# Subtest: full scenario reaches the warehouse limit without exceeding any zone capacity
+ok 48 - full scenario reaches the warehouse limit without exceeding any zone capacity
+  ---
+  duration_ms: 0.366
+  type: 'test'
+  ...
+# Subtest: scenarios do not mutate the initial demo data
+ok 49 - scenarios do not mutate the initial demo data
+  ---
+  duration_ms: 0.4589
+  type: 'test'
+  ...
+# Subtest: Wokwi ESP32 wiring uses RX2/TX2 aliases for GPIO16/17
+ok 50 - Wokwi ESP32 wiring uses RX2/TX2 aliases for GPIO16/17
+  ---
+  duration_ms: 2.1448
+  type: 'test'
+  ...
+# Subtest: each ESP-C01 input part drives exactly the controller slot assigned to it (DEC-044)
+ok 51 - each ESP-C01 input part drives exactly the controller slot assigned to it (DEC-044)
+  ---
+  duration_ms: 2.3915
+  type: 'test'
+  ...
+# Subtest: ESP-C01 outputs: lock relays, door servos, buzzer and indicator LEDs on their configured pins
+ok 52 - ESP-C01 outputs: lock relays, door servos, buzzer and indicator LEDs on their configured pins
+  ---
+  duration_ms: 1.02
+  type: 'test'
+  ...
+# Subtest: ESP-C01 MFRC522 reader and direction switch use the configured SPI pins, separate from every other pin
+ok 53 - ESP-C01 MFRC522 reader and direction switch use the configured SPI pins, separate from every other pin
+  ---
+  duration_ms: 0.8999
+  type: 'test'
+  ...
+# Subtest: every wire in the active Wokwi diagram ends on a real pin of an existing part
+ok 54 - every wire in the active Wokwi diagram ends on a real pin of an existing part
+  ---
+  duration_ms: 1.0165
+  type: 'test'
+  ...
+# Subtest: push buttons on non-RTC GPIOs have an external pull resistor to the released level
+ok 55 - push buttons on non-RTC GPIOs have an external pull resistor to the released level
+  ---
+  duration_ms: 0.765
+  type: 'test'
+  ...
+# Subtest: every indicator LED has its own 220 ohm series resistor
+ok 56 - every indicator LED has its own 220 ohm series resistor
+  ---
+  duration_ms: 3.991
+  type: 'test'
+  ...
+# Subtest: events need a confirmed live session; retained, retired and unconfirmed frames are refused
+ok 57 - events need a confirmed live session; retained, retired and unconfirmed frames are refused
+  ---
+  duration_ms: 7.0074
+  type: 'test'
+  ...
+# Subtest: event sequence gaps are reported per boot, never for duplicates or the first event after 1
+ok 58 - event sequence gaps are reported per boot, never for duplicates or the first event after 1
+  ---
+  duration_ms: 1.8696
+  type: 'test'
+  ...
+# Subtest: event queries are bounded and only accept registered devices, known types and positive cursors
+ok 59 - event queries are bounded and only accept registered devices, known types and positive cursors
+  ---
+  duration_ms: 4.1928
+  type: 'test'
+  ...
+# Subtest: event view keeps the edge decision and never invents a count
+ok 60 - event view keeps the edge decision and never invents a count
+  ---
+  duration_ms: 0.8397
+  type: 'test'
+  ...
+# Subtest: events migration dedupes per device event ID and keeps referential ownership
+ok 61 - events migration dedupes per device event ID and keeps referential ownership
+  ---
+  duration_ms: 14.637
+  type: 'test'
+  ...
+# Subtest: firmware gets only its own device credential and the private gateway endpoint
+ok 62 - firmware gets only its own device credential and the private gateway endpoint
+  ---
+  duration_ms: 2.237
+  type: 'test'
+  ...
+# Subtest: malformed secrets cannot inject C++ into the generated header
+ok 63 - malformed secrets cannot inject C++ into the generated header
+  ---
+  duration_ms: 1.1101
+  type: 'test'
+  ...
+# Subtest: retained frames and QoS1 duplicates do not count as new live samples
+ok 64 - retained frames and QoS1 duplicates do not count as new live samples
+  ---
+  duration_ms: 44.2706
+  type: 'test'
+  ...
+# Subtest: observer rejects wrong boot, invalid schema, false safe defaults and out-of-order frames
+ok 65 - observer rejects wrong boot, invalid schema, false safe defaults and out-of-order frames
+  ---
+  duration_ms: 47.1537
+  type: 'test'
+  ...
+# Subtest: new MQTT session starts a new live sample window
+ok 66 - new MQTT session starts a new live sample window
+  ---
+  duration_ms: 12.7941
+  type: 'test'
+  ...
+# Subtest: observer accepts current RFID and healthy door telemetry without accepting unknown safety signals
+ok 67 - observer accepts current RFID and healthy door telemetry without accepting unknown safety signals
+  ---
+  duration_ms: 5.5208
+  type: 'test'
+  ...
+# Subtest: device ACL allows only its own outgoing messages and incoming commands
+ok 68 - device ACL allows only its own outgoing messages and incoming commands
+  ---
+  duration_ms: 2.2461
+  type: 'test'
+  ...
+# Subtest: backend can receive telemetry and write commands but observer is read-only
+ok 69 - backend can receive telemetry and write commands but observer is read-only
+  ---
+  duration_ms: 0.5022
+  type: 'test'
+  ...
+# Subtest: broker config binds only localhost and requires authentication
+ok 70 - broker config binds only localhost and requires authentication
+  ---
+  duration_ms: 11.8498
+  type: 'test'
+  ...
+# Subtest: missing admin credential is a configuration error and never defaults to a blank password
+ok 71 - missing admin credential is a configuration error and never defaults to a blank password
+  ---
+  duration_ms: 2.1733
+  type: 'test'
+  ...
+# Subtest: database provisioning scopes grants to KhoGuard and separates runtime from DDL
+ok 72 - database provisioning scopes grants to KhoGuard and separates runtime from DDL
+  ---
+  duration_ms: 8.7671
+  type: 'test'
+  ...
+# Subtest: door provenance uses its registered device rather than the zone environment owner
+ok 73 - door provenance uses its registered device rather than the zone environment owner
+  ---
+  duration_ms: 45.3773
+  type: 'test'
+  ...
+# Subtest: live adapter preserves unknowns/provenance and stale data never permits closing
+ok 74 - live adapter preserves unknowns/provenance and stale data never permits closing
+  ---
+  duration_ms: 1.3831
+  type: 'test'
+  ...
+# Subtest: full snapshots resync skipped revisions; old revisions/time and malformed snapshots are refused
+ok 75 - full snapshots resync skipped revisions; old revisions/time and malformed snapshots are refused
+  ---
+  duration_ms: 11.4911
+  type: 'test'
+  ...
+# Subtest: live event log shows edge RFID decisions and reports gaps instead of hiding them
+ok 76 - live event log shows edge RFID decisions and reports gaps instead of hiding them
+  ---
+  duration_ms: 3.4336
+  type: 'test'
+  ...
+# Subtest: live alerts keep active/acknowledged/resolved separate; only active unacknowledged alerts need attention
+ok 77 - live alerts keep active/acknowledged/resolved separate; only active unacknowledged alerts need attention
+  ---
+  duration_ms: 4.1772
+  type: 'test'
+  ...
+# Subtest: access audit rows label shift decisions; out-of-shift is a warning, never a block
+ok 78 - access audit rows label shift decisions; out-of-shift is a warning, never a block
+  ---
+  duration_ms: 1.9288
+  type: 'test'
+  ...
+# Subtest: dashboard permissions follow the role list from the backend session
+ok 79 - dashboard permissions follow the role list from the backend session
+  ---
+  duration_ms: 1.5463
+  type: 'test'
+  ...
+# Subtest: receiving view: percent is display-only and truncated, level uses exact counts, reason codes are Vietnamese
+ok 80 - receiving view: percent is display-only and truncated, level uses exact counts, reason codes are Vietnamese
+  ---
+  duration_ms: 12.3221
+  type: 'test'
+  ...
+# Subtest: every statement the migration runner sends is real SQL, not a fragment of a comment
+ok 81 - every statement the migration runner sends is real SQL, not a fragment of a comment
+  ---
+  duration_ms: 11.6215
+  type: 'test'
+  ...
+# Subtest: applied migration is skipped only when checksum matches; incomplete or edited migration is blocked
+ok 82 - applied migration is skipped only when checksum matches; incomplete or edited migration is blocked
+  ---
+  duration_ms: 2.5329
+  type: 'test'
+  ...
+# Subtest: MySQL telemetry DDL does not reference auto-increment id in a CHECK constraint
+ok 83 - MySQL telemetry DDL does not reference auto-increment id in a CHECK constraint
+  ---
+  duration_ms: 0.7511
+  type: 'test'
+  ...
+# Subtest: immutable v1 seed preserves history and contains the active registry assignments
+ok 84 - immutable v1 seed preserves history and contains the active registry assignments
+  ---
+  duration_ms: 8.7855
+  type: 'test'
+  ...
+# Subtest: a packet from a superseded connection is not acknowledged or ingested
+ok 85 - a packet from a superseded connection is not acknowledged or ingested
+  ---
+  duration_ms: 189.9358
+  type: 'test'
+  ...
+# Subtest: a packet ingested on the current connection is acknowledged
+ok 86 - a packet ingested on the current connection is acknowledged
+  ---
+  duration_ms: 1.491
+  type: 'test'
+  ...
+# Subtest: MQTT probe waits for its live marker despite retained and unrelated traffic
+ok 87 - MQTT probe waits for its live marker despite retained and unrelated traffic
+  ---
+  duration_ms: 2.2028
+  type: 'test'
+  ...
+# Subtest: MQTT probe times out when its marker never arrives and removes its listener
+ok 88 - MQTT probe times out when its marker never arrives and removes its listener
+  ---
+  duration_ms: 23.261
+  type: 'test'
+  ...
+# Subtest: report query: default last 24 h, explicit range, zone/type/limit/cursor, strict rejection
+ok 89 - report query: default last 24 h, explicit range, zone/type/limit/cursor, strict rejection
+  ---
+  duration_ms: 6.712
+  type: 'test'
+  ...
+# Subtest: CSV: UTF-8 BOM, CRLF, quotes/newlines escaped, formula prefixes neutralised, numbers kept
+ok 90 - CSV: UTF-8 BOM, CRLF, quotes/newlines escaped, formula prefixes neutralised, numbers kept
+  ---
+  duration_ms: 0.8975
+  type: 'test'
+  ...
+# Subtest: exported columns are a whitelist and carry no credential fields
+ok 91 - exported columns are a whitelist and carry no credential fields
+  ---
+  duration_ms: 43.947
+  type: 'test'
+  ...
+# Subtest: configuration fails closed without secrets and cannot select another schema/account or LAN bind
+ok 92 - configuration fails closed without secrets and cannot select another schema/account or LAN bind
+  ---
+  duration_ms: 2.7073
+  type: 'test'
+  ...
+# Subtest: health stays live while readiness reflects dependency loss and recovery
+ok 93 - health stays live while readiness reflects dependency loss and recovery
+  ---
+  duration_ms: 88.1467
+  type: 'test'
+  ...
+# Subtest: snapshot/history routes validate queries, bound rows and return 503 without leaking database errors
+ok 94 - snapshot/history routes validate queries, bound rows and return 503 without leaking database errors
+  ---
+  duration_ms: 45.2729
+  type: 'test'
+  ...
+# Subtest: readiness exceptions do not leak credentials and no mutation route is exposed
+ok 95 - readiness exceptions do not leak credentials and no mutation route is exposed
+  ---
+  duration_ms: 28.7728
+  type: 'test'
+  ...
+# Subtest: database readiness requires ownership, completed schema and seed; a failed connection is discarded
+ok 96 - database readiness requires ownership, completed schema and seed; a failed connection is discarded
+  ---
+  duration_ms: 1.3148
+  type: 'test'
+  ...
+# Subtest: moving zones A/B/D to Wokwi keeps the checksum of the inventory seed applied before 007
+ok 97 - moving zones A/B/D to Wokwi keeps the checksum of the inventory seed applied before 007
+  ---
+  duration_ms: 0.2576
+  type: 'test'
+  ...
+# Subtest: control routes: same-origin JSON only, bounded body, door commands only through a live session
+ok 98 - control routes: same-origin JSON only, bounded body, door commands only through a live session
+  ---
+  duration_ms: 76.8632
+  type: 'test'
+  ...
+# Subtest: every data route needs a session; roles are enforced by the backend, not the UI
+ok 99 - every data route needs a session; roles are enforced by the backend, not the UI
+  ---
+  duration_ms: 62.4751
+  type: 'test'
+  ...
+# Subtest: receiving routes: viewer refused, strict body, rule refusals surface as 409 reason codes
+ok 100 - receiving routes: viewer refused, strict body, rule refusals surface as 409 reason codes
+  ---
+  duration_ms: 46.4657
+  type: 'test'
+  ...
+# Subtest: history reports: read for viewers, access log needs access_audit, strict query
+ok 101 - history reports: read for viewers, access log needs access_audit, strict query
+  ---
+  duration_ms: 20.0715
+  type: 'test'
+  ...
+# Subtest: the active model contains only C, ESP-C01 and two controlled doors
+ok 102 - the active model contains only C, ESP-C01 and two controlled doors
+  ---
+  duration_ms: 17.761
+  type: 'test'
+  ...
+# Subtest: historical DB zones and alerts never leak into active snapshots or reports
+ok 103 - historical DB zones and alerts never leak into active snapshots or reports
+  ---
+  duration_ms: 14.6341
+  type: 'test'
+  ...
+# Subtest: refusing a command to an unavailable device preserves confirmed sessions of other devices
+ok 104 - refusing a command to an unavailable device preserves confirmed sessions of other devices
+  ---
+  duration_ms: 13.5247
+  type: 'test'
+  ...
+# Subtest: an actual database failure still invalidates confirmed sessions
+ok 105 - an actual database failure still invalidates confirmed sessions
+  ---
+  duration_ms: 2.2229
+  type: 'test'
+  ...
+# Subtest: test environment fixture uses the active device and leaves unimplemented safety inputs unknown
+ok 106 - test environment fixture uses the active device and leaves unimplemented safety inputs unknown
+  ---
+  duration_ms: 10.1526
+  type: 'test'
+  ...
+# Subtest: telemetry needs a confirmed session and live data; retained and old clocks never refresh state
+ok 107 - telemetry needs a confirmed session and live data; retained and old clocks never refresh state
+  ---
+  duration_ms: 2.4952
+  type: 'test'
+  ...
+# Subtest: redelivered frames of the stored current session are kept as history but never confirm the session (T24)
+ok 108 - redelivered frames of the stored current session are kept as history but never confirm the session (T24)
+  ---
+  duration_ms: 0.6061
+  type: 'test'
+  ...
+# Subtest: duplicates, decreasing seq/uptime/revision cannot change the current snapshot; reboot resets counters
+ok 109 - duplicates, decreasing seq/uptime/revision cannot change the current snapshot; reboot resets counters
+  ---
+  duration_ms: 0.4376
+  type: 'test'
+  ...
+# Subtest: history queries require registry device and UTC time window, reject duplicate/unknown parameters and bound pagination
+ok 110 - history queries require registry device and UTC time window, reject duplicate/unknown parameters and bound pagination
+  ---
+  duration_ms: 4.2479
+  type: 'test'
+  ...
+# Subtest: snapshot includes offline inventory, unknown WMS and signals, then marks stored data stale on disconnect/restart
+ok 111 - snapshot includes offline inventory, unknown WMS and signals, then marks stored data stale on disconnect/restart
+  ---
+  duration_ms: 7.2683
+  type: 'test'
+  ...
+# Subtest: snapshot carries edge lock/open time and stored alerts with acknowledgement kept separate from state
+ok 112 - snapshot carries edge lock/open time and stored alerts with acknowledgement kept separate from state
+  ---
+  duration_ms: 2.3947
+  type: 'test'
+  ...
+# Subtest: ThingsBoard exports every registered device and only its assigned door keys
+ok 113 - ThingsBoard exports every registered device and only its assigned door keys
+  ---
+  duration_ms: 11.2982
+  type: 'test'
+  ...
+# Subtest: unknown sensors and unverified counts never become numeric zero or clear
+ok 114 - unknown sensors and unverified counts never become numeric zero or clear
+  ---
+  duration_ms: 1.85
+  type: 'test'
+  ...
+# Subtest: stale device does not emit new numeric measurements and shows old data explicitly
+ok 115 - stale device does not emit new numeric measurements and shows old data explicitly
+  ---
+  duration_ms: 0.6953
+  type: 'test'
+  ...
+# Subtest: measurement time is last_seen_at, not the export time
+ok 116 - measurement time is last_seen_at, not the export time
+  ---
+  duration_ms: 1.8399
+  type: 'test'
+  ...
+# Subtest: invalid, old or future snapshots cannot be passed off as live
+ok 117 - invalid, old or future snapshots cannot be passed off as live
+  ---
+  duration_ms: 2.0621
+  type: 'test'
+  ...
+# Subtest: backend failure emits explicit unavailable state for every configured device
+ok 118 - backend failure emits explicit unavailable state for every configured device
+  ---
+  duration_ms: 0.6133
+  type: 'test'
+  ...
+# Subtest: a disconnected database or broker suppresses all measurements even if the snapshot has fresh flags
+ok 119 - a disconnected database or broker suppresses all measurements even if the snapshot has fresh flags
+  ---
+  duration_ms: 1.3476
+  type: 'test'
+  ...
+# Subtest: Cloud payload flattens device keys without collisions and preserves original measurement timestamps
+ok 120 - Cloud payload flattens device keys without collisions and preserves original measurement timestamps
+  ---
+  duration_ms: 2.738
+  type: 'test'
+  ...
+# Subtest: Cloud target requires an approved HTTPS region and MQTT TLS with certificate verification
+ok 121 - Cloud target requires an approved HTTPS region and MQTT TLS with certificate verification
+  ---
+  duration_ms: 4.2141
+  type: 'test'
+  ...
+# Subtest: Cloud messages cap datapoints at 50 without losing values or changing source timestamps
+ok 122 - Cloud messages cap datapoints at 50 without losing values or changing source timestamps
+  ---
+  duration_ms: 1.9011
+  type: 'test'
+  ...
+# Subtest: Cloud dashboard has one zone table, two charts, a single warehouse alias and no control widgets
+ok 123 - Cloud dashboard has one zone table, two charts, a single warehouse alias and no control widgets
+  ---
+  duration_ms: 3.4925
+  type: 'test'
+  ...
+# Subtest: server certificate names exactly the hosts clients use, and is not a CA
+ok 124 - server certificate names exactly the hosts clients use, and is not a CA
+  ---
+  duration_ms: 1.8867
+  type: 'test'
+  ...
+# Subtest: TLS listener 18885 is added on loopback only when the demo CA exists; plain 18884 stays localhost
+ok 125 - TLS listener 18885 is added on loopback only when the demo CA exists; plain 18884 stays localhost
+  ---
+  duration_ms: 18.9498
+  type: 'test'
+  ...
+# Subtest: firmware uses TLS port and pins the demo CA when given; malformed PEM cannot inject C++
+ok 126 - firmware uses TLS port and pins the demo CA when given; malformed PEM cannot inject C++
+  ---
+  duration_ms: 1.7872
+  type: 'test'
+  ...
+# Subtest: backend accepts TLS port 18885 and verifies the CA; any other broker port is refused
+ok 127 - backend accepts TLS port 18885 and verifies the CA; any other broker port is refused
+  ---
+  duration_ms: 3.6883
+  type: 'test'
+  ...
+# Subtest: WebSocket delivers full snapshots/resync; rejects foreign origin and mutation payloads
+ok 128 - WebSocket delivers full snapshots/resync; rejects foreign origin and mutation payloads
+  ---
+  duration_ms: 74.2718
+  type: 'test'
+  ...
+1..128
+# tests 128
+# suites 0
+# pass 128
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1609.2789

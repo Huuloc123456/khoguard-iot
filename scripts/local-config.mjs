@@ -9,7 +9,7 @@ export const readJson = path => JSON.parse(readFileSync(path, 'utf8'));
 export const registry = readJson(new URL('../contracts/devices.json', import.meta.url));
 
 const PEM = /^-----BEGIN CERTIFICATE-----\n(?:[A-Za-z0-9+/=]{1,64}\n)+-----END CERTIFICATE-----\n?$/;
-// user: the MQTT account compiled into this image, ESP-C01 or a Wokwi zone node (SIM-A01, SIM-B01, SIM-D01).
+// Only the active ESP-C01 MQTT credential is compiled into firmware.
 export function firmwareSecrets(password, caPem, user = 'ESP-C01') {
   if (!registry.devices.some(device => device.id === user && device.source === 'wokwi')) throw new Error('Invalid firmware device credential');
   if (typeof password !== 'string' || !SECRET_PATTERN.test(password)) throw new Error(`Invalid ${user} credential`);
@@ -34,8 +34,8 @@ export function buildAcl() {
   const outgoing = ['telemetry', 'events', 'status', 'acks'];
   const block = (user, topics) => `user ${user}\n${topics.join('\n')}\n`;
   return '# Generated from contracts/devices.json; default deny.\n'
-    + block('khoguard-backend', [...outgoing.map(kind => `topic read ${prefix}+/${kind}`), `topic write ${prefix}+/commands`])
-    + '\n' + block('khoguard-observer', [...outgoing, 'commands'].map(kind => `topic read ${prefix}+/${kind}`))
+    + block('khoguard-backend', registry.devices.flatMap(device=>[...outgoing.map(kind => `topic read ${prefix}${device.id}/${kind}`), `topic write ${prefix}${device.id}/commands`]))
+    + '\n' + block('khoguard-observer', registry.devices.flatMap(device=>[...outgoing, 'commands'].map(kind => `topic read ${prefix}${device.id}/${kind}`)))
     + '\n' + registry.devices.map(device => block(device.id, [
       ...outgoing.map(kind => `topic write ${prefix}${device.id}/${kind}`), `topic read ${prefix}${device.id}/commands`,
     ])).join('\n');

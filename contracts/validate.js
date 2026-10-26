@@ -60,6 +60,7 @@ export function validateSnapshot(value) {
   if (value.zones.some(zone => (zone.occupied ?? 0) + (zone.reserved ?? 0) > zone.capacity || zone.range[0] > zone.range[1])) {
     return failure('INVALID_SNAPSHOT', 'Invalid capacity or temperature range');
   }
+  if (value.zones.some(zone => !registry.zones.includes(zone.id))) return failure('INVALID_SNAPSHOT', 'Zone is outside the active scope');
   const zoneIds = new Set(value.zones.map(zone => zone.id));
   if (value.doors.some(door => !zoneIds.has(door.zone) || !registry.devices.some(device => device.zone_id === door.zone && device.doors.includes(door.id)))) {
     return failure('INVALID_SNAPSHOT', 'Door has no matching zone assignment');

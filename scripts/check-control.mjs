@@ -71,10 +71,10 @@ try {
   await live();
   assert.equal((await post('/api/doors/D07/commands','{"action":"close"}','http://evil.example')).status,403);
   assert.equal((await post('/api/doors/D07/commands','{"action":"close"}',null)).status,403);
-  assert.equal((await post('/api/doors/D01/commands','{"action":"open"}')).status,409);
+  assert.equal((await post('/api/doors/D01/commands','{"action":"open"}')).status,400);
   assert.equal((await post('/api/doors/D07/commands','{"action":"unlock"}')).status,400);
   await delay(300);assert.equal(received.length,0,'refused requests publish nothing');
-  checks.push('no live session -> 409 DEVICE_NOT_LIVE; foreign/missing Origin 403; simulator door 409; unknown action 400; none of them publish');
+  checks.push('no live session -> 409 DEVICE_NOT_LIVE; foreign/missing Origin 403; retired door 400; unknown action 400; none of them publish');
 
   stage='applied ack';
   const before=await snapshot();
@@ -146,7 +146,7 @@ try {
   s=await until(snapshot,x=>mine(x,'TEMPERATURE_OUT_OF_RANGE')?.state==='active');
   assert.equal(mine(s,'PANIC_ACTIVE','D07').state,'resolved');
   await publish(telemetry({temperature:-16.2}));
-  await until(snapshot,x=>x.zones[2].environment.temperature_c===-16.2);
+  await until(snapshot,x=>x.zones[0].environment.temperature_c===-16.2);
   assert.equal(mine(await snapshot(),'TEMPERATURE_OUT_OF_RANGE').state,'active','back inside by less than the hysteresis keeps it active');
   await publish(telemetry({temperature:-16.6}));
   await until(snapshot,x=>mine(x,'TEMPERATURE_OUT_OF_RANGE')?.state==='resolved');

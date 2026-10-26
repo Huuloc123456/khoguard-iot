@@ -14,10 +14,10 @@ import { DoorControls } from './DoorControls.jsx';
 
 const navigation = [
   { id: 'overview', label: 'Tổng quan', icon: 'overview', title: 'Tổng quan kho hàng', description: 'Theo dõi vận hành, môi trường và an toàn tại một nơi.' },
-  { id: 'map', label: 'Sơ đồ kho', icon: 'map', title: 'Sơ đồ kho hàng', description: 'Quan sát các khu vực và chọn vị trí cần theo dõi.' },
-  { id: 'doors', label: 'Giám sát cửa', icon: 'door', title: 'Giám sát cửa', description: 'Theo dõi trạng thái đóng / mở của 12 cửa trên toàn kho.' },
+  { id: 'map', label: 'Sơ đồ kho', icon: 'map', title: 'Sơ đồ kho hàng', description: 'Giám sát kho lạnh C và hai cửa liên động.' },
+  { id: 'doors', label: 'Giám sát cửa', icon: 'door', title: 'Giám sát cửa', description: 'Theo dõi hai cửa liên động D07–D08 trong khu C.' },
   { id: 'environment', label: 'Môi trường', icon: 'temperature', title: 'Môi trường kho', description: 'Giám sát nhiệt độ, độ ẩm và các ngưỡng bảo quản.' },
-  { id: 'receiving', label: 'Nhận hàng', icon: 'box', title: 'Nhận hàng và giữ chỗ', description: 'Kiểm tra sức chứa, khu đệm và giữ vị trí phù hợp trước khi nhập kho.' },
+  { id: 'receiving', label: 'Nhận hàng', icon: 'box', title: 'Nhận hàng và giữ chỗ', description: 'Kiểm tra sức chứa và giữ vị trí trong kho lạnh C.' },
   { id: 'activity', label: 'Nhật ký', icon: 'history', title: 'Nhật ký hoạt động', description: 'Tra cứu sự kiện ra / vào, cửa và cảnh báo của phiên mô phỏng.' },
 ];
 
@@ -100,7 +100,7 @@ export default function App() {
       <header className="topbar"><div className="warehouse-label"><Icon name="warehouse" size={19} /><strong>Kho trung tâm</strong><span className="topbar-separator" /><span>{summary.zones} khu vực · {summary.doors} cửa</span></div><div className="topbar-right">{modeControl}<Pill tone="info">{mode==='demo'?'Dữ liệu mẫu':'Mô phỏng IoT qua MQTT'}</Pill></div></header>
       <main id="main-content" tabIndex={-1}>
         <div className="page-heading"><div><h1>{current.title}</h1><p>{current.description}</p></div><div className="heading-actions">{mode==='demo' ? <button className="button export-button" aria-label="Xuất nhật ký" title="Xuất nhật ký CSV" onClick={exportEvents}><Icon name="download" size={17} /><span className="button-label">Xuất nhật ký</span></button> : <button className="button export-button" aria-label="Lịch sử và CSV" title="Lịch sử và xuất CSV" onClick={()=>navigate('activity')}><Icon name="download" size={17} /><span className="button-label">Lịch sử / CSV</span></button>}{mode==='demo'&&<button className={`button primary ${showSimulation ? 'pressed' : ''}`} aria-expanded={showSimulation} aria-controls="simulation-panel" onClick={() => setShowSimulation(!showSimulation)}><Icon name="play" size={16} />Mô phỏng</button>}</div></div>
-        {mode==='live'&&<div className={`connection-banner ${live.status==='error'?'warning-text':''}`} role="status">{live.status==='error'?live.error:`MySQL đã kết nối · MQTT ${demo.connections.broker==='connected'?'đã kết nối':'mất kết nối'}`} · {demo.devices.filter(d=>d.freshness==='fresh').length}/5 thiết bị có dữ liệu mới · Cập nhật {new Date(demo.generatedAt).toLocaleTimeString('vi-VN',{timeZone:'Asia/Bangkok',hour12:false})}<p>Giá trị “—” chưa có dữ liệu. Dữ liệu cũ giữ để tra cứu, không coi là an toàn. Cảnh báo cửa/người mắc kẹt do bộ đếm tại thiết bị quyết định; khẩn cấp và liên động chạy tại thiết bị.</p></div>}
+        {mode==='live'&&<div className={`connection-banner ${live.status==='error'?'warning-text':''}`} role="status">{live.status==='error'?live.error:`MySQL đã kết nối · MQTT ${demo.connections.broker==='connected'?'đã kết nối':'mất kết nối'}`} · {demo.devices.filter(d=>d.freshness==='fresh').length}/{demo.devices.length} thiết bị có dữ liệu mới · Cập nhật {new Date(demo.generatedAt).toLocaleTimeString('vi-VN',{timeZone:'Asia/Bangkok',hour12:false})}<p>Giá trị “—” chưa có dữ liệu. Dữ liệu cũ giữ để tra cứu, không coi là an toàn. Cảnh báo cửa/người mắc kẹt do bộ đếm tại thiết bị quyết định; khẩn cấp và liên động chạy tại thiết bị.</p></div>}
         {showSimulation && <section id="simulation-panel" className="simulation-panel" aria-labelledby="simulation-title"><div className="simulation-heading"><div><h2 id="simulation-title">Kịch bản mô phỏng</h2><p>Mỗi kịch bản bắt đầu từ dữ liệu mẫu. Thay đổi chỉ áp dụng cho phiên này.</p></div><button className="text-button" onClick={() => runScenario('default')}><Icon name="refresh" size={16} />Đặt lại</button></div><div className="scenario-buttons">{scenarios.map(item => <button key={item.id} className={`button ${demo.scenario === item.id ? 'scenario-active' : ''}`} aria-pressed={demo.scenario === item.id} onClick={() => runScenario(item.id)}>{item.id === 'panic' && <Icon name="alert" size={15} />}{item.label}</button>)}</div></section>}
         <p className={`notice ${notice ? 'visible' : ''}`} role="status">{notice}</p>
         <div className="summary-strip" aria-label="Tóm tắt trạng thái kho">
@@ -116,7 +116,7 @@ export default function App() {
         {view === 'environment' && <EnvironmentTable zones={demo.zones} onSelect={showZone} />}
         {view === 'receiving' && (mode==='live' ? <Receiving revision={demo.revision} canReserve={can(user,'reserve')} /> : <p className="notice visible" role="status">Giữ chỗ chỉ chạy với Backend / MQTT; demo giao diện không ghi gì vào hệ thống.</p>)}
         {view === 'activity' && (mode==='live' ? <>{can(user,'access_audit') ? <AccessAudit revision={demo.revision} /> : <p className="notice visible" role="status">Nhật ký ra vào theo ca chỉ dành cho tài khoản vận hành hoặc quản trị.</p>}<History canAccess={can(user,'access_audit')} /></> : <EventTable events={demo.events} />)}
-        <footer className="page-footer"><span>KhoGuard · Mô hình mô phỏng</span><span><Icon name="flask" size={14} />{mode==='demo'?'Dữ liệu mẫu trong trình duyệt':'Nguồn Wokwi / Node mô phỏng · đọc từ MySQL'}</span></footer>
+        <footer className="page-footer"><span>KhoGuard · Mô hình mô phỏng</span><span><Icon name="flask" size={14} />{mode==='demo'?'Dữ liệu mẫu trong trình duyệt':'ESP-C01 trong Wokwi · đọc từ MySQL'}</span></footer>
       </main>
     </div>
   </div>;

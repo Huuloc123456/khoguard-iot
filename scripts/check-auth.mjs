@@ -103,8 +103,8 @@ try {
   assert.deepEqual(items.map(i=>[i.card_id,i.direction,i.decision]),expected);
   assert.ok(items.every(i=>i.shift_code===shift.code && i.shift_date===shift.date));
   assert.ok(expected.some(e=>e[2]==='out_of_shift'),'one demo card is always outside the current shift');
-  const snapshot=await until(async()=>(await (await get('/api/snapshot',op2)).json()),s=>s.zones[2].occupancy.current_occupants===1);
-  assert.deepEqual(snapshot.zones[2].occupancy,{current_occupants:1,count_verified:true,presence:true},'out-of-shift entry still counts; protection unchanged');
+  const snapshot=await until(async()=>(await (await get('/api/snapshot',op2)).json()),s=>s.zones[0].occupancy.current_occupants===1);
+  assert.deepEqual(snapshot.zones[0].occupancy,{current_occupants:1,count_verified:true,presence:true},'out-of-shift entry still counts; protection unchanged');
   checks.push(`shift ${shift.code} ${shift.date}: ${expected.map(e=>`${e[0]} ${e[1]}=${e[2]}`).join(', ')}; out-of-shift entry still counted (count 1, presence) — audit never disables protection`);
 
   await publish(envelope('status',0,{state:'offline'}),true);

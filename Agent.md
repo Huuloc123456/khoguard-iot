@@ -1,6 +1,18 @@
 # KhoGuard — kế hoạch triển khai và kiểm thử
 
-Cập nhật: **13/10/2026**. Phạm vi: đồ án **mô phỏng**, lập trình ESP32 bằng **PlatformIO trong VS Code**, chạy bằng **Wokwi**, dashboard **React nền trắng**, quản lý nhiều cửa và nhiều khu vực. Tài liệu này là kế hoạch; ô chưa đánh dấu là công việc chưa hoàn thành.
+> **Phạm vi hiện hành 25/10/2026:** một khu C, ESP-C01, hai cửa D07–D08. Các mục M00–M18 bên dưới lưu quá trình của bản nhiều khu và không còn là cấu hình hoạt động. Theo [kế hoạch rút gọn](tasks/plan.md), [công việc](tasks/todo.md) và [README](README.md) để chạy bản hiện tại. Bằng chứng cũ không thay nghiệm thu lại linh kiện Wokwi mới.
+
+> **Cập nhật sau demo trực tiếp 25/10/2026:** RFID Blue/Red, PIR, chặn đóng bằng sonar tĩnh ở cả hai cửa, liên động, DHT22, cảnh báo cửa giữ mở, Panic D07/D08 và Panic cục bộ khi broker gián đoạn đã được quan sát. Sự kiện Panic đến MySQL sau reconnect. Vật cản động để xác nhận đảo chiều và chuỗi nhả Panic rồi reset vẫn cần nghiệm thu. Xem [kịch bản demo](docs/HUONG_DAN_DEMO.md) và [kịch bản thuyết trình](docs/KICH_BAN_THUYET_TRINH.md). Bộ sinh slide cũ được lưu trong `.local/archive/legacy-slides-2026-10-25/`.
+
+## M19 — Rút gọn một khu và đồng bộ hồ sơ
+
+- Đã hoàn thành thay đổi registry/API/UI/firmware/ACL/Cloud, giữ lịch sử và seed MySQL; 30 phần tử điện, bảng dây, sơ đồ SVG, README, PPTX 33 slide và DOCX 13 trang thống nhất.
+- Kiểm tra: 128/128 unit, build web/ESP32, hai bộ C++ qua WSL đạt. Runner cuối 17 bước đạt; nhánh C++ Windows bỏ qua do thiếu g++, có kết quả WSL riêng. [Bằng chứng 24–25/10](docs/evidence/SINGLE-ZONE-2026-10-24.md).
+- Chưa nghiệm thu lại tương tác Wokwi hiện hành và bố cục trình duyệt/điện thoại; giữ các mục này trong tasks/todo.md. Không dùng bằng chứng nhiều khu bên dưới làm kết quả một khu.
+
+---
+
+Cập nhật lịch sử: **13/10/2026**. Phạm vi: đồ án **mô phỏng**, lập trình ESP32 bằng **PlatformIO trong VS Code**, chạy bằng **Wokwi**, dashboard **React nền trắng**, quản lý nhiều cửa và nhiều khu vực. Tài liệu này là kế hoạch; ô chưa đánh dấu là công việc chưa hoàn thành.
 
 ## 1. Sau giao diện, làm gì trước?
 
@@ -387,6 +399,15 @@ Mỗi mốc là một phần có thể trình diễn và kiểm tra riêng. Ưu 
 - Phụ thuộc: M16. Phạm vi: README, docs, mẫu config và kết quả thực tế.
 - Nghiệm thu: người khác chạy lại bốn demo theo hướng dẫn; clean checkout build/test được; hạn chế mô phỏng được nêu; mọi ô hoàn thành có bằng chứng.
 - Chuẩn bị ngày 13/10/2026: [checklist](docs/CHECKLIST_DEMO.md), [Postman](docs/postman/khoguard.postman_collection.json), [source sạch 107 test/build và 9 request GET tại lượt review](docs/evidence/REVIEW-CLAUDE-2026-10-13.md). Chưa nghiệm thu toàn M17: người nhận chưa chạy lại cấu hình/demo và M16 còn phép đo DOM.
+
+### M18 — ThingsBoard Cloud bổ sung (24/10/2026)
+
+- [x] Adapter snapshot chỉ đọc; giữ null/stale và timestamp, gộp dữ liệu toàn kho vào một Cloud device.
+- [x] Lệnh setup/bridge/check, xác minh TLS và địa chỉ Cloud; dashboard 4 bảng khu và 2 biểu đồ; test adapter/cấu hình.
+- [x] Người dùng đã đăng ký và cung cấp API key; cấu hình đã lưu riêng trong `.local`.
+- [x] Tạo Cloud device/dashboard thật, chạy MQTT/TLS bridge, đọc lại 5 nguồn; backend ngắt → unavailable, bật lại → tự phục hồi. 131/131 unit đạt, gồm 11 test ThingsBoard.
+- [ ] Xác nhận hiển thị trên trình duyệt/điện thoại và dữ liệu môi trường mới từ các Wokwi đang chạy.
+- Phạm vi: dashboard phụ, giữ React/MySQL/firmware, không RPC điều khiển. [Hướng dẫn](docs/THINGSBOARD.md), DEC-046; [bằng chứng Cloud thật](docs/evidence/THINGSBOARD-CLOUD-2026-10-24.md). D09 fresh; bốn nguồn Wokwi chưa chạy, giữ stale/chưa rõ thay vì giả số đo mới.
 
 ## 10. Ma trận kiểm thử bắt buộc
 

@@ -341,3 +341,75 @@ Còn thiếu / bước tiếp theo:
 - Kiểm tra write-fault sau sửa đạt 3 nhóm: 31/31 snapshots không fresh/readiness lỗi; khung tồn đọng lưu đúng một lần sau 418 ms. Bật lại bốn Node simulator; 5/5 fresh, readiness 200, lệnh đóng D07 nhận applied.
 - Lượt chuẩn bị có lỗi watcher ngoài workspace, chạy nhầm cửa sổ và kiểm tra freshness trước TTL; đã sửa, không đánh dấu các lượt lỗi là đạt.
 - Quyết định DEC-039/040; [bằng chứng chi tiết](docs/evidence/WOKWI-REMAINING-2026-10-13.md). Ba nhóm còn thiếu đã hoàn thành; M16 còn đo DOM, M17 còn người nhận chạy lại quy trình.
+
+## 24/10/2026 — Hoàn thiện nội dung slide thuyết trình
+
+- Tạo và hoàn thiện [docs/NOI_DUNG_SLIDE.md](docs/NOI_DUNG_SLIDE.md): 28 slide chia 5 chương; mỗi trang có tiêu đề, nội dung, hình chèn và ghi chú thuyết trình. Có gợi ý rút gọn còn 15 slide.
+- Chương 1–2 dựa trên hai tài liệu Word Phần 1/Phần 2; chương 3–5 trình bày triển khai, demo, kết quả và giới hạn KhoGuard. Phân biệt rõ phương án công nghiệp trong tài liệu với chức năng đã mô phỏng.
+- Thêm 8 sơ đồ SVG nền trắng trong `docs/slides/assets/`, dùng cùng ảnh giao diện có sẵn; render bản xem thử và kiểm tra bố cục, chữ tiếng Việt.
+- Kiểm tra đủ 28 trang có nội dung/hình/ghi chú, 39 liên kết tệp tồn tại, 8 SVG hợp lệ. Số liệu kiểm thử trích từ bằng chứng 13/10/2026; không chạy lại hệ thống trong công việc soạn slide.
+- Đầu ra là Markdown và hình minh họa; chưa tạo PowerPoint. Tên thành viên, lớp và giảng viên để nhóm bổ sung.
+
+## 24/10/2026 — Chuẩn bị tích hợp ThingsBoard Cloud
+
+- Người dùng chọn thêm dashboard, giữ website/MySQL; sau đó đổi từ cài cục bộ sang Cloud. Đã dừng riêng installer KhoGuard đang chờ Docker.
+- Docker Desktop lỗi các socket khởi động: đã sao lưu thư mục runtime `Docker/run`, không reset data disk/volume; thao tác dọn socket tiếp theo bị duyệt tự động chặn nên không thực hiện. Không tiếp tục xử lý Docker sau khi chuyển Cloud.
+- Thêm adapter `integrations/thingsboard.mjs`, dashboard generator, CLI setup/bridge/check và mẫu JSON 6 widget. Một Cloud device gộp 5 nguồn/12 cửa; nguồn thiết bị lấy registry hiện tại, không sửa firmware.
+- Tạo file riêng `.local/thingsboard-cloud.env`; người dùng chưa có tài khoản nên đang hướng dẫn đăng ký và lấy API key. Chưa tạo device/dashboard thật, chưa gửi dữ liệu lên Cloud.
+- Kiểm tra **130/130 unit đạt**, gồm 10 test tích hợp mới; cú pháp CLI và diff check đạt. Không gọi unit test là bằng chứng đã kết nối Cloud. [Bằng chứng](docs/evidence/THINGSBOARD-CLOUD-2026-10-24.md).
+- Ghi M18 vào Agent.md, DEC-046, hướng dẫn `docs/THINGSBOARD.md` và link trong README. Chờ tài khoản/key rồi chạy setup → bridge → check, thử mất nguồn/phục hồi và xem dashboard thật.
+
+## 24/10/2026 — Kết nối ThingsBoard Cloud thật
+
+- Người dùng đăng nhập và cung cấp API key. Lưu trong `.local` được Git bỏ qua; không đưa giá trị vào tài liệu, bằng chứng hay kết quả hiển thị.
+- Setup tạo một Cloud device `KhoGuard-WH01`, dashboard 4 bảng khu và 2 biểu đồ. API Cloud xác nhận cả hai loại widget tồn tại. Bật broker dự án, backend, Vite, nguồn D09 SIM-C02 và bridge.
+- Phát hiện hostname MQTT phải có tiền tố `mqtt.` và gói toàn kho 103 trường không được nhận. Chẩn đoán bản tin nhỏ/50 trường nhận được; test RED hai lỗi, sửa endpoint và chia gói 50 trường, giữ TLS/QoS1/timestamp, GREEN.
+- `thingsboard:check` đọc được dữ liệu 5 nguồn qua API Cloud. D09 fresh; bốn nguồn Wokwi chưa bật nên giữ stale/chưa rõ, không giả dữ liệu môi trường.
+- Thử dừng đúng backend của lượt này: Cloud báo cả 5 nguồn unavailable; bật lại backend trong finally, bridge tự phục hồi. Không dừng MySQL hoặc dịch vụ Mosquitto dùng chung.
+- Toàn bộ **131/131 unit đạt**; cập nhật M18, DEC-046 và [bằng chứng](docs/evidence/THINGSBOARD-CLOUD-2026-10-24.md). Chưa có trình duyệt kết nối để kiểm tra bố cục Cloud trên điện thoại; chưa thử ngắt chính Cloud/Internet.
+- Key đã được gửi trong chat: khuyến nghị người dùng thu hồi sau setup/check; bridge dùng device token riêng nên tiếp tục gửi được. Không tự thu hồi key.
+
+## 24–25/10/2026 — Rút gọn một khu, rà linh kiện và cập nhật hồ sơ
+
+- Theo yêu cầu mới, giữ khu C / ESP-C01 / D07–D08. Đồng bộ registry, snapshot, API/history/report/access/giữ chỗ, demo React, firmware, ACL và ThingsBoard; ngừng A/B/D và SIM-C02. Hai cửa cùng khu giữ ví dụ liên động.
+- Đóng băng seed v1 trong `db/seeds/registry-v1.json`, giữ checksum và SQL migration cũ. Không xóa các hàng lịch sử MySQL; bộ lọc hiện hành chỉ nhận đúng thiết bị/cửa hoạt động. Thêm kiểm thử chống lọt dữ liệu cửa D09 và `scope:check` đọc API thật.
+- Chuyển firmware nhiều khu và script simulator không dùng vào `.local/single-zone-backup-20261024/retired/`. Lệnh xóa hàng loạt ban đầu bị duyệt tự động chặn với lý do `blocked by policy`; đã chọn lưu trữ thay vì xóa đệ quy. Bản Word/PPT gốc và diff trước thay đổi có sao lưu; giữ nguyên ZIP người dùng.
+- Đối chiếu đầy đủ **30 phần tử điện** với firmware. Bổ sung **5 điện trở 220 Ω** cho LED, giữ pull-up DHT và hai pull-down Panic. Sửa tên PIR/siêu âm thay cho mmWave/rèm quang; loại mô tả MQ-2, LCD và Reset vật lý không có trong mô hình. Tạo bảng GPIO/nguồn và hai SVG nối dây/kiến trúc.
+- ThingsBoard Cloud giữ device/dashboard ID, còn một bảng C và hai biểu đồ. API đọc lại ESP-C01 thành công; khi chưa bật Wokwi, nguồn giữ stale đúng thực tế. Không xóa telemetry Cloud cũ, không thêm RPC.
+- Viết README đầy đủ, cập nhật hướng dẫn cấu hình/demo, kiến trúc, hợp đồng, kế hoạch, checklist và DEC-047. PowerPoint **33 slide/5 chương** giữ mẫu HUIT; Word **13 trang/5 chương** có phụ lục sơ đồ A3. Đã render và xem từng slide/trang; PPT package/layout/font/import đạt. Cập nhật cả Word trong `D:\huit\iot\doc` và bản trong `docs/`.
+- Kiểm tra cuối: **128/128 unit**, Vite production và PlatformIO esp32dev thành công; hai bộ C++ chạy qua WSL đạt. `verify:all` **17 bước đạt, 0 lỗi, một nhánh C++ bỏ qua** do Windows thiếu g++ trên PATH (đã kiểm tra riêng qua WSL). Bản tin tải cuối lưu **58/58**, P95 publish → WebSocket **499 ms** trên 8 mẫu; slide/Word giữ số liệu checkpoint 24/10 là 625 ms và có bằng chứng riêng.
+- Đã bật lại broker/backend/Vite/bridge, `scope:check` và Cloud readback đạt. Chưa nghiệm thu lại Wokwi tương tác/relay hiện hành, bố cục web/Cloud trên điện thoại hoặc phần cứng thật. C++/build không được ghi thành bằng chứng phản ứng linh kiện. [Kết quả và bằng chứng](docs/evidence/SINGLE-ZONE-2026-10-24.md).
+
+## 25/10/2026 — Chạy thử project một khu với Wokwi
+
+- Theo yêu cầu chạy thử: xác nhận MySQL, broker 18884/18885, backend 3001 và React 5173 đang hoạt động; bật lại gateway Wokwi 9011. Web trả HTTP 200, `/api/ready` xác nhận database ready và MQTT connected.
+- Dùng công cụ điều khiển ứng dụng mở đúng cửa sổ `Wokwi Simulator - khoguard-iot`, nhấn Start. Thông báo lỗi gateway cũ đã được đóng sau khi gateway kết nối thành công; không sửa cấu hình mạng hay firewall.
+- Quan sát Serial có `MQTT_ONLINE`, `SENSOR_HEARTBEAT` nhiệt độ −18,4 °C/độ ẩm 55%, `TELEMETRY ACK` tăng liên tục. Sonar D07/D08 chuyển clear sau khi khởi tạo. `scope:check` xác nhận fresh, chỉ C/ESP-C01/D07,D08 và 78 vị trí.
+- ThingsBoard Cloud readback fresh, −18,4 °C, timestamp nguồn mới. Giữ Wokwi và các dịch vụ chạy cho người dùng xem; đã yêu cầu mở web trong panel Codex. Bằng chứng: `docs/evidence/SINGLE-ZONE-2026-10-24/scope-run-2026-10-25.json`, `cloud-run-2026-10-25.log`.
+- Đây là kiểm tra khởi động và đường truyền Wokwi → MQTT → backend/MySQL → Cloud; chưa chạy lại toàn bộ RFID/Panic/servo/relay/reboot/TLS sai hoặc xem bố cục React bằng trình duyệt. Không đánh dấu toàn bộ nghiệm thu tương tác là hoàn thành.
+
+## 25/10/2026 — Demo tương tác và hoàn thiện tài liệu
+
+- Quan sát trực tiếp trên Wokwi: MFRC522 Blue IN/OUT, thẻ Red bị từ chối và ghi MySQL; PIR chặn đóng; sonar tĩnh chặn lệnh đóng ở D07 và D08; liên động hai cửa; contact/lệnh D07–D08; DHT22 cảnh báo và phục hồi; cảnh báo giữ cửa 30/>60 giây và tự gỡ; Panic D07/D08; đầu ra Panic cục bộ khi broker dừng và sự kiện được MySQL nhận sau khi MQTT trở lại.
+- Chưa tạo được vật cản đúng thời điểm cửa đang đóng để xác nhận đảo chiều. Reset khi nút Panic vẫn giữ bị chặn `PANIC_ACTIVE`; chuỗi nhả nút rồi reset chưa được xác nhận trọn vẹn trong cùng phiên. Không báo hai ca này là đạt.
+- Acceptance harness từng đọc sai đối tượng event và kiểm tra MySQL quá sớm; đã sửa truy vấn kết quả và chờ sự kiện. Bằng chứng trực tiếp xác nhận event đến MySQL sau reconnect; chưa chạy lại toàn bộ acceptance suite sau bản sửa cuối.
+- Viết lại hướng dẫn demo và lời thuyết trình theo 33 trang; bổ sung phần nối dây giải thích đơn giản, giữ nguyên bảng kỹ thuật; cập nhật README, tasks/todo và trạng thái Agent.
+- Chuyển trình tạo slide 28 trang và 8 hình minh họa nhiều khu đã lỗi thời sang `.local/archive/legacy-slides-2026-10-25/`; giữ nguyên, có thể khôi phục. Tạo `docs/slides/README.md` nêu nguồn 33 trang hiện hành. Sửa chú thích firmware để phản ánh đầu đọc MFRC522 Wokwi thật và vẫn giữ đường Serial cho kiểm thử tự động.
+- Không chạy lại unit test/build trong lượt viết tài liệu. Các kết quả kiểm tra tự động trước đó vẫn có ngày và bằng chứng riêng; không gộp chúng với ca tương tác.
+
+## 25/10/2026 — Tìm skill GitHub và làm lại bố cục slide
+
+- Theo yêu cầu, đọc và áp dụng [presentation-skill](https://github.com/siril9/presentation-skill) (MIT): giữ outline làm nguồn chuẩn, thay cấu trúc theo nội dung, dựng lại rồi kiểm tra hình ảnh.
+- Làm mới PowerPoint 33 trang theo nền sáng, tiêu đề navy, điểm nhấn cyan; phân cấp rõ chương và dùng timeline, sơ đồ, thẻ, so sánh và ảnh minh họa thay cho chuỗi trang chữ/bảng đồng dạng.
+- Thêm ảnh minh họa kho lạnh, linh kiện, liên động hai cửa; ghi rõ đó là ảnh tạo để minh họa, không phải ảnh thiết bị thật. Làm sơ đồ dây GPIO thành hình lớn hơn; bảng chân và lưu ý điện áp vẫn có ở `docs/LINH_KIEN_VA_NOI_DAY.md`.
+- Nguồn sửa được: `docs/slides/outline.json`; hình ở `docs/slides/assets/`. Giữ bản PowerPoint cũ tại `.local/KhoGuard-thuyet-trinh-before-redesign-20261025.pptx`.
+- Dựng lại đủ 33 trang. Kiểm tra tự động: 0 tràn chữ, 0 chồng lấn, 0 placeholder, 0 lỗi hình học; xem contact sheet và trang sơ đồ bằng PowerPoint/PDF.
+- Còn một cảnh báo khoảng trắng trên trang sơ đồ dây: toàn bộ pin nhiều nên trang chỉ dùng để nhìn tổng quan; tra cứu từng chân trong bảng Markdown. Ảnh sinh tạo không đại diện phần cứng vật lý.
+
+## 25/10/2026 — Áp dụng template PowerPoint HUIT
+
+- Theo yêu cầu và roster 33 trang đã được người dùng duyệt, dùng mẫu `docs/slides/2-template-bvkltn-khoa12-2024.pptx` làm bố cục thật; giữ logo, thanh xanh đầu trang, chân trang họa tiết, trang bìa/kết thúc và trang chia 5 chương. Đọc skill `ppt-master` từ [GitHub](https://github.com/hugohe3/ppt-master), cài bản làm việc riêng trong `.local` và dùng workflow Edit Native PPTX. Không sửa template nguồn.
+- Xuất 33 trang thành PPTX native; 33/33 trang qua SVG quality gate, file qua delivery check và đọc lại xác nhận 33 trang. Render toàn bộ bằng PowerPoint thành PDF để xem flow; kiểm tra phóng lớn trang nội dung, dây GPIO, số liệu và trang kết.
+- Sửa nhãn số liệu bị đặt lệch khỏi thẻ (trang 6 và các trang số liệu), khoảng cách tiêu đề/phụ đề ở trang kiểm thử, và dòng chữ đè lên tranh cảm ơn. Render lại xác nhận các lỗi hình thức này đã hết.
+- Delivery check: gói PPTX và quan hệ nội bộ hợp lệ; trạng thái `passed-with-advisories` do theme font được kế thừa từ template HUIT. Có thể có thay font nhẹ trên máy không có cùng font; cần mở bằng PowerPoint trước khi trình chiếu.
+- Cập nhật hướng dẫn slide, README và DEC-048 để ghi rõ mẫu và quy trình. Giữ bản trước HUIT trong `.local` trước khi thay PowerPoint hiện hành.

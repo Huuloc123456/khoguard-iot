@@ -52,7 +52,7 @@ export function History({ canAccess }) {
       <label>Dữ liệu<select value={filter.kind} onChange={set('kind')}>{kinds.map(k => <option key={k} value={k}>{REPORT_LABELS[k]}</option>)}</select></label>
       <label>Từ<input type="datetime-local" required value={filter.from} onChange={set('from')} /></label>
       <label>Đến<input type="datetime-local" required value={filter.to} onChange={set('to')} /></label>
-      <label>Khu<select value={filter.zone} onChange={set('zone')}><option value="">Tất cả</option>{['A', 'B', 'C', 'D'].map(z => <option key={z}>{z}</option>)}</select></label>
+      <label>Khu<select value={filter.zone} onChange={set('zone')}><option value="">Tất cả</option>{['C'].map(z => <option key={z}>{z}</option>)}</select></label>
       <label>Loại<select value={filter.type} onChange={set('type')}><option value="">Tất cả</option>{REPORT_TYPES[filter.kind].map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
       <button className="button primary">Lọc</button>
     </form>

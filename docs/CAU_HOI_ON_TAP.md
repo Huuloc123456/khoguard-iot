@@ -1,6 +1,8 @@
 # Câu hỏi ôn tập phản biện — KhoGuard
 
-Dùng để chuẩn bị trả lời giảng viên sau phần trình bày [KICH_BAN_THUYET_TRINH.md](KICH_BAN_THUYET_TRINH.md). Mỗi câu có **gợi ý trả lời** ngắn đủ nói trong 30–60 giây, và **nguồn** để mở ra khi bị hỏi sâu. Số liệu lấy từ mã nguồn và bằng chứng ngày 13/10/2026.
+> **Cảnh báo phiên bản:** phần hỏi đáp dưới đây được viết cho cấu hình nhiều khu ngày 13/10/2026. Các ví dụ SIM-A/B/C/D, 12 cửa, mmWave và rèm quang không thuộc cấu hình đang demo. Dùng [kịch bản thuyết trình hiện hành](KICH_BAN_THUYET_TRINH.md), [kịch bản demo](HUONG_DAN_DEMO.md) và trạng thái nghiệm thu ở đầu [checklist](CHECKLIST_DEMO.md) để trả lời về bản một khu ngày 25/10/2026.
+
+Dùng để tham khảo câu hỏi nền; mỗi câu có gợi ý trả lời và nguồn của cấu hình cũ. Không lấy số liệu hay ví dụ cũ làm kết quả nghiệm thu hiện hành.
 
 ## Nguyên tắc trả lời
 

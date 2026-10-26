@@ -1,0 +1,1025 @@
+{
+  "title": "KhoGuard — giám sát kho lạnh một khu",
+  "subtitle": "Mô hình IoT Wokwi · một kho C · hai cửa D07–D08",
+  "deck_style": {
+    "style_preset": "arctic-minimal",
+    "composition_grammar": "editorial-spread",
+    "style_seed": "khoguard-huit-cold-2026",
+    "font_pair": "clean_modern_v1",
+    "header_mode": "bar",
+    "title_layout": "split-hero",
+    "title_motif": "none",
+    "footer_mode": "source-line",
+    "footer_page_numbers": true,
+    "figure_frame": "open",
+    "table_treatment": "journal-grid",
+    "chart_treatment": "minimal",
+    "section_motif": "rail-dots",
+    "emoji_mode": "none",
+    "readability_contract": {
+      "min_title_pt": 30,
+      "min_body_pt": 16,
+      "min_support_pt": 14,
+      "min_caption_pt": 10,
+      "min_footer_pt": 9,
+      "min_metadata_pt": 9,
+      "max_title_lines": 2
+    },
+    "timeline_mode": "open-events"
+  },
+  "compliance": {
+    "require_attribution": false,
+    "auto_image_sources": false
+  },
+  "slides": [
+    {
+      "type": "title",
+      "title": "KhoGuard",
+      "variant": "title",
+      "role": "title",
+      "subtitle": "Mô phỏng giám sát kho lạnh C · ESP-C01 · D07 / D08",
+      "kicker": "NHÓM 17  ·  ĐỀ TÀI 42  ·  INTERNET OF THINGS",
+      "assets": {
+        "hero_image": "assets/hero-kho-lanh.png",
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "alt_text": "Kho lạnh với hai cửa D07/D08, cảm biến và bộ điều khiển minh họa.",
+      "notes": "Ảnh bìa được tạo riêng để minh họa bối cảnh, không phải ảnh phần cứng thật. Phạm vi là mô phỏng Wokwi.",
+      "slide_id": "kg-01",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Năm phần: từ bài toán tới giới hạn",
+      "variant": "timeline",
+      "role": "evidence",
+      "subtitle": "Trình bày trong khoảng 7–9 phút",
+      "timeline_mode": "open-events",
+      "milestones": [
+        {
+          "label": "01",
+          "title": "Phạm vi",
+          "body": "Kho C · ESP-C01 · 2 cửa"
+        },
+        {
+          "label": "02",
+          "title": "Thiết bị",
+          "body": "Linh kiện và quy tắc an toàn"
+        },
+        {
+          "label": "03",
+          "title": "Triển khai",
+          "body": "Firmware · MQTT · MySQL · React"
+        },
+        {
+          "label": "04",
+          "title": "Demo",
+          "body": "Ca đã chạy và kết quả"
+        },
+        {
+          "label": "05",
+          "title": "Giới hạn",
+          "body": "Điều mô hình chưa chứng minh"
+        }
+      ],
+      "slide_intent": "context",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-02",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Chương 1 · Bài toán và phạm vi",
+      "variant": "section",
+      "role": "section",
+      "subtitle": "Một kho lạnh, hai cửa, một bộ điều khiển",
+      "caption": "Mục tiêu · phạm vi hiện hành · kiến trúc",
+      "slide_intent": "section",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-03",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Kho lạnh cần biết khi nào cửa không nên đóng",
+      "variant": "comparison-2col",
+      "role": "comparison",
+      "assets": {
+        "hero_image": "assets/lien-dong-hai-cua.png",
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_intent": "decision",
+      "slide_id": "kg-04",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ],
+      "left": {
+        "title": "Nguy cơ",
+        "body": [
+          "Người ở trong kho.",
+          "PIR báo chuyển động.",
+          "Sonar thấy vật cản hoặc input chưa rõ."
+        ]
+      },
+      "right": {
+        "title": "Quy tắc",
+        "body": [
+          "ESP32 từ chối đóng.",
+          "Cửa còn lại phải đóng.",
+          "Panic được xử lý tại chỗ."
+        ]
+      },
+      "verdict": "Mô hình minh họa, không thay thiết bị an toàn công nghiệp."
+    },
+    {
+      "type": "content",
+      "title": "Một luồng đơn giản: đo → quyết định → báo",
+      "variant": "flow",
+      "role": "evidence",
+      "flow_steps": [
+        {
+          "title": "Đo",
+          "detail": "DHT22 · RFID · PIR · sonar · cửa"
+        },
+        {
+          "title": "Quyết định",
+          "detail": "ESP32 áp dụng luật an toàn"
+        },
+        {
+          "title": "Lưu",
+          "detail": "Backend → MySQL"
+        },
+        {
+          "title": "Xem",
+          "detail": "React vận hành · ThingsBoard phụ"
+        }
+      ],
+      "slide_intent": "process",
+      "visual_intent": "flow",
+      "subtitle": "Mỗi phần có một nhiệm vụ rõ ràng.",
+      "caption": "ThingsBoard bổ sung quan trắc; website KhoGuard và MySQL là hệ chính.",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-05",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ],
+      "flow_layout": "strip"
+    },
+    {
+      "type": "content",
+      "title": "Phạm vi vận hành được rút gọn",
+      "variant": "stats",
+      "role": "evidence",
+      "facts": [
+        {
+          "value": "1",
+          "label": "khu C",
+          "detail": "Kho lạnh WH01"
+        },
+        {
+          "value": "1",
+          "label": "ESP-C01",
+          "detail": "ESP32 chạy Wokwi"
+        },
+        {
+          "value": "2",
+          "label": "cửa",
+          "detail": "D07 và D08 liên động"
+        },
+        {
+          "value": "78",
+          "label": "vị trí dùng được",
+          "detail": "80 vật lý, trừ 2 xả đá"
+        }
+      ],
+      "slide_intent": "evidence",
+      "caption": "Các khu cũ còn trong MySQL chỉ là lịch sử, không thuộc phạm vi hoạt động.",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-06",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "ESP32 xử lý tại chỗ; website lưu và hiển thị trạng thái",
+      "variant": "flow",
+      "role": "evidence",
+      "assets": {
+        "hero_image": "assets/architecture-one-zone.png",
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_intent": "process",
+      "slide_id": "kg-07",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ],
+      "subtitle": "Bốn lớp trong đường đi của dữ liệu.",
+      "flow_steps": [
+        {
+          "title": "ESP-C01",
+          "detail": "Đọc cảm biến, xử lý tại chỗ"
+        },
+        {
+          "title": "MQTT / API",
+          "detail": "Nhận trạng thái và lệnh"
+        },
+        {
+          "title": "MySQL",
+          "detail": "Lưu telemetry, sự kiện"
+        },
+        {
+          "title": "Giao diện",
+          "detail": "React chính · Cloud phụ"
+        }
+      ],
+      "flow_layout": "strip"
+    },
+    {
+      "type": "section",
+      "title": "Chương 2 · Linh kiện và an toàn mô phỏng",
+      "variant": "section",
+      "role": "section",
+      "subtitle": "Từ tín hiệu đầu vào tới hành động minh họa",
+      "caption": "30 phần tử điện · dây tín hiệu · quy tắc cửa",
+      "slide_intent": "section",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-08",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Các linh kiện chia thành cảm biến, điều khiển và đầu ra",
+      "variant": "image-sidebar",
+      "role": "evidence",
+      "assets": {
+        "hero_image": "assets/bo-linh-kien-iot.png",
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "alt_text": "Ảnh dựng minh họa ESP32, RFID, DHT22, PIR, sonar, servo và relay; không xác nhận đúng model ngoài Wokwi.",
+      "sidebar_sections": [
+        {
+          "title": "Nhận tín hiệu",
+          "body": "DHT22 · MFRC522 · PIR · 2 HC-SR04"
+        },
+        {
+          "title": "Điều khiển",
+          "body": "ESP32 đọc contact, công tắc chiều và 2 nút Panic."
+        },
+        {
+          "title": "Minh họa đầu ra",
+          "body": "2 servo · 3 relay · 5 LED · buzzer"
+        }
+      ],
+      "image_sidebar_mode": "editorial-atlas",
+      "slide_intent": "evidence",
+      "subtitle": "Tổng cộng 30 phần tử điện trong diagram Wokwi.",
+      "caption": "Ảnh tạo để minh họa nhóm linh kiện; xem diagram.json để đối chiếu đúng model và số lượng.",
+      "slide_id": "kg-09",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Đầu vào nối về GPIO của ESP32",
+      "variant": "scientific-figure",
+      "role": "evidence",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "alt_text": "Sơ đồ nối dây đầy đủ ESP-C01, đầu vào bên trái, đầu ra bên phải.",
+      "image_sidebar_mode": "editorial-atlas",
+      "slide_intent": "evidence",
+      "subtitle": "Bản tổng hợp để phóng lớn và đọc GPIO trực tiếp.",
+      "caption": "Bảng giải thích dễ đọc nằm ở docs/LINH_KIEN_VA_NOI_DAY.md.",
+      "notes": "Chi tiết pin SPI: SCK 2, MOSI 13, MISO 34, CS 12; RFID RST và nguồn 3V3. Xem docs/LINH_KIEN_VA_NOI_DAY.md.",
+      "slide_id": "kg-10",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ],
+      "figures": [
+        {
+          "path": "assets/wiring-diagram-slide.png",
+          "label": "A",
+          "title": "ESP-C01 và toàn bộ dây tín hiệu",
+          "caption": "Sơ đồ mô phỏng số trong Wokwi. ECHO 5 V chỉ nối trực tiếp trong mô phỏng; mạch thật cần hạ xuống 3,3 V."
+        }
+      ],
+      "figure_layout": "panel-grid"
+    },
+    {
+      "type": "content",
+      "title": "Đầu ra là công tắc và đèn minh họa",
+      "variant": "cards-3",
+      "role": "evidence",
+      "slide_intent": "context",
+      "subtitle": "Sơ đồ mô phỏng không cấp tải công suất thật.",
+      "cards": [
+        {
+          "title": "Cửa",
+          "body": "Relay khóa D07/D08: GPIO25/26. Servo: GPIO27/14, 0° đóng, 90° mở."
+        },
+        {
+          "title": "Cảnh báo",
+          "body": "Đèn GPIO32; buzzer GPIO33. LED dùng điện trở nối tiếp 220 Ω."
+        },
+        {
+          "title": "Sưởi / quạt",
+          "body": "Relay GPIO4 đổi hai LED. Nguồn logic 3V3; servo, sonar, PIR và relay dùng VIN 5V trong mô phỏng."
+        }
+      ],
+      "notes": "Mạch thật cần nguồn tải riêng, chung GND, kiểm tra relay và bảo vệ tải. Không cấp tải công suất theo sơ đồ Wokwi.",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-11",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "ESP32 chỉ nhận lệnh đóng khi các điều kiện đều an toàn",
+      "variant": "image-sidebar",
+      "role": "evidence",
+      "slide_intent": "evidence",
+      "subtitle": "D07 mở thì D08 không được mở đồng thời.",
+      "caption": "Hình minh họa nguyên tắc, không phải ảnh thiết bị đã lắp.",
+      "assets": {
+        "hero_image": "assets/lien-dong-hai-cua.png",
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-12",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ],
+      "alt_text": "Minh họa nguyên tắc liên động: cửa D07 mở, cửa D08 vẫn khóa.",
+      "image_sidebar_mode": "editorial-atlas",
+      "sidebar_sections": [
+        {
+          "title": "Điều kiện",
+          "body": "Người được xác minh và count bằng 0."
+        },
+        {
+          "title": "Vật cản",
+          "body": "PIR không báo chuyển động; sonar thông thoáng."
+        },
+        {
+          "title": "Liên động",
+          "body": "Cửa còn lại đóng; input rõ và Panic không hoạt động."
+        }
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Mỗi thời điểm có một cách phản ứng",
+      "variant": "matrix",
+      "role": "decision",
+      "subtitle": "Các mốc thời gian thuộc những điều kiện khác nhau.",
+      "matrix_mode": "open-quadrants",
+      "quadrants": [
+        {
+          "title": "Panic",
+          "body": "Phản ứng tại chỗ ngay; latch giữ đến khi reset hợp lệ."
+        },
+        {
+          "title": "30 giây",
+          "body": "Cửa còn mở → cảnh báo mức nhắc."
+        },
+        {
+          "title": "Trên 60 giây",
+          "body": "Cửa vẫn mở → cảnh báo nghiêm trọng, đèn/còi."
+        },
+        {
+          "title": "10 giây / 5 phút",
+          "body": "Contact không xác nhận: lỗi hành trình. PIR kéo dài: cảnh báo nguy cơ mắc kẹt theo điều kiện mô hình."
+        }
+      ],
+      "slide_intent": "decision",
+      "caption": "Timer firmware tiếp tục chạy khi mất MQTT.",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-13",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Sức chứa khả dụng được tính minh bạch",
+      "variant": "stats",
+      "role": "evidence",
+      "facts": [
+        {
+          "value": "80",
+          "label": "vị trí vật lý",
+          "detail": "Tổng vị trí trong khu C"
+        },
+        {
+          "value": "78",
+          "label": "vị trí khả dụng",
+          "detail": "Đã loại 2 vị trí xả đá"
+        },
+        {
+          "value": "60",
+          "label": "đang chứa ban đầu",
+          "detail": "Dữ liệu demo seed"
+        },
+        {
+          "value": "74",
+          "label": "mức tối đa cho phép",
+          "detail": "Không vượt ngưỡng 95%"
+        }
+      ],
+      "slide_intent": "evidence",
+      "caption": "Giữ chỗ 15 phút; yêu cầu làm tổng tăng lên 75 bị từ chối. Chưa kết nối WMS/cảm biến pallet.",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-14",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Chương 3 · Triển khai hệ thống",
+      "variant": "section",
+      "role": "section",
+      "subtitle": "Thiết bị gửi tín hiệu, phần mềm biến tín hiệu thành lịch sử",
+      "caption": "PlatformIO · Wokwi · MQTT/TLS · MySQL · React · Cloud",
+      "slide_intent": "section",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-15",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Sáu công cụ ghép thành một luồng demo",
+      "variant": "cards-3",
+      "role": "evidence",
+      "slide_intent": "context",
+      "subtitle": "Mỗi công cụ phụ trách một lớp.",
+      "cards": [
+        {
+          "title": "Firmware + mô phỏng",
+          "body": "C++ / PlatformIO / Wokwi: đọc đầu vào và mô phỏng ESP32."
+        },
+        {
+          "title": "Tin nhắn + lịch sử",
+          "body": "Mosquitto MQTT/TLS chuyển telemetry, event, command, ACK; Node.js và MySQL kiểm tra, lưu dữ liệu."
+        },
+        {
+          "title": "Màn hình",
+          "body": "React/Vite cho vận hành; ThingsBoard Cloud chỉ để xem bản sao snapshot."
+        }
+      ],
+      "notes": "Phương án hiện hành giữ MySQL; không cần ThingsBoard cục bộ hoặc MongoDB.",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-16",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Quan trắc đi lên; lệnh phải được xác nhận đi về",
+      "variant": "comparison-2col",
+      "role": "comparison",
+      "left": {
+        "title": "Quan trắc",
+        "body": [
+          "ESP gửi telemetry/event qua MQTT-TLS.",
+          "Backend ghi vào MySQL.",
+          "React và Cloud đọc trạng thái."
+        ]
+      },
+      "right": {
+        "title": "Lệnh cửa",
+        "body": [
+          "Operator gửi yêu cầu.",
+          "Backend kiểm phiên và TTL 10 giây.",
+          "ESP tự kiểm tra; ACK xác nhận."
+        ]
+      },
+      "verdict": "Backend không thể ép ESP bỏ qua an toàn.",
+      "slide_intent": "comparison",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-17",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "MySQL lưu lịch sử; chức năng hiện hành chỉ lấy khu C",
+      "variant": "cards-3",
+      "role": "evidence",
+      "cards": [
+        {
+          "title": "Đo lường",
+          "body": "Telemetry và trạng thái gần nhất của ESP-C01."
+        },
+        {
+          "title": "Nghiệp vụ",
+          "body": "Sự kiện, cảnh báo, lệnh, phiên, lịch ca và giữ chỗ."
+        },
+        {
+          "title": "Giữ nguyên lịch sử",
+          "body": "Seed/migration cũ được giữ; truy vấn hoạt động lọc đúng phạm vi C."
+        }
+      ],
+      "promote_card": 0,
+      "subtitle": "Không xóa hàng lịch sử chỉ vì đã rút gọn phạm vi.",
+      "caption": "MySQL là cơ sở dữ liệu chính của KhoGuard.",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-18",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "React gom các việc vận hành thành ba nhóm",
+      "variant": "cards-3",
+      "role": "evidence",
+      "slide_intent": "context",
+      "subtitle": "Năm màn hình, một khu C.",
+      "cards": [
+        {
+          "title": "Theo dõi",
+          "body": "Tổng quan, sơ đồ kho, môi trường DHT22 và cảnh báo."
+        },
+        {
+          "title": "Điều khiển",
+          "body": "Giám sát hai cửa D07/D08, lệnh đang chờ và ACK từ thiết bị."
+        },
+        {
+          "title": "Nghiệp vụ",
+          "body": "Nhận hàng/giữ chỗ 78 vị trí; nhật ký có lọc và xuất CSV."
+        }
+      ],
+      "notes": "Dải nhiệt độ mô hình −22…−16 °C. Backend/MQTT đọc dữ liệu qua MySQL.",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-19",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Ba lớp giúp giới hạn quyền và kết nối",
+      "variant": "matrix",
+      "role": "decision",
+      "quadrants": [
+        {
+          "title": "Vai trò",
+          "body": "Viewer xem; operator vận hành; admin xem thêm audit."
+        },
+        {
+          "title": "MQTT ACL",
+          "body": "ESP-C01, backend và observer chỉ được dùng topic được cấp."
+        },
+        {
+          "title": "TLS",
+          "body": "Kiểm tra CA và hostname; không tắt xác minh chứng chỉ."
+        },
+        {
+          "title": "Bí mật",
+          "body": "Mật khẩu/token nằm trong .local, không đưa vào Git hoặc slide."
+        }
+      ],
+      "slide_intent": "decision",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-20",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "ThingsBoard Cloud là màn hình quan trắc phụ",
+      "variant": "stats",
+      "role": "evidence",
+      "facts": [
+        {
+          "value": "3",
+          "label": "widget",
+          "detail": "Bảng C, nhiệt độ, độ ẩm"
+        },
+        {
+          "value": "10 s",
+          "label": "chu kỳ bridge",
+          "detail": "Snapshot viewer qua TLS"
+        },
+        {
+          "value": "0",
+          "label": "RPC điều khiển",
+          "detail": "Cloud không điều khiển cửa"
+        }
+      ],
+      "slide_intent": "evidence",
+      "caption": "Cloud device KhoGuard-WH01; phải xem thời điểm nguồn và trạng thái stale.",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-21",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Chương 4 · Demo và kết quả",
+      "variant": "section",
+      "role": "section",
+      "subtitle": "Đã chạy trên mô phỏng; không gọi là phần cứng thật",
+      "caption": "RFID · PIR · sonar · cửa · Panic · nhiệt độ",
+      "slide_intent": "section",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-22",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Một thẻ hợp lệ cập nhật người; PIR bổ sung chặn đóng",
+      "variant": "timeline",
+      "role": "evidence",
+      "timeline_mode": "open-events",
+      "milestones": [
+        {
+          "label": "01",
+          "title": "Blue IN",
+          "body": "Thẻ DEMO-017 được nhận; số người tăng."
+        },
+        {
+          "label": "02",
+          "title": "Đóng cửa",
+          "body": "Khi count còn 1, firmware chặn đóng."
+        },
+        {
+          "label": "03",
+          "title": "Blue OUT",
+          "body": "Quét lại ở chiều OUT; số người về 0."
+        },
+        {
+          "label": "04",
+          "title": "Red / PIR",
+          "body": "DEMO-999 bị từ chối; PIR HIGH cũng chặn đóng."
+        }
+      ],
+      "caption": "Thẻ đại diện một lượt đi qua; PIR phát hiện chuyển động chứ không đếm người.",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-23",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Panic ưu tiên thoát; cảm biến và broker không thay đổi logic tại chỗ",
+      "variant": "comparison-2col",
+      "role": "comparison",
+      "left": {
+        "title": "Panic đã thấy",
+        "body": [
+          "Panic D07 và D08 chạy.",
+          "Mất broker: đầu ra ESP vẫn hoạt động.",
+          "Sự kiện tới MySQL sau reconnect."
+        ]
+      },
+      "right": {
+        "title": "Còn giới hạn",
+        "body": [
+          "Giữ nút: reset bị chặn PANIC_ACTIVE.",
+          "Nhả nút rồi reset: chưa xác nhận trọn vẹn.",
+          "Giữ chỗ là luồng nghiệp vụ phần mềm."
+        ]
+      },
+      "verdict": "Panic cục bộ đạt; chuỗi reset còn thiếu.",
+      "slide_intent": "evidence",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-24",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Tín hiệu mơ hồ hoặc quá cũ được xử lý theo hướng an toàn",
+      "variant": "flow",
+      "role": "evidence",
+      "flow_steps": [
+        {
+          "title": "Đo",
+          "detail": "Sonar gần hoặc echo cũ: có vật cản"
+        },
+        {
+          "title": "Chặn",
+          "detail": "PIR/input chưa rõ: không đóng"
+        },
+        {
+          "title": "Hết hạn",
+          "detail": "ESP cũ >10 giây: từ chối lệnh"
+        },
+        {
+          "title": "Reboot",
+          "detail": "Phiên mới: lệnh cũ hết hiệu lực"
+        }
+      ],
+      "slide_intent": "process",
+      "visual_intent": "flow",
+      "subtitle": "Chỉ dùng mã lỗi/kết quả quan sát được; không thay thế thiết bị an toàn công nghiệp.",
+      "caption": "Ngưỡng và timeout thuộc mô hình hiện hành.",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-25",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ],
+      "flow_layout": "strip"
+    },
+    {
+      "type": "content",
+      "title": "Wokwi ngày 25/10: các ca đạt và việc còn lại",
+      "variant": "comparison-2col",
+      "role": "comparison",
+      "left": {
+        "title": "Đã quan sát đạt",
+        "body": [
+          "RFID Blue IN/OUT; Red bị từ chối.",
+          "PIR và sonar tĩnh chặn đóng.",
+          "Liên động, DHT22, timer cửa.",
+          "Panic hai cửa; offline local và MySQL reconnect."
+        ]
+      },
+      "right": {
+        "title": "Chưa xác nhận",
+        "body": [
+          "Đảo chiều khi chắn giữa lúc đóng.",
+          "Reset Panic sau khi nhả nút.",
+          "Reboot, mất nguồn, mất echo, TLS sai.",
+          "Phần cứng thật và điện thoại."
+        ]
+      },
+      "verdict": "Không ghi đảo chiều động là đạt.",
+      "sources": [
+        "docs/HUONG_DAN_DEMO.md",
+        "docs/CHECKLIST_DEMO.md"
+      ],
+      "slide_intent": "evidence",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-26"
+    },
+    {
+      "type": "content",
+      "title": "Kiểm thử tự động chứng minh phần mềm, không chứng minh linh kiện",
+      "variant": "stats",
+      "role": "evidence",
+      "facts": [
+        {
+          "value": "128/128",
+          "label": "unit đạt",
+          "detail": "Bằng chứng ngày 24/10"
+        },
+        {
+          "value": "17",
+          "label": "bước verify",
+          "detail": "0 lỗi trong checkpoint"
+        },
+        {
+          "value": "625 ms",
+          "label": "P95 publish → WS",
+          "detail": "8 mẫu trong checkpoint"
+        }
+      ],
+      "slide_intent": "evidence",
+      "caption": "Kết quả tự động 24/10/2026, không phải phản ứng Wokwi hay cam kết độ trễ thiết bị.",
+      "notes": "Không dùng load một thiết bị để khẳng định tải 50 ESP32. Chi tiết và giới hạn ở docs/evidence/SINGLE-ZONE-2026-10-24.md.",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-27",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Từ mô hình nhiều khu sang một cấu hình dễ kiểm tra",
+      "variant": "comparison-2col",
+      "role": "comparison",
+      "left": {
+        "title": "Bản trước",
+        "body": [
+          "4 khu · 12 cửa.",
+          "Nhiều firmware và thiết bị mô phỏng.",
+          "Cloud nhiều bảng khu.",
+          "Tài liệu còn linh kiện không có."
+        ]
+      },
+      "right": {
+        "title": "Bản hiện hành",
+        "body": [
+          "1 khu C · ESP-C01 · 2 cửa.",
+          "Một firmware Wokwi; hai cửa liên động.",
+          "Cloud một bảng C, hai biểu đồ.",
+          "30 linh kiện khớp diagram."
+        ]
+      },
+      "verdict": "Lịch sử MySQL giữ nguyên; hoạt động chỉ lọc khu C.",
+      "slide_intent": "comparison",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-28",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "section",
+      "title": "Chương 5 · Kết luận và giới hạn",
+      "variant": "section",
+      "role": "section",
+      "subtitle": "Mô hình giúp nhìn rõ quy tắc trước khi nói tới triển khai thật",
+      "caption": "Kết quả · giới hạn · cách chạy lại",
+      "slide_intent": "section",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-29",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "KhoGuard nối được tín hiệu, quy tắc và lịch sử trong một demo",
+      "variant": "cards-3",
+      "role": "evidence",
+      "cards": [
+        {
+          "title": "Đo",
+          "body": "Nhiệt độ, độ ẩm, thẻ, chuyển động, vật cản và contact."
+        },
+        {
+          "title": "Bảo vệ",
+          "body": "Liên động, Panic, timeout và từ chối lệnh không an toàn."
+        },
+        {
+          "title": "Quan sát",
+          "body": "Website/MySQL chính; ThingsBoard là bản sao Cloud."
+        }
+      ],
+      "promote_card": 0,
+      "subtitle": "Một ESP32 · hai cửa · một khu C.",
+      "caption": "Chỉ mô phỏng; không phải hệ điều khiển kho thực tế.",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-30",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Mô hình chưa thay thế thiết bị và kiểm định công nghiệp",
+      "variant": "matrix",
+      "role": "decision",
+      "quadrants": [
+        {
+          "title": "PIR",
+          "body": "Phát hiện chuyển động; người đứng yên có thể không được nhận ra."
+        },
+        {
+          "title": "HC-SR04",
+          "body": "Không phải rèm quang an toàn; vật cản động/đảo chiều chưa xác nhận."
+        },
+        {
+          "title": "Điện",
+          "body": "ECHO 5 V cần chuyển mức; nguồn thật, cách ly và relay chưa nghiệm thu."
+        },
+        {
+          "title": "Đầu ra",
+          "body": "Servo, LED và relay chỉ minh họa; nhiệt độ không tự điều khiển sưởi/quạt."
+        }
+      ],
+      "slide_intent": "decision",
+      "caption": "Không dùng mô hình này để bảo vệ người hoặc điều khiển tải thật.",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-31",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "content",
+      "title": "Chạy demo theo một vòng an toàn dễ lặp lại",
+      "variant": "timeline",
+      "role": "evidence",
+      "timeline_mode": "open-events",
+      "milestones": [
+        {
+          "label": "1",
+          "title": "Khởi động",
+          "body": "run.bat · đợi MySQL, broker, backend"
+        },
+        {
+          "label": "2",
+          "title": "Mô phỏng",
+          "body": "Một tab Wokwi, giữ Simulator hiển thị"
+        },
+        {
+          "label": "3",
+          "title": "Kiểm tra",
+          "body": "Trang web · ESP-C01 fresh · cửa đóng"
+        },
+        {
+          "label": "4",
+          "title": "Trình diễn",
+          "body": "RFID · PIR/sonar · Panic · cảnh báo"
+        },
+        {
+          "label": "5",
+          "title": "Khôi phục",
+          "body": "Nhả Panic · đóng cửa · sonar clear · close.bat"
+        }
+      ],
+      "caption": "Hướng dẫn đầy đủ: docs/HUONG_DAN_DEMO.md.",
+      "assets": {
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "slide_id": "kg-32",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    },
+    {
+      "type": "title",
+      "title": "Cảm ơn thầy cô và các bạn",
+      "variant": "title",
+      "role": "title",
+      "subtitle": "Nhóm 17 · Đề tài 42 · KhoGuard",
+      "kicker": "MỘT KHU C  ·  ESP-C01  ·  HAI CỬA D07 / D08",
+      "assets": {
+        "hero_image": "assets/hero-kho-lanh.png",
+        "logo": "assets/huit-white-wordmark.png"
+      },
+      "alt_text": "Minh họa kho lạnh và hệ thống quan trắc KhoGuard.",
+      "notes": "Ảnh tạo riêng để làm nền kết thúc, không phải ảnh hiện trường.",
+      "slide_id": "kg-33",
+      "sources": [
+        "KhoGuard source docs and firmware; status through 25/10/2026"
+      ]
+    }
+  ]
+}

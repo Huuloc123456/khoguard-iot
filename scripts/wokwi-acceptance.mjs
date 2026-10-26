@@ -275,7 +275,7 @@ try {
     return { events: got.length, shift, decisions: access.map(a => a.decision) };
   });
 
-  await step('S2a', 'T05/KB2', 'RFID 0 nhưng mmWave còn người: chặn đóng + cảnh báo', async () => {
+  await step('S2a', 'T05/KB2', 'RFID 0 nhưng PIR còn người: chặn đóng + cảnh báo', async () => {
     ask('Bấm vào PIR → Simulate Motion (có người); bấm lại mỗi vài giây nếu bước này kéo dài quá 10 s.');
     await telemetryWait(p => p.occupancy.presence === true && p.occupancy.current_occupants === 0 && p.occupancy.count_verified, MANUAL_MS, 'presence = true');
     const c = await command('D07', 'close');
@@ -314,7 +314,7 @@ try {
     const ev = await eventWait(p => p.event_type === 'door' && p.door_id === 'D07' && p.reason === 'BEAM_BLOCKED', since);
     return { serial: hit.text, event_state: ev.payload.state };
   });
-  await step('S3c', 'T10', 'Trả rèm quang và đóng D07 bằng tay', async () => {
+  await step('S3c', 'T10', 'Trả vật cản siêu âm và đóng D07 bằng tay', async () => {
     ask('Kéo HC-SR04 D07 về 400 cm rồi gạt CONTACT07 về LOW (cửa đóng).');
     await waitBaseline('Trả về trạng thái nền');
     return 'baseline';
@@ -411,13 +411,12 @@ try {
     for (let i = 0; i < 50 && !await portOpen(config.mqtt.port); i++) await delay(200);
     const online = await serialWait(/^MQTT_ONLINE /, mark, 30000);
     const t = await telemetryWait(p => door(p, 'D07').panic_latched === true, 15000, 'telemetry sau nối lại');
-    const ev = frames.find(f => f.at >= outage.stopped_at && f.topic.endsWith('/events') && f.valid && f.message.payload.event_type === 'panic' && f.message.payload.door_id === 'D07');
-    assert.ok(ev, 'event panic chưa được gửi lại');
+    const ev = await eventWait(p => p.event_type === 'panic' && p.door_id === 'D07', outage.stopped_at, 10000);
     await delay(1500);
     const stored = (await json('/api/events?device_id=ESP-C01&type=panic&limit=5')).body.items.find(e => Date.parse(e.received_at) >= outage.stopped_at);
     assert.ok(stored, 'event panic chưa vào MySQL');
     return { broker_pid: pid, serial: online.text, session_changed: t.session_id !== frames.findLast(f => f.at < outage.stopped_at && f.message)?.message.session_id,
-      event_id: ev.message.event_id, event_uptime_ms: ev.message.uptime_ms, stored_id: stored.id };
+      event_id: ev.event_id, event_uptime_ms: ev.uptime_ms, stored_id: stored.id };
   });
   await step('S6d', 'T08', 'Dọn: nhả nút, đặt lại, đóng cửa', async () => {
     ask('Gạt CONTACT07 sang HIGH (cửa đã mở); nút PANIC07 đã tự nhả — harness sẽ đặt lại.');

@@ -1,0 +1,36 @@
+{
+  "checked_at": "2026-10-24T02:53:24.393Z",
+  "dashboard": "https://thingsboard.cloud/dashboards/569b8ac0-cf55-11f1-afdc-397ada9afcbe",
+  "devices": [
+    {
+      "device": "SIM-A01",
+      "freshness": "stale",
+      "temperature": "Dữ liệu cũ",
+      "updated_at": "2026-10-24T02:53:13.027Z"
+    },
+    {
+      "device": "SIM-B01",
+      "freshness": "stale",
+      "temperature": "Dữ liệu cũ",
+      "updated_at": "2026-10-24T02:53:13.027Z"
+    },
+    {
+      "device": "ESP-C01",
+      "freshness": "stale",
+      "temperature": "Dữ liệu cũ",
+      "updated_at": "2026-10-24T02:53:13.027Z"
+    },
+    {
+      "device": "SIM-C02",
+      "freshness": "fresh",
+      "temperature": "Chưa rõ",
+      "updated_at": "2026-10-24T02:53:13.027Z"
+    },
+    {
+      "device": "SIM-D01",
+      "freshness": "stale",
+      "temperature": "Dữ liệu cũ",
+      "updated_at": "2026-10-24T02:53:13.027Z"
+    }
+  ]
+}

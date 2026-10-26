@@ -1,350 +1,172 @@
 # KhoGuard
 
-**Hệ thống IoT mô phỏng giám sát kho hàng có kho lạnh**: 4 khu, 12 cửa, nhiệt độ/độ ẩm, đếm người bằng RFID, bảo vệ người trong kho lạnh (không đóng cửa khi còn người, nút khẩn cấp mở cửa ngay cả khi mất mạng), cảnh báo, điều khiển cửa có xác nhận, giữ chỗ nhận hàng theo sức chứa, lịch sử và xuất CSV.
+Mô phỏng giám sát và điều khiển **một kho lạnh C, một ESP32 ESP-C01 và hai cửa D07–D08** bằng PlatformIO/Wokwi. Giao diện React tiếng Việt nền trắng, backend Node.js, MySQL, MQTT/TLS và dashboard ThingsBoard Cloud bổ sung.
 
-Đồ án môn Internet of Things — Nhóm 17. Không có phần cứng thật: ESP32 chạy trong **Wokwi** (lập trình bằng **PlatformIO** trong VS Code), các khu còn lại do **script Node** giả lập. Toàn bộ chạy trên một máy Windows, chỉ ở `127.0.0.1`.
+Phạm vi cập nhật 24–25/10/2026. Các khu A/B/D, SIM-C02 và cửa ngoài D07–D08 đã ngừng hoạt động. Dữ liệu và seed MySQL v1 được giữ làm lịch sử, không xuất hiện trong snapshot/báo cáo/giữ chỗ hiện hành.
 
-```text
-ESP32 trên Wokwi (khu C) ──MQTT/TLS──┐
-                                      ├── Mosquitto riêng ── Backend Node ── MySQL
-Script Node giả lập (khu A, B, C, D) ─┘     :18884/:18885      :3001          khoguard_demo
-                                                                 │
-                                                        REST + WebSocket
-                                                                 │
-                                                  Dashboard React (Vite :5173)
-```
-
-> Muốn hiểu sâu từng thành phần, luồng dữ liệu, bảng DB và lý do thiết kế: đọc **[ARCHITECTURE.md](ARCHITECTURE.md)**.
-
----
-
-## Mục lục
-
-- [Tính năng](#tính-năng)
-- [Trạng thái hiện tại](#trạng-thái-hiện-tại)
-- [Yêu cầu hệ thống](#yêu-cầu-hệ-thống)
-- [Chạy nhanh](#chạy-nhanh)
-- [Sử dụng dashboard](#sử-dụng-dashboard)
-- [Thao tác với ESP32 trên Wokwi](#thao-tác-với-esp32-trên-wokwi)
-- [Danh sách lệnh](#danh-sách-lệnh)
-- [Cấu trúc dự án](#cấu-trúc-dự-án)
-- [Kiểm thử](#kiểm-thử)
-- [Bảo mật và secret](#bảo-mật-và-secret)
-- [Xử lý lỗi thường gặp](#xử-lý-lỗi-thường-gặp)
-- [Giới hạn](#giới-hạn)
-- [Tài liệu](#tài-liệu)
-
----
-
-## Tính năng
-
-| Nhóm | Có gì |
-| --- | --- |
-| **Giám sát** | Sơ đồ 4 khu, trạng thái 12 cửa (mở/đóng/đang chạy/khóa), nhiệt độ – độ ẩm theo ngưỡng từng khu, nguồn dữ liệu từng thiết bị (*Wokwi* hay *Node mô phỏng*), độ mới dữ liệu (*mới / cũ / chưa có*) |
-| **An toàn cửa (tại ESP32)** | Chặn đóng khi còn người (RFID), mmWave còn phát hiện, rèm quang bị chắn, panic, hoặc tín hiệu chưa rõ; đảo chiều khi đang đóng; panic chốt, nhả khóa và mở cửa; liên động hai cửa khu C; timer cửa mở 30 s / 60 s và người mắc kẹt 5 phút; đèn, còi, sưởi, quạt mô phỏng bằng LED |
-| **RFID** | Thẻ demo `DEMO-017`, `DEMO-018` (được phép), `DEMO-999` (thu hồi); chống đọc lặp, số người không âm, sau reboot số người là *chưa xác minh* |
-| **Lệnh cửa** | Operator gửi *Mở / Đóng / Đặt lại khẩn cấp* cho D07, D08; ESP32 tự kiểm tra rồi trả *đã áp dụng / bị từ chối (lý do) / hết hạn*; cửa trên UI chỉ đổi theo dữ liệu thiết bị |
-| **Cảnh báo** | Cửa mở lâu, mắc kẹt, panic, lệch số người, nhiệt độ ngoài ngưỡng (có trễ 0,5 °C), mất cảm biến, mất kết nối; *tiếp nhận* chỉ ghi nhận, cảnh báo tự hết khi điều kiện hết |
-| **Nhận hàng** | Giữ một vị trí phù hợp nhiệt độ/kích thước/tải trọng trong 15 phút; cảnh báo từ 85 %, từ chối khi vượt 95 % hoặc khu đệm ùn tắc; an toàn với hai yêu cầu đồng thời |
-| **Lịch sử** | Sự kiện thiết bị, cảnh báo, lệnh cửa, giữ chỗ, ra vào theo ca; lọc theo giờ Việt Nam, khu, loại; xuất CSV UTF-8 (chặn ô công thức) |
-| **Tài khoản** | `viewer` (chỉ xem), `operator` (vận hành), `admin` (thêm nhật ký đăng nhập); cookie HttpOnly, khóa sau 5 lần sai |
-| **Bền vững** | Dữ liệu lưu MySQL, còn sau khi tải lại trang/khởi động lại backend; MQTT qua TLS với CA riêng; chống trùng tin, phát hiện tin bị mất |
-| **Chế độ demo** | *Demo giao diện* chạy 4 kịch bản mẫu trong trình duyệt, không cần backend |
-
----
-
-## Trạng thái hiện tại
-
-Cập nhật 13/10/2026. Chi tiết và bằng chứng từng mốc ở [Agent.md](Agent.md) và [docs/evidence/](docs/evidence/).
-
-| Mốc | Nội dung | Trạng thái |
-| --- | --- | --- |
-| M00 | Dashboard React nền trắng | ✅ Đạt |
-| M01 | Hợp đồng MQTT/snapshot, registry, validator | ✅ Đạt |
-| M02 | Broker riêng, tài khoản/ACL, schema MySQL riêng | ✅ Đạt |
-| M03 | Firmware ESP32 trên Wokwi gửi telemetry, reconnect | ✅ Đạt |
-| M04 | Backend HTTP, migration, health/readiness | ✅ Đạt |
-| M05 | MQTT → MySQL → snapshot/lịch sử | ✅ Đạt |
-| M06 | Dashboard nhận dữ liệu backend (REST + WebSocket) | ✅ Đạt (nguồn script) |
-| M07 | Firmware đọc input cửa/rèm quang/panic/mmWave | ✅ Đạt (Wokwi) |
-| M08 | RFID, số người, event ingest | ✅ Đạt (Wokwi) |
-| M09 | Quy tắc an toàn cục bộ (cổng đóng, panic, liên động) | ✅ Đạt (test C++) |
-| M10 | Lệnh cửa có ack, output mô phỏng | ✅ Đạt (Wokwi) |
-| M11 | Cảnh báo, timer, tiếp nhận | ✅ Đạt (Wokwi: 30 s / 60 s khi mất broker, mắc kẹt 5 phút) |
-| M12 | TLS, offline, phục hồi | ✅ Đạt (Wokwi TLS, T08 mất broker) |
-| M13 | Đăng nhập, vai trò, ca làm việc | ✅ Đạt |
-| M14 | Giữ chỗ và điều kiện nhận hàng | ✅ Đạt |
-| M15 | Lịch sử, báo cáo, CSV | ✅ Đạt |
-| M16 | Toàn kho, 4 kịch bản, đo tải | 🟡 T06/reboot/T20 trên Wokwi đạt; còn đo DOM |
-| M17 | Đóng gói, bàn giao | 🟡 README, Postman, checklist và source sạch test/build đã có; chờ người nhận chạy lại |
-
-**Các kịch bản Wokwi đã chạy** (13/10/2026): RFID, mmWave, liên động, rèm quang, panic, T08, lệnh trùng/cũ và timer ([lượt đầu](docs/evidence/WOKWI-2026-10-13.md)). Lượt bổ sung nghiệm thu **T06, reboot, CA sai và hostname sai: 9/9 nhóm đạt**; đã sửa lỗi từ chối lệnh làm mất xác nhận phiên, **109/109 unit** và kiểm tra lỗi ghi MySQL đạt; firmware bình thường phục hồi, 5/5 thiết bị fresh ([bằng chứng mới nhất](docs/evidence/WOKWI-REMAINING-2026-10-13.md)). T17, T24, T26 đạt ([phần 2](docs/evidence/M16-PART2-2026-10-13.md)). Review trước lượt bổ sung có 16 bước runner, hai bộ C++ và source sạch cài/test/build đạt ([review sau Claude](docs/evidence/REVIEW-CLAUDE-2026-10-13.md)). Còn đo latency DOM và người nhận chạy lại cấu hình/demo theo [checklist bàn giao](docs/CHECKLIST_DEMO.md).
-
----
-
-## Yêu cầu hệ thống
-
-| Công cụ | Phiên bản đã kiểm | Bắt buộc? |
-| --- | --- | --- |
-| Windows 10/11 + PowerShell | Windows 11 | Có |
-| Node.js + npm | 24.19 / 11.17 | Có |
-| MySQL Server | 26.7 (service có sẵn) | Có (backend) |
-| Mosquitto | 2.x tại `C:\Program Files\Mosquitto` | Có (backend) |
-| Git for Windows | 2.55 (có sẵn `openssl` cho TLS) | Có |
-| VS Code + PlatformIO + Wokwi extension | 1.141 / Core 6.2 / Wokwi 4.0 | Chỉ khi chạy ESP32 |
-| g++ (qua WSL) | 15.2 | Tùy chọn, cho test C++ |
-
-Chỉ xem giao diện mẫu thì chỉ cần Node.js.
-
----
-
-## Chạy nhanh
-
-### Cách 1 — Chỉ xem giao diện (không cần MQTT/MySQL)
-
-```powershell
-npm ci
-npm run dev
-```
-
-Mở <http://127.0.0.1:5173>, chọn **Nguồn dữ liệu → Demo giao diện**, bấm **Mô phỏng** để chạy 4 kịch bản mẫu.
-
-### Cách 2 — Hệ thống đầy đủ
-
-Lần đầu trên máy mới làm theo **[docs/HUONG_DAN_CAU_HINH.md](docs/HUONG_DAN_CAU_HINH.md)** (mỗi bước có lệnh, kết quả mong đợi và cách kiểm tra). Tóm tắt:
-
-```powershell
-npm ci                       # cài thư viện (dừng Vite trước nếu đang chạy)
-npm run infra:setup          # tạo .local/, mật khẩu MQTT, ACL, cấu hình broker
-npm run infra:tls:setup      # CA demo + chứng chỉ broker, bật cổng TLS 18885
-notepad .local\mysql-admin.env   # điền MYSQL_ADMIN_USER / MYSQL_ADMIN_PASSWORD
-npm run infra:db:init        # tạo schema khoguard_demo + 2 tài khoản riêng
-npm run db:migrate           # áp migration 001 → 006
-npm run auth:setup           # tạo viewer / operator / admin
-```
-
-Mỗi lần chạy, mở các cửa sổ PowerShell riêng tại thư mục dự án:
-
-| Cửa sổ | Lệnh | Ghi chú |
-| --- | --- | --- |
-| T1 | `npm run infra:mqtt:start` | Broker dự án 18884/18885 (giữ mở) |
-| T2 | `npm run backend:start` | Backend `http://127.0.0.1:3001` |
-| T3 | `npm run dev -- --strictPort` | Dashboard `http://127.0.0.1:5173` |
-| T4 | `npm run demo:warehouse -- --seed=17` | Dữ liệu mô phỏng khu A, B, D và cửa D09 |
-| T5 | `npm run firmware:gateway:start` | Chỉ khi chạy ESP32 trên Wokwi |
-
-> Nếu PowerShell báo *running scripts is disabled* khi gọi `npm`, dùng `npm.cmd` (ví dụ `npm.cmd run backend:start`).
-
-Kiểm tra nhanh:
-
-```powershell
-Invoke-RestMethod http://127.0.0.1:3001/api/ready   # status: ready, database: ready, mqtt: connected
-```
-
-Mật khẩu dashboard nằm ở `.local\dashboard-users.json` (chỉ trên máy bạn):
-
-```powershell
-Get-Content .local\dashboard-users.json
-```
-
-### Chạy ESP32 trên Wokwi
-
-```powershell
-npm run firmware:gateway:setup   # lần đầu: tải gateway Wokwi và kiểm SHA-256
-npm run firmware:build           # sinh secret firmware vào .local rồi build PlatformIO
-```
-
-Trong VS Code: **F1 → Wokwi: Select Config File → `firmware/wokwi.toml`**, rồi **F1 → Wokwi: Start Simulator**. Serial Monitor phải in `KHOGUARD_M12 boot=… transport=mqtts:18885 CA-verified`. Thứ tự khởi động: broker → gateway → simulator.
-
----
-
-## Sử dụng dashboard
-
-1. Mở <http://127.0.0.1:5173>, chọn **Nguồn dữ liệu → Backend / MQTT**, đăng nhập (`operator` để thao tác, `viewer` để chỉ xem).
-2. Thanh bên hiện *Backend đã kết nối · MQTT đã kết nối*; dải trên cùng cho biết bao nhiêu thiết bị có dữ liệu mới.
-3. Các trang:
-
-| Trang | Làm được gì |
-| --- | --- |
-| **Tổng quan** | Sơ đồ khu, chi tiết khu, cảnh báo cần tiếp nhận, nhật ký gần đây |
-| **Sơ đồ kho** | Chọn khu, xem môi trường |
-| **Giám sát cửa** | Điều khiển D07/D08 (operator), bảng 12 cửa với nguồn từng cửa |
-| **Môi trường** | Nhiệt độ/độ ẩm và ngưỡng từng khu |
-| **Nhận hàng** | Sức chứa kho + khu đệm, giữ chỗ, xác nhận nhập kho, hủy |
-| **Nhật ký** | Ra vào theo ca; **Lịch sử / CSV** với bộ lọc và xuất file |
-
-Ý nghĩa hiển thị:
-
-- **“—”** là *chưa có dữ liệu*, không phải 0.
-- **Dữ liệu cũ**: thiết bị không gửi trong 10 s; giá trị giữ để tra cứu, **không** coi là an toàn.
-- Gửi lệnh cửa → *Đang chờ ESP-C01 xác nhận…* → *Đã áp dụng* / *Bị từ chối: lý do* / *Hết hạn*. Biểu tượng cửa chỉ đổi khi thiết bị báo trạng thái mới.
-- **Tiếp nhận** cảnh báo không xóa cảnh báo; panic cần lệnh **Đặt lại khẩn cấp** riêng sau khi nút đã nhả.
-
----
-
-## Thao tác với ESP32 trên Wokwi
-
-| Muốn làm | Thao tác |
-| --- | --- |
-| Mở/đóng cửa bằng tay | Gạt công tắc `contact07` / `contact08` (HIGH = mở) |
-| Chắn rèm quang | Gạt `beam07` / `beam08` sang LOW |
-| Nhấn nút khẩn cấp | Gạt `panic07` / `panic08` sang HIGH |
-| Có người trong kho (mmWave) | Gạt `presence` sang HIGH |
-| Đổi nhiệt độ/độ ẩm | Bấm DHT22, kéo thanh trượt |
-| Quẹt thẻ | Gõ vào Serial Monitor: `RFID D07 DEMO-017 IN`, `RFID D07 DEMO-017 OUT`, `RFID D08 DEMO-999 IN` |
-| Gửi lệnh cửa | Dashboard → *Giám sát cửa* → D07/D08 |
-
-10 LED cho biết output: khóa D07/D08 (xanh lá), motor mở (xanh dương) / đóng (cam) từng cửa, đèn khẩn cấp (trắng), còi (đỏ), sưởi (đỏ), quạt (cyan). Sau khi gửi lệnh mở/đóng, gạt công tắc contact của cửa đó trong 10 s để mô phỏng cửa tới vị trí.
-
-### Nghiệm thu bán tự động trên Wokwi
-
-```powershell
-npm run wokwi:acceptance
-```
-
-Script mở Serial qua `127.0.0.1:4000` (RFC2217), tự gửi các lượt quẹt thẻ, quan sát MQTT bằng tài khoản chỉ đọc, gửi lệnh qua API và **tự dừng/bật lại broker dự án** cho bước T08. Ở các bước cần gạt công tắc, nó in `>>> THAO TÁC: …` rồi chờ tới khi telemetry xác nhận. Chạy lại từ một bước: `npm run wokwi:acceptance -- --from=S4a`. Bằng chứng (serial log, MQTT, kết quả) ghi vào `.local/wokwi-acceptance/runs/<thời điểm>/`.
-
----
-
-## Danh sách lệnh
-
-Tất cả chạy bằng `npm run <lệnh>` tại thư mục gốc.
-
-### Phát triển
-
-| Lệnh | Việc |
-| --- | --- |
-| `dev` | Vite dev server `127.0.0.1:5173` (proxy `/api`, `/ws` → 3001) |
-| `build` / `preview` | Build production vào `dist/` / xem bản build |
-| `test` | 109 unit test (`node --test`) |
-
-### Hạ tầng (chạy một lần hoặc khi cần)
-
-| Lệnh | Việc |
-| --- | --- |
-| `infra:setup` | Tạo `.local/` (quyền NTFS riêng), 7 tài khoản MQTT, ACL, cấu hình broker, `runtime.env` |
-| `infra:tls:setup` | CA demo + chứng chỉ, listener TLS 18885, chuyển backend sang TLS |
-| `infra:db:init` | Tạo schema + tài khoản `khoguard_runtime` / `khoguard_migrate` bằng admin |
-| `db:migrate` | Áp migration 001–006 (chạy lại là no-op) |
-| `auth:setup` | Tạo/đổi mật khẩu tài khoản dashboard |
-| `infra:mqtt:start` | Chạy broker dự án |
-| `firmware:prepare` / `firmware:build` | Sinh `kg_secrets.h` / build firmware ESP32 |
-| `firmware:gateway:setup` / `firmware:gateway:start` | Tải / chạy gateway Wokwi |
-| `wokwi:remaining` | Nghiệm thu unknown/stale, reboot và TLS sai; cần Simulator đang hiển thị trong workspace riêng. Chuẩn bị bằng `-- --prepare`; xem [hướng dẫn](docs/evidence/WOKWI-REMAINING-2026-10-13.md#chạy-lại) |
-
-### Chạy và mô phỏng
-
-| Lệnh | Việc |
-| --- | --- |
-| `backend:start` | Backend |
-| `demo:warehouse -- --seed=17 [--seconds=600] [--with-fake-esp]` | 4 thiết bị mô phỏng; `--with-fake-esp` chỉ khi **không** chạy Wokwi |
-| `demo:environment` | Chỉ SIM-A01 (nguồn môi trường M05) |
-| `demo:scenarios -- --scenario=all\|1\|2\|3\|4` | 4 kịch bản tự động với ESP32 giả lập (backend chạy, Wokwi tắt) |
-| `load:test -- --nodes=50 --seconds=60 --burst=500` | Đo tải (tự bật backend riêng) |
-
-### Kiểm tra
-
-| Lệnh | Cần gì đang chạy | Kiểm |
-| --- | --- | --- |
-| `infra:mqtt:check` | broker | 11 kiểm tra tài khoản/ACL |
-| `infra:tls:check` | broker | CA giả, sai hostname, ACL qua TLS |
-| `infra:db:check` | MySQL | 6 kiểm tra schema/quyền |
-| `infra:secrets:check` | — (tự bật Vite) | File secret bị Git bỏ qua, URL secret trả 403 |
-| `backend:check`, `telemetry:check`, `events:check`, `control:check`, `auth:check`, `reservations:check` | broker + backend | Tích hợp từng mốc |
-| `recovery:check`, `reports:check` | broker (backend **tắt**, tự bật) | Phục hồi, báo cáo |
-| `writefault:check` | broker + backend, **không** chạy `demo:warehouse` | Lỗi ghi DB (khóa dòng): không lưu giả, phục hồi lưu đúng một lần |
-| `firmware:check -- <boot-id>` | Wokwi | Telemetry thật từ ESP32 |
-| `wokwi:acceptance` | broker + backend + Wokwi | Nghiệm thu firmware thật |
-| `verify:all [-- --skip=a,b]` | broker + MySQL (backend, Vite, Wokwi **tắt**) | Toàn bộ theo đúng thứ tự |
-
----
-
-## Cấu trúc dự án
-
-```text
-contracts/   Hợp đồng dữ liệu: registry thiết bị, JSON Schema MQTT/snapshot, validator dùng chung
-firmware/    ESP32: controller.h (quy tắc an toàn thuần C++), lib/khoguard (GPIO/MQTT/TLS, main.cpp chỉ gọi), test C++, mạch Wokwi
-server/      Backend Node: ingest MQTT, snapshot, cảnh báo, lệnh, HTTP API, WebSocket, đăng nhập, giữ chỗ, báo cáo
-db/          Migration SQL 001–006, rollback, bộ chạy migration có journal/checksum
-src/         Dashboard React
-scripts/     Thiết lập, mô phỏng, kiểm tra tích hợp, đo tải, nghiệm thu Wokwi
-infra/       Mẫu cấu hình Mosquitto (không secret)
-tests/       Unit test node:test
-docs/        Hướng dẫn cấu hình, sơ đồ, bằng chứng kiểm thử
-.local/      (không vào Git) mật khẩu, khóa TLS, cấu hình sinh ra, build firmware, log
-```
-
-Mô tả từng file: [ARCHITECTURE.md §5](ARCHITECTURE.md#5-cấu-trúc-thư-mục).
-
----
-
-## Kiểm thử
-
-```powershell
-npm test         # 109 unit test
-npm run build    # build dashboard
-npm run verify:all   # toàn bộ (broker + MySQL bật; backend, Vite, Wokwi tắt)
-```
-
-Kết quả mới nhất (13/10/2026): **109/109 unit**, Wokwi bổ sung **9/9 nhóm**, lỗi ghi MySQL **3 nhóm đạt** và firmware bình thường phục hồi, 5/5 thiết bị fresh ([nghiệm thu bổ sung](docs/evidence/WOKWI-REMAINING-2026-10-13.md)). Review trước DEC-040: `verify:all` 16 bước đạt / 1 C++ bỏ qua do PATH, hai bộ C++ qua WSL đạt; build web/ESP32; 4 kịch bản/20 bước; tải 2000/2000 tin, P95 publish → WebSocket 211 ms ([review sau Claude](docs/evidence/REVIEW-CLAUDE-2026-10-13.md)). Đây chưa là phép đo hiển thị DOM. Ma trận T01–T27: [Agent.md §10](Agent.md).
-
----
-
-## Bảo mật và secret
-
-- Mọi mật khẩu, khóa TLS, cấu hình sinh ra nằm trong **`.local/`**: bị `.gitignore`, bị Vite chặn phục vụ, chỉ user hiện tại + SYSTEM đọc được. **Không đưa `.local/` vào Git, không dán mật khẩu vào chat.**
-- Script dự án không bao giờ in mật khẩu. Biến `VITE_*` không chứa secret.
-- Dịch vụ dự án chỉ nghe `127.0.0.1`. Không dùng broker 1883 hay schema MySQL khác; script không dừng tiến trình không thuộc dự án.
-- MQTT: không anonymous, ACL theo thiết bị, TLS với CA demo riêng, không bỏ kiểm chứng chỉ.
-- `.npmrc` tắt script cài đặt của thư viện.
-
-Chi tiết các lớp bảo vệ: [ARCHITECTURE.md §15](ARCHITECTURE.md#15-bảo-mật-theo-lớp).
-
----
-
-## Xử lý lỗi thường gặp
-
-| Hiện tượng | Cách xử lý |
-| --- | --- |
-| `npm` báo *running scripts is disabled* | Dùng `npm.cmd …` |
-| `npm ci` báo EPERM/EBUSY | Dừng Vite/backend dự án rồi chạy lại |
-| `/api/ready` → `mqtt: disconnected` | Chưa chạy broker (T1), hoặc vừa `infra:tls:setup` mà chưa khởi động lại broker |
-| `/api/ready` → `database: unavailable` | MySQL service dừng hoặc chưa `db:migrate` |
-| Dashboard báo *Mất kết nối backend* | Backend (T2) chưa chạy; dashboard tự nối lại khi backend lên |
-| ESP-C01 *chưa có dữ liệu* | Gateway (T5) chưa chạy hoặc simulator chưa Start; xem Serial Monitor có `MQTT_ONLINE` |
-| Gateway đã bật lại, Serial chỉ có `SENSOR_HEARTBEAT`, ESP-C01 vẫn stale | Đóng hẳn tab Wokwi rồi F1 → **Wokwi: Start Simulator**. Extension 4.0.0 có thể giữ object gateway đã đóng khi chỉ restart mô phỏng; không chỉ nhấn nút restart |
-| Lệnh cửa *DEVICE_NOT_LIVE* | ESP-C01 không gửi dữ liệu trong 10 s |
-| Lệnh bị *REVISION_MISMATCH* | Trạng thái vừa đổi; xem lại rồi gửi lại |
-| `infra:mqtt:start` báo cổng bị chiếm | Broker dự án đã chạy ở cửa sổ khác |
-
-Bảng đầy đủ: [docs/HUONG_DAN_CAU_HINH.md §17](docs/HUONG_DAN_CAU_HINH.md#17-xử-lý-lỗi-thường-gặp).
-
----
-
-## Giới hạn
-
-- Mô hình mô phỏng để trình diễn nguyên lý; **không** thay thế Safety PLC, relay an toàn độc lập, cơ cấu mở bằng tay hay kiểm định thiết bị. Thời gian phản ứng mô phỏng không phải cam kết an toàn phần cứng.
-- mmWave, rèm quang, contact, panic là công tắc; RFID là dòng Serial; CO₂, ảnh nhiệt, AI không được triển khai.
-- Chỉ ESP-C01 (cửa D07, D08) nhận lệnh; cửa các khu khác là dữ liệu mô phỏng.
-- Số liệu chứa hàng là dữ liệu demo, chưa nối WMS.
-- Chỉ chạy localhost (cookie chưa `Secure`).
-
----
-
-## Tài liệu
+## Bắt đầu đọc từ đâu
 
 | Tài liệu | Nội dung |
 | --- | --- |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Kiến trúc chi tiết: thành phần, hợp đồng dữ liệu, firmware, backend, DB, dashboard, luồng, an toàn, bảo mật, kiểm thử |
-| [docs/HUONG_DAN_CAU_HINH.md](docs/HUONG_DAN_CAU_HINH.md) | Cài đặt và vận hành từng bước trên Windows |
-| [docs/architecture/](docs/architecture/README.md) | Sơ đồ kiến trúc tổng thể và luồng lệnh cửa (HTML/PNG) |
-| [Agent.md](Agent.md) | Kế hoạch M00–M17, quy tắc nghiệp vụ, ma trận kiểm thử T01–T27, bốn kịch bản demo |
-| [DESITION.md](DESITION.md) | Các quyết định DEC-001…DEC-040 và lý do |
-| [docs/CHECKLIST_DEMO.md](docs/CHECKLIST_DEMO.md) | Demo, Postman, kiểm tra và bàn giao không secret |
-| [docs/postman/khoguard.postman_collection.json](docs/postman/khoguard.postman_collection.json) | Collection API, mật khẩu mặc định trống |
-| [QUA_TRINH.md](QUA_TRINH.md) | Nhật ký thực hiện, kết quả kiểm tra, lỗi đã gặp |
-| [contracts/README.md](contracts/README.md) | Hợp đồng MQTT/API chi tiết |
-| [server/README.md](server/README.md) | API backend, migration, kiểm thử |
-| [firmware/README.md](firmware/README.md) | Build/chạy firmware, mạch, RFID, TLS |
-| [infra/README.md](infra/README.md) | Broker, MySQL, tài khoản, bảo vệ secret |
-| [docs/evidence/](docs/evidence/) | Bằng chứng kiểm thử từng mốc |
+| [Linh kiện và nối dây](docs/LINH_KIEN_VA_NOI_DAY.md) | Toàn bộ 30 linh kiện, GPIO, nguồn và giới hạn mô phỏng |
+| [Sơ đồ nối dây](docs/diagrams/so-do-noi-day.svg) | Sơ đồ tổng hợp ESP-C01 |
+| [Kiến trúc](ARCHITECTURE.md) | Dữ liệu, lệnh cửa, lớp lưu trữ và Cloud |
+| [Cấu hình máy](docs/HUONG_DAN_CAU_HINH.md) | Cài và cấu hình lần đầu |
+| [Chạy demo](docs/HUONG_DAN_DEMO.md) | Chuẩn bị, kịch bản trình diễn, kết quả đã xác nhận và kết thúc an toàn |
+| [Kịch bản thuyết trình](docs/KICH_BAN_THUYET_TRINH.md) | Lời nói mẫu theo đủ 33 trang và câu trả lời thường gặp |
+| [ThingsBoard](docs/THINGSBOARD.md) | Cloud phụ, setup, bridge, kiểm tra dữ liệu |
+| [Nội dung slide](docs/NOI_DUNG_SLIDE.md) | 33 trang, chia 5 chương, nội dung/hình và lời nói |
+| [PowerPoint](docs/slides/KhoGuard-thuyet-trinh.pptx) | Bản thuyết trình 33 trang; nguồn bố cục ở [outline.json](docs/slides/outline.json) |
+| [Tài liệu thư mục slide](docs/slides/README.md) | Deck theo template HUIT, outline và cách dựng |
+| [Báo cáo Word](docs/Bao_cao_KhoGuard_mot_khu.docx) | Báo cáo đồng bộ với code hiện hành |
+| [Quyết định](DESITION.md), [quá trình](QUA_TRINH.md), [công việc](tasks/todo.md) | Lý do thay đổi và kết quả kiểm tra |
+
+## Chức năng
+
+- Đo nhiệt độ/độ ẩm DHT22, trạng thái hai cửa, UID RFID và tín hiệu PIR/vật cản trong Wokwi.
+- ESP32 quyết định liên động hai cửa, từ chối đóng khi còn người/tín hiệu chưa rõ, xử lý Panic và cảnh báo mở lâu tại chỗ.
+- Website gửi yêu cầu mở, đóng hoặc đặt lại Panic. Chỉ ACK từ firmware mới xác nhận lệnh đã áp dụng.
+- MySQL lưu telemetry, sự kiện, cảnh báo, lệnh, tài khoản, lịch ca và giữ chỗ. Viewer xem, operator vận hành, admin xem thêm nhật ký xác thực.
+- Kho C có 80 vị trí vật lý, 2 vị trí xả đá, **78 vị trí khả dụng**. Bản seed có 60 vị trí đã chứa. Nhận hàng chỉ dành cho hàng đông lạnh, cảnh báo từ 85%, từ chối yêu cầu mới làm vượt 95%. Chỉ tiêu hàng hóa là demo, chưa có WMS/cảm biến pallet.
+- ThingsBoard nhận bản sao snapshot theo quyền viewer mỗi 10 giây. Một bảng khu C và hai biểu đồ môi trường, tổng 3 widget.
+
+## Kiến trúc
+
+```text
+DHT22 / RFID / PIR / contact / Panic / HC-SR04
+                         │
+                    ESP-C01 (Wokwi)
+                         │ MQTT/TLS
+                    Mosquitto riêng
+                         │
+                    Backend Node.js ── MySQL
+                         ├── REST + WebSocket ── React
+                         └── Snapshot viewer ── Bridge ── ThingsBoard Cloud
+```
+
+Lệnh cửa đi ngược từ React qua API/MQTT đến ESP32. Firmware kiểm tra an toàn và phản hồi ACK. ThingsBoard hiện chỉ giám sát.
+
+## Công cụ cần có
+
+Windows, Node.js 24, npm, Git, MySQL Server, Mosquitto, VS Code với PlatformIO và Wokwi. Python chỉ dùng khi tạo tài liệu. MQTTX/MySQL Workbench là tùy chọn. Cloud không cần Docker/PostgreSQL.
+
+Firmware khóa platform `espressif32@7.0.1`, MQTT 2.5.3, ArduinoJson 7.4.3, DHT 1.4.7, Adafruit Unified Sensor 1.1.15 và MFRC522 1.4.11. PlatformIO cài theo `firmware/platformio.ini`. DHT library hiện giữ theo bản đã build; nếu gặp đọc lỗi, telemetry phải về null, không sửa thành số 0 để che lỗi.
+
+## Cấu hình lần đầu
+
+Mở PowerShell tại thư mục dự án:
+
+```powershell
+npm.cmd ci
+npm.cmd run infra:setup
+# Mở .local/mysql-admin.env, tự điền tài khoản MySQL admin trên máy và lưu.
+npm.cmd run infra:db:init
+npm.cmd run db:migrate
+npm.cmd run auth:setup
+# Chạy khi broker dự án chưa bật:
+npm.cmd run infra:tls:setup
+npm.cmd run firmware:gateway:setup
+npm.cmd run firmware:build
+```
+
+Máy đã cấu hình không cần chạy lại các bước tạo tài khoản/chứng chỉ. `db:migrate` kiểm tra journal và checksum, không reset DB. `.local/dashboard-users.json` chứa thông tin đăng nhập demo trên máy. Không gửi mật khẩu/key vào chat hay đưa `.local` vào file nộp.
+
+## Khởi động hằng ngày
+
+```powershell
+.\run.bat
+```
+
+Launcher mở broker, backend, website, gateway và **một** project VS Code `firmware`. Nếu có cấu hình Cloud, nó bật bridge. Trong VS Code nhấn F1 → **Wokwi: Start Simulator**, giữ tab Simulator hiển thị.
+
+```powershell
+.\run.bat web     # Chỉ mở dịch vụ/web, chưa bật Wokwi
+.\run.bat status  # Xem cổng dịch vụ
+.\close.bat       # Dừng tiến trình KhoGuard, giữ MySQL và broker service 1883
+```
+
+Có thể mở mỗi lệnh ở terminal riêng: `npm.cmd run infra:mqtt:start`, `npm.cmd run backend:start`, `npm.cmd run dev -- --strictPort`, `npm.cmd run firmware:gateway:start`, `npm.cmd run thingsboard:bridge`.
+
+| Dịch vụ | Địa chỉ |
+| --- | --- |
+| React | http://127.0.0.1:5173 |
+| Backend | http://127.0.0.1:3001 |
+| Health / readiness | `/api/health`, `/api/ready` |
+| MQTT dự án | 127.0.0.1:18884, TLS 18885 |
+| MySQL | 127.0.0.1:3306, schema `khoguard_demo` |
+| Wokwi gateway | localhost:9011; forward 9080 theo công cụ upstream |
+| Serial Wokwi | localhost:4000 theo `firmware/wokwi.toml` |
+
+Chọn nguồn **Backend / MQTT** và đăng nhập để dùng dữ liệu lưu trong MySQL. **Demo giao diện** là dữ liệu mẫu trong trình duyệt, không điều khiển firmware.
+
+## Thao tác mô phỏng
+
+- MFRC522: chọn Blue Card = DEMO-017, Green = DEMO-018, Red = DEMO-999 (thu hồi). Công tắc chiều HIGH = IN, LOW = OUT.
+- Hai công tắc contact: HIGH = mở, LOW = đóng. Servo không tự đổi công tắc.
+- HC-SR04: <100 cm là bị chắn, >=100 cm và echo còn mới là thông. Mất echo quá 250 ms được coi là bị chắn.
+- PIR: bấm Simulate Motion. Nó chỉ báo chuyển động, không đo người bất động.
+- Panic D07/D08: nút đỏ hoặc phím 7/8. Nhả nút không tự xóa latch. Khi đủ điều kiện, operator gửi Đặt lại khẩn cấp trên web.
+- Serial hỗ trợ `RFID D07 DEMO-017 IN` và `RFID D07 DEMO-017 OUT` cho kiểm tra tự động.
+
+Các ngưỡng: input debounce 30 ms, DHT/telemetry 2 s, dữ liệu live tối đa 10 s, lệnh cửa TTL 10 s, hành trình contact timeout 10 s, servo biểu diễn hành trình 1,5 s, cảnh báo mở từ 30 s, còi sau 60 s, nghi mắc kẹt sau 5 phút tín hiệu PIR khi hai cửa đóng.
+
+## ThingsBoard Cloud
+
+Tự đăng nhập Cloud, tạo API key theo [hướng dẫn](docs/THINGSBOARD.md), lưu vào `.local/thingsboard-cloud.env` trên máy rồi chạy:
+
+```powershell
+npm.cmd run thingsboard:setup
+npm.cmd run thingsboard:bridge
+# Terminal khác:
+npm.cmd run thingsboard:check
+```
+
+URL dashboard được in sau setup. Dữ liệu số giữ timestamp gốc; offline/stale/unknown được ghi rõ. Các key nhiều khu cũ còn là lịch sử trên Cloud, dashboard mới chỉ dùng `ESP_C01_*`. Dừng bridge sau demo nếu không cần gửi liên tục.
+
+## Kiểm tra
+
+```powershell
+npm.cmd test
+npm.cmd run build
+npm.cmd run firmware:build
+# Broker và MySQL đang chạy; dừng backend, Vite, bridge và Wokwi trước runner:
+npm.cmd run verify:all
+# Kiểm tra nhanh khi backend, broker và MySQL đang chạy:
+npm.cmd run scope:check
+```
+
+Runner dùng dữ liệu kiểm thử, có thể giả lập ESP-C01. Không chạy cạnh Wokwi vì cùng danh tính thiết bị. Kết quả trong `.local/verify-all.json`; bằng chứng bản một khu ở `docs/evidence/SINGLE-ZONE-2026-10-24.md`. Kiểm tra tự động không thay thế thao tác Wokwi với linh kiện tương tác.
+
+`close.bat` nhận diện cửa sổ do `run.bat` mở và các tiến trình mang đường dẫn tuyệt đối của dự án. Nếu tự chạy bằng lệnh tương đối trong terminal riêng, dùng Ctrl+C tại terminal đó để dừng. Mã nguồn nhiều khu đã chuyển vào `.local/single-zone-backup-20261024/retired/`; không còn được build hoặc gọi từ launcher.
+
+## Cấu trúc mã nguồn
+
+```text
+contracts/       Registry hoạt động, schema và fixtures
+firmware/        Một bản ESP-C01, Wokwi, config GPIO và logic C++
+server/          API, WebSocket, MQTT ingest, auth và nghiệp vụ
+src/             Dashboard React
+db/              Migration bất biến, seed v1 và rollback thủ công
+integrations/    Chuyển snapshot sang ThingsBoard và tạo dashboard
+scripts/         Cấu hình, chạy dịch vụ và kiểm tra
+tests/           Kiểm thử JavaScript
+docs/            Hướng dẫn, sơ đồ, slide, báo cáo và bằng chứng
+tasks/           Kế hoạch và tiến độ thay đổi một khu
+.local/          Secret, firmware build, log và bản sao lưu riêng, không vào Git
+```
+
+## Xử lý lỗi thường gặp
+
+| Hiện tượng | Kiểm tra |
+| --- | --- |
+| Web không mở | Chạy Vite, kiểm tra cổng 5173, chạy lại `npm.cmd ci` nếu thiếu module |
+| `/api/ready` trả 503 | Xem database/MQTT trong JSON. Bật broker dự án 18885, không nhầm service 1883 |
+| ESP offline/stale | Gateway 9011, tab Simulator đang hiển thị, build đúng `.local/firmware-build/esp32dev` |
+| Không đóng được cửa | Count/PIR/vật cản/Panic/input/revision. Không có nút ép bỏ liên động |
+| Servo quay nhưng cửa chưa đổi | Tự gạt contact đúng trạng thái trước timeout 10 s |
+| ThingsBoard báo dữ liệu cũ | Backend, broker, bridge và Wokwi phải chạy. Xem `freshness` và `last_seen_at` |
+| DB checksum không khớp | Không sửa migration cũ/reset schema. Giữ nguyên seed v1 và xem nhật ký |
+
+## Giới hạn
+
+Đây là đồ án mô phỏng. PIR LOW không chứng minh kho trống; cách xác minh count khi khởi động dựa trên giả định mô hình. HC-SR04 không phải rèm quang bảo vệ người. Mạch Wokwi không kiểm chứng mức điện áp/cấp dòng/khởi động chân strapping. Đọc [lưu ý nối dây](docs/LINH_KIEN_VA_NOI_DAY.md) trước khi sử dụng sơ đồ ngoài simulator. Chưa đo thời gian đến DOM, chưa chứng nhận an toàn công nghiệp và chưa nghiệm thu phần cứng thật.

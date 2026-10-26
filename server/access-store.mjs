@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { verifyPassword, newToken, LoginLimiter, SESSION_TTL_MS } from './auth.mjs';
 import { sqlUtc } from './telemetry.mjs';
+import { registry } from '../contracts/validate.js';
 
 const execute = (pool,sql,values=[]) => pool.execute({sql,timeout:1500},values);
 const digest = token => createHash('sha256').update(token).digest('hex');
@@ -40,7 +41,7 @@ export function createAccessStore(pool) {
   const denied=(user,detail)=>audit(user?.username ?? 'anonymous','denied',detail.slice(0,64)).catch(()=>{});
   async function accessAudit(limit=50) {
     const [rows]=await execute(pool,`SELECT a.id,a.card_id,c.holder,a.door_id,a.direction,a.edge_result,a.shift_code,a.shift_date,a.decision,a.at
-      FROM access_audit a LEFT JOIN access_cards c ON c.card_id=a.card_id ORDER BY a.id DESC LIMIT ?`,[limit]);
+      FROM access_audit a JOIN doors d ON d.id=a.door_id LEFT JOIN access_cards c ON c.card_id=a.card_id WHERE d.zone_id = ? AND a.door_id IN (?, ?) ORDER BY a.id DESC LIMIT ?`,[registry.zones[0],...registry.devices[0].doors,limit]);
     return {items:rows.map(r=>({...r,shift_date:typeof r.shift_date==='string' ? r.shift_date : new Date(r.shift_date).toISOString().slice(0,10),at:iso(r.at)}))};
   }
   async function authAudit(limit=50) {

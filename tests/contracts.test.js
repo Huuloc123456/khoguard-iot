@@ -123,10 +123,10 @@ test('door assignments and telemetry ownership cannot be forged', () => {
   doorOnly.device_id = 'SIM-C02';
   doorOnly.payload.doors = [{ ...doorOnly.payload.doors[0], door_id: 'D09' }];
   const topic = telemetry.topic.replace('ESP-C01', 'SIM-C02');
-  assert.equal(code(validateMqttMessage(topic, JSON.stringify(doorOnly))), 'UNSUPPORTED_TELEMETRY');
+  assert.equal(code(validateMqttMessage(topic, JSON.stringify(doorOnly))), 'DEVICE_NOT_REGISTERED');
   delete doorOnly.payload.environment;
   delete doorOnly.payload.occupancy;
-  assert.equal(validateMqttMessage(topic, JSON.stringify(doorOnly)).ok, true);
+  assert.equal(code(validateMqttMessage(topic, JSON.stringify(doorOnly))), 'DEVICE_NOT_REGISTERED');
 });
 
 test('a telemetry snapshot cannot contain a door ID twice', () => {
@@ -214,17 +214,17 @@ test('a rejected acknowledgment includes a reason, while applied acknowledgment 
   assert.equal(validateMqttMessage(ack.topic, JSON.stringify(message)).ok, true);
 });
 
-test('snapshot example supports all four zones, twelve doors and known provenance', () => {
+test('snapshot example supports one zone, two doors and known provenance', () => {
   assert.equal(validateSnapshot(snapshot).ok, true);
-  assert.equal(snapshot.zones.length, 4);
-  assert.equal(snapshot.doors.length, 12);
-  assert.equal(snapshot.devices.length, 5);
+  assert.equal(snapshot.zones.length, 1);
+  assert.equal(snapshot.doors.length, 2);
+  assert.equal(snapshot.devices.length, 1);
 });
 
 test('registry has exactly one owner per door and one environment/occupancy owner per zone', () => {
   const doors = registry.devices.flatMap(device => device.doors);
-  assert.equal(new Set(doors).size, 12);
-  assert.equal(doors.length, 12);
+  assert.equal(new Set(doors).size, 2);
+  assert.equal(doors.length, 2);
   assert.equal(new Set(registry.devices.map(device => device.id)).size, registry.devices.length);
   for (const zone of registry.zones) {
     assert.equal(registry.devices.filter(device => device.zone_id === zone && device.environment).length, 1);
@@ -234,10 +234,10 @@ test('registry has exactly one owner per door and one environment/occupancy owne
 
 test('snapshot rejects slot over-allocation, duplicate IDs and inverted temperature range', () => {
   const mutations = [
-    s => { s.zones[0].reserved = 17; },
+    s => { s.zones[0].reserved = s.zones[0].capacity + 1; },
     s => { s.doors[1].id = s.doors[0].id; },
     s => { s.zones[0].range = [30, 18]; },
-    s => { s.doors[0].zone = 'C'; },
+    s => { s.doors[0].zone = 'A'; },
     s => { s.devices[0].source = 'node-simulator'; },
   ];
   for (const mutate of mutations) {
@@ -274,6 +274,6 @@ test('freshness has a ten-second boundary and rejects future receive times', () 
 
 test('validation leaves the current UI demo independent of MQTT fixtures', async () => {
   const { createDemo, getSummary } = await import('../src/demo.js');
-  assert.equal(getSummary(createDemo()).occupied, 240);
-  assert.equal(getSummary(createDemo()).doors, 12);
+  assert.equal(getSummary(createDemo()).occupied, 60);
+  assert.equal(getSummary(createDemo()).doors, 2);
 });

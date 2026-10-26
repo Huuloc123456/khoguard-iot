@@ -60,7 +60,7 @@ export function buildSnapshot(zones,rows,revision,now,connections,live,alerts=[]
   });
   return {schema_version:1,warehouse_id:'WH01',revision,generated_at:now.toISOString(),
     connections:{broker:connections.mqtt ? 'connected':'disconnected',database:connections.database ? 'connected':'disconnected'},
-    zones:zones.map(zone=>{
+    zones:zones.filter(zone=>registry.zones.includes(zone.id)).map(zone=>{
       const owner=registry.devices.find(d=>d.zone_id===zone.id && d.environment);
       const payload=byId.get(owner.id)?.message?.payload;
       const count=slots.find(c=>c.zone_id===zone.id);
@@ -75,5 +75,5 @@ export function buildSnapshot(zones,rows,revision,now,connections,live,alerts=[]
       return {id,zone:device.zone_id,state:door?.state ?? 'unknown',beam_clear:door?.beam_clear ?? null,panic_latched:door?.panic_latched ?? null,
         local_inputs_healthy:door?.local_inputs_healthy ?? false,locked:door?.locked ?? null,
         open_seconds:door?.open_ms!==undefined ? door.open_ms/1000 : null,updated_at:row?.received_at ? new Date(row.received_at).toISOString():null};
-    })),devices,alerts:alerts.map(alertView)};
+    })),devices,alerts:alerts.filter(a=>registry.zones.includes(a.zone_id) && (a.door_id==null || registry.devices.some(d=>d.doors.includes(a.door_id)))).map(alertView)};
 }

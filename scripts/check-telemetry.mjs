@@ -23,13 +23,13 @@ const checks=[];
 let publisher,probe,probeApp,migration,dbGate,mqttGate,gatedPool;
 let stage='repository';
 const boot=`check-${randomUUID()}`, session=`session-${randomUUID()}`;
-const message={schema_version:1,warehouse_id:'WH01',device_id:'SIM-A01',boot_id:boot,session_id:session,
+const message={schema_version:1,warehouse_id:'WH01',device_id:'ESP-C01',boot_id:boot,session_id:session,
   seq:10,kind:'telemetry',clock_synced:false,sent_at:null,uptime_ms:10000,
-  payload:{zone_id:'A',controller_revision:0,environment:{temperature_c:24.5,humidity_pct:55},
+  payload:{zone_id:'C',controller_revision:0,environment:{temperature_c:24.5,humidity_pct:55},
     occupancy:{current_occupants:null,count_verified:false,presence:null},
-    doors:['D01','D02','D03'].map(door_id=>({door_id,state:'unknown',beam_clear:null,panic_latched:null,local_inputs_healthy:false}))}};
-const packet=(m,retain=false)=>({topic:`khoguard/v1/WH01/devices/SIM-A01/${m.kind}`,payload:Buffer.from(JSON.stringify(m)),qos:1,retain});
-const online={...message,kind:'status',seq:0,payload:{zone_id:'A',state:'online'}};
+    doors:['D07','D08'].map(door_id=>({door_id,state:'unknown',beam_clear:null,panic_latched:null,local_inputs_healthy:false}))}};
+const packet=(m,retain=false)=>({topic:`khoguard/v1/WH01/devices/ESP-C01/${m.kind}`,payload:Buffer.from(JSON.stringify(m)),qos:1,retain});
+const online={...message,kind:'status',seq:0,payload:{zone_id:'C',state:'online'}};
 try {
   assert.equal(await databaseReady(pool,state),true);
   assert.equal(await store.ingest(packet(message)),'unconfirmed');
@@ -41,7 +41,7 @@ try {
   assert.equal(validateSnapshot(snapshot).ok,true);
   assert.equal(snapshot.zones[0].environment.temperature_c,24.5);
   assert.equal(snapshot.devices[0].freshness,'fresh');
-  const offline={...online,payload:{zone_id:'A',state:'offline'}};
+  const offline={...online,payload:{zone_id:'C',state:'offline'}};
   assert.equal(await store.ingest(packet(offline)),'status_offline');
   const stale=await store.snapshot({database:true,mqtt:true});
   assert.equal(stale.devices[0].state,'offline');
@@ -80,7 +80,7 @@ try {
   let seq=10;
   const make=(session=liveSession,boot=liveBoot)=>environmentMessage({boot,session,seq:seq++,uptime:seq*1000,temperature:25.5,humidity:60});
   const first=make(), will=statusMessage(first,'offline');
-  publisher=mqtt.connect({...brokerOptions(config.mqtt),username:'SIM-A01',password:accounts['SIM-A01'],clientId:`kg-check-${randomUUID()}`,
+  publisher=mqtt.connect({...brokerOptions(config.mqtt),username:'ESP-C01',password:accounts['ESP-C01'],clientId:`kg-check-${randomUUID()}`,
     clean:true,reconnectPeriod:0,will:{topic:packet(will).topic,payload:JSON.stringify(will),qos:1,retain:true}});
   publisher.on('error',()=>{});
   await once(publisher,'connect',{signal:AbortSignal.timeout(5000)});
@@ -101,7 +101,7 @@ try {
   const barrier=make(); barrier.seq=12;
   await publish(barrier);
   liveSnapshot=await until(readSnapshot,s=>s.revision===beforeInvalid+1 && s.devices[0].boot_id===liveBoot);
-  const [stored]=await pool.execute('SELECT seq,received_at FROM telemetry WHERE device_id=? AND boot_id=? ORDER BY seq',['SIM-A01',liveBoot]);
+  const [stored]=await pool.execute('SELECT seq,received_at FROM telemetry WHERE device_id=? AND boot_id=? ORDER BY seq',['ESP-C01',liveBoot]);
   assert.deepEqual(stored.map(r=>r.seq),[10,12]);
   assert.equal(new Date(stored[0].received_at).toISOString(),beforeSeen);
   assert.equal(liveSnapshot.zones[0].environment.temperature_c,25.5);
@@ -109,7 +109,7 @@ try {
 
   stage='history pagination';
   const from=new Date(Date.now()-60000).toISOString(), to=new Date(Date.now()+60000).toISOString();
-  const params=new URLSearchParams({device_id:'SIM-A01',from,to,limit:'1'});
+  const params=new URLSearchParams({device_id:'ESP-C01',from,to,limit:'1'});
   const history=async()=>{const r=await authFetch(`${base}/api/telemetry?${params}`,{signal:AbortSignal.timeout(5000)});assert.equal(r.status,200);return r.json();};
   const ids=[]; let cursor=0;
   do {if (cursor) params.set('cursor',String(cursor));const page=await history();assert.ok(page.items.length<=1);ids.push(...page.items.map(i=>i.id));cursor=page.next_cursor;} while(cursor);
@@ -163,7 +163,7 @@ try {
   await publisher.endAsync(true);
   const finalSession=`session-${randomUUID()}`, final={...rebooted,session_id:finalSession,seq:2,uptime_ms:2000};
   const finalWill=statusMessage(final,'offline');
-  publisher=mqtt.connect({...brokerOptions(config.mqtt),username:'SIM-A01',password:accounts['SIM-A01'],clientId:`kg-will-${randomUUID()}`,
+  publisher=mqtt.connect({...brokerOptions(config.mqtt),username:'ESP-C01',password:accounts['ESP-C01'],clientId:`kg-will-${randomUUID()}`,
     reconnectPeriod:0,keepalive:5,will:{topic:packet(finalWill).topic,payload:JSON.stringify(finalWill),qos:1,retain:true}});
   publisher.on('error',()=>{});await once(publisher,'connect',{signal:AbortSignal.timeout(5000)});
   await publish(statusMessage(final,'online'));await publish(final);
@@ -181,7 +181,7 @@ try {
   const faultFrame=environmentMessage({boot:faultBoot,session:faultSession,seq:0,uptime:0,temperature:27,humidity:62});
   await faultStore.ingest(packet(statusMessage(faultFrame,'online')));
   await faultStore.ingest(packet(faultFrame));
-  const [beforeFault]=await pool.execute('SELECT seq,message FROM device_current WHERE device_id=?',['SIM-A01']);
+  const [beforeFault]=await pool.execute('SELECT seq,message FROM device_current WHERE device_id=?',['ESP-C01']);
   probeApp=createApp(async()=>({database:await databaseReady(gatedPool,state),mqtt:true}),faultStore,createAccessStore(gatedPool));
   probeApp.listen(0,'127.0.0.1');await once(probeApp,'listening');
   const faultBase=`http://127.0.0.1:${probeApp.address().port}`;
@@ -191,7 +191,7 @@ try {
   assert.equal((await fetch(`${faultBase}/api/health`)).status,200);
   await assert.rejects(faultStore.ingest(packet({...faultFrame,seq:1,uptime_ms:1000})));
   stage='DB fault unchanged current';
-  const [afterFault]=await pool.execute('SELECT seq,message FROM device_current WHERE device_id=?',['SIM-A01']);
+  const [afterFault]=await pool.execute('SELECT seq,message FROM device_current WHERE device_id=?',['ESP-C01']);
   assert.deepEqual(afterFault,beforeFault);
   dbGate.setBlocked(false);
   await until(()=>databaseReady(gatedPool,state),x=>x);
@@ -201,8 +201,8 @@ try {
   stage='DB recovery confirmation';
   // The redelivered frame of the stored session is kept as history, but current state and freshness wait for confirmation.
   assert.equal(await faultStore.ingest(packet({...faultFrame,seq:1,uptime_ms:1000})),'backlog');
-  assert.deepEqual((await pool.execute('SELECT seq,message FROM device_current WHERE device_id=?',['SIM-A01']))[0],beforeFault);
-  assert.equal(Number((await pool.execute('SELECT COUNT(*) AS n FROM telemetry WHERE device_id=? AND boot_id=? AND seq=1',['SIM-A01',faultBoot]))[0][0].n),1);
+  assert.deepEqual((await pool.execute('SELECT seq,message FROM device_current WHERE device_id=?',['ESP-C01']))[0],beforeFault);
+  assert.equal(Number((await pool.execute('SELECT COUNT(*) AS n FROM telemetry WHERE device_id=? AND boot_id=? AND seq=1',['ESP-C01',faultBoot]))[0][0].n),1);
   assert.equal((await (await authFetch(`${faultBase}/api/snapshot`)).json()).devices[0].freshness,'stale');
   await faultStore.ingest(packet(statusMessage(faultFrame,'online')));
   assert.equal(await faultStore.ingest(packet({...faultFrame,seq:1,uptime_ms:1000})),'duplicate');

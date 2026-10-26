@@ -295,3 +295,25 @@ Mỗi quyết định mới thêm DEC-xxx với ngày, trạng thái, lý do và
 - Board ESP32 DevKit V1 của Wokwi đã hết chân xuất (chỉ còn VP/VN là chân đọc), mà HC-SR04 cần TRIG. Vì `fan = !emergency` và `heater = emergency` trong `controller.h`, quạt luôn ngược sưởi nên một relay chuyển mạch lái cả hai (NO = đèn sưởi, NC = đèn quạt); GPIO5 cũ của quạt thành TRIG chung cho 2 cảm biến. ECHO dùng đúng chân cũ của công tắc rèm quang (17, 21) và đo bằng ngắt, nên vòng lặp an toàn không chờ echo.
 - Không thêm LCD cho khu C vì không còn chân I2C; Serial và dashboard vẫn đủ. Phương án loại: đổi sang board ESP32 khác nhiều chân hơn (phải đổi toàn bộ tên chân trong mạch và test).
 - Hệ quả: nếu sau này quạt và sưởi cần bật độc lập thì phải tách lại relay và tìm chân khác. Build, test JS và C++ đạt; chưa chạy trên Wokwi.
+
+## DEC-046 — ThingsBoard Cloud là dashboard giám sát bổ sung
+
+- Ngày 24/10/2026. Người dùng yêu cầu thêm ThingsBoard, giữ website KhoGuard và MySQL; sau lỗi Docker đã chọn Cloud.
+- Bridge đọc snapshot bằng viewer, ánh xạ theo registry và gửi qua MQTT/TLS 8883. Dùng một Cloud device `KhoGuard-WH01` chứa các trường có tiền tố theo nguồn để không cần gateway cộng 5 Cloud device. Không nhận RPC, không can thiệp firmware/lệnh cửa.
+- MySQL vẫn giữ nghiệp vụ và lịch sử chính. Phép đo giữ thời điểm nhận gốc, null/stale không chuyển thành 0; nguồn mất kết nối được hiển thị riêng. REST chỉ dùng HTTPS tại hai vùng Cloud chính thức, không theo redirect mang API key.
+- API key chỉ dùng setup/check; device token dùng bridge, đều lưu ở `.local`. Người dùng đã đăng ký và cung cấp API key; đã tạo device/dashboard và xác nhận Cloud readback, mất nguồn backend/phục hồi. Key đã xuất hiện trong chat nên khuyến nghị thu hồi sau setup/check, không tự thu hồi thay người dùng.
+- Nghiệm thu thực tế: dùng hostname MQTT riêng `mqtt.thingsboard.cloud` / `mqtt.eu.thingsboard.cloud`; chia bản tin tối đa 50 trường vì gói toàn kho 103 trường bị Cloud từ chối. Giữ timestamp, TLS và QoS1; 131 unit đạt. Chưa xác nhận UI trên điện thoại và biểu đồ môi trường mới khi Wokwi chưa chạy.
+- Hạn chế: cần Internet, quota Cloud theo gói; bridge chu kỳ 10 giây là bản sao giám sát, không thay hệ thống an toàn hay lịch sử MySQL. [Hướng dẫn](docs/THINGSBOARD.md).
+
+
+## DEC-047 Rút gọn một khu C ngày 24/10/2026
+
+Theo yêu cầu người dùng, cấu hình hoạt động chỉ gồm WH01/C/ESP-C01/D07–D08. Giữ hai cửa để tiếp tục minh họa liên động, Panic và vật cản. React và ThingsBoard dùng cùng registry; Cloud còn 3 widget.
+
+Seed đầu tiên đóng băng ở db/seeds/registry-v1.json để giữ checksum, khóa ngoại và lịch sử MySQL. Không sửa migration 001–007 hay xóa hàng lịch sử. API snapshot, sự kiện, access audit, báo cáo và giữ chỗ giới hạn khu C. Các danh tính cũ không được nhận telemetry/lệnh trong phạm vi hoạt động và mất ACL grant. Kho C chỉ nhận frozen, không còn staging D.
+
+Loại firmware A/B/D, script mô phỏng nhiều khu và thư viện LCD khỏi build hoạt động. Lưu bản trước thay đổi ở .local/single-zone-backup-20261024. Dùng đúng tên PIR/siêu âm và thêm 5 điện trở 220 ohm. Sơ đồ Wokwi chỉ mô phỏng số, không chứng nhận nối ECHO 5 V trực tiếp vào ESP32 ngoài thực tế. Word/PPT mô tả code đang có, không trình bày các đề xuất Reset/MQ-2/mmWave như đã triển khai.
+
+## DEC-048 — Dùng template HUIT cho PowerPoint
+
+Ngày 25/10/2026. Theo yêu cầu người dùng, dùng `docs/slides/2-template-bvkltn-khoa12-2024.pptx` làm mẫu bố cục, giữ logo, thanh đầu trang, chân trang và hệ thống trang chia chương; thay nội dung ví dụ bằng nội dung KhoGuard theo roster 33 trang đã được duyệt. Dùng quy trình Edit Native PPTX của `hugohe3/ppt-master`. Không sửa bản template gốc. PPTX sinh ra là đầu ra; outline giữ nội dung chuẩn. Build trung gian và bản dựng bảo toàn layout nằm trong `.local/ppt-master-projects/khoguard-huit-template/`.

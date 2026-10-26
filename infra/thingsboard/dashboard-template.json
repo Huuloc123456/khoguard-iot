@@ -1,0 +1,225 @@
+{
+  "title": "KhoGuard · Kho lạnh C",
+  "configuration": {
+    "description": "Dashboard Cloud phụ từ KhoGuard. Không có RPC. Biểu đồ giữ lịch sử; xem độ mới và lần nhận cuối. Một Cloud device đại diện ESP-C01, khu C và hai cửa D07–D08.",
+    "widgets": {
+      "35c91984-15d1-42cb-922f-81fab14f0f97": {
+        "id": "35c91984-15d1-42cb-922f-81fab14f0f97",
+        "typeFullFqn": "system.cards.entities_table",
+        "type": "latest",
+        "sizeX": 24,
+        "sizeY": 5,
+        "config": {
+          "title": "Khu C · xem độ mới trước khi dùng số liệu",
+          "showTitle": true,
+          "showTitleIcon": false,
+          "showLegend": true,
+          "datasources": [
+            {
+              "type": "entity",
+              "entityAliasId": "7832d83a-6b8b-4c9d-af1b-e5aa0261ba97",
+              "dataKeys": [
+                {
+                  "name": "ESP_C01_source_available",
+                  "label": "Nguồn có dữ liệu",
+                  "type": "timeseries",
+                  "settings": {}
+                },
+                {
+                  "name": "ESP_C01_freshness",
+                  "label": "Độ mới",
+                  "type": "timeseries",
+                  "settings": {}
+                },
+                {
+                  "name": "ESP_C01_temperature_display",
+                  "label": "Nhiệt độ",
+                  "type": "timeseries",
+                  "settings": {}
+                },
+                {
+                  "name": "ESP_C01_humidity_display",
+                  "label": "Độ ẩm",
+                  "type": "timeseries",
+                  "settings": {}
+                },
+                {
+                  "name": "ESP_C01_occupants_display",
+                  "label": "Số người",
+                  "type": "timeseries",
+                  "settings": {}
+                },
+                {
+                  "name": "ESP_C01_presence_display",
+                  "label": "Hiện diện",
+                  "type": "timeseries",
+                  "settings": {}
+                },
+                {
+                  "name": "ESP_C01_last_seen_at",
+                  "label": "Lần nhận cuối",
+                  "type": "timeseries",
+                  "settings": {}
+                },
+                {
+                  "name": "ESP_C01_D07_state",
+                  "label": "D07",
+                  "type": "timeseries",
+                  "settings": {}
+                },
+                {
+                  "name": "ESP_C01_D08_state",
+                  "label": "D08",
+                  "type": "timeseries",
+                  "settings": {}
+                }
+              ]
+            }
+          ],
+          "timewindow": {
+            "realtime": {
+              "timewindowMs": 3600000
+            }
+          },
+          "settings": {
+            "enableSearch": false,
+            "enablePagination": false,
+            "displayPagination": false
+          }
+        }
+      },
+      "245f39f4-b8f1-4d80-8301-cb8dfaf0b24a": {
+        "id": "245f39f4-b8f1-4d80-8301-cb8dfaf0b24a",
+        "typeFullFqn": "system.charts.basic_timeseries",
+        "type": "timeseries",
+        "sizeX": 24,
+        "sizeY": 7,
+        "config": {
+          "title": "Nhiệt độ (°C) · theo thời điểm dữ liệu gốc",
+          "showTitle": true,
+          "showTitleIcon": false,
+          "showLegend": true,
+          "datasources": [
+            {
+              "type": "entity",
+              "entityAliasId": "7832d83a-6b8b-4c9d-af1b-e5aa0261ba97",
+              "dataKeys": [
+                {
+                  "name": "ESP_C01_temperature_c",
+                  "label": "Khu C",
+                  "type": "timeseries",
+                  "settings": {}
+                }
+              ]
+            }
+          ],
+          "timewindow": {
+            "realtime": {
+              "timewindowMs": 3600000
+            }
+          },
+          "settings": {
+            "enableSearch": false,
+            "enablePagination": false,
+            "displayPagination": false
+          }
+        }
+      },
+      "cbd53afc-34fa-4d26-801e-0f88f0833b8e": {
+        "id": "cbd53afc-34fa-4d26-801e-0f88f0833b8e",
+        "typeFullFqn": "system.charts.basic_timeseries",
+        "type": "timeseries",
+        "sizeX": 24,
+        "sizeY": 7,
+        "config": {
+          "title": "Độ ẩm (%) · theo thời điểm dữ liệu gốc",
+          "showTitle": true,
+          "showTitleIcon": false,
+          "showLegend": true,
+          "datasources": [
+            {
+              "type": "entity",
+              "entityAliasId": "7832d83a-6b8b-4c9d-af1b-e5aa0261ba97",
+              "dataKeys": [
+                {
+                  "name": "ESP_C01_humidity_pct",
+                  "label": "Khu C",
+                  "type": "timeseries",
+                  "settings": {}
+                }
+              ]
+            }
+          ],
+          "timewindow": {
+            "realtime": {
+              "timewindowMs": 3600000
+            }
+          },
+          "settings": {
+            "enableSearch": false,
+            "enablePagination": false,
+            "displayPagination": false
+          }
+        }
+      }
+    },
+    "entityAliases": {
+      "7832d83a-6b8b-4c9d-af1b-e5aa0261ba97": {
+        "id": "7832d83a-6b8b-4c9d-af1b-e5aa0261ba97",
+        "alias": "KhoGuard-WH01",
+        "filter": {
+          "type": "singleEntity",
+          "resolveMultiple": false,
+          "singleEntity": {
+            "entityType": "DEVICE",
+            "id": "00000000-0000-4000-8000-000000000001"
+          }
+        }
+      }
+    },
+    "states": {
+      "default": {
+        "name": "Tổng quan",
+        "root": true,
+        "layouts": {
+          "main": {
+            "widgets": {
+              "35c91984-15d1-42cb-922f-81fab14f0f97": {
+                "sizeX": 24,
+                "sizeY": 5,
+                "row": 0,
+                "col": 0
+              },
+              "245f39f4-b8f1-4d80-8301-cb8dfaf0b24a": {
+                "sizeX": 24,
+                "sizeY": 7,
+                "row": 5,
+                "col": 0
+              },
+              "cbd53afc-34fa-4d26-801e-0f88f0833b8e": {
+                "sizeX": 24,
+                "sizeY": 7,
+                "row": 12,
+                "col": 0
+              }
+            },
+            "gridSettings": {
+              "columns": 24,
+              "margin": 12,
+              "backgroundColor": "#ffffff"
+            }
+          }
+        }
+      }
+    },
+    "timewindow": {
+      "realtime": {
+        "timewindowMs": 3600000
+      }
+    },
+    "settings": {
+      "showTitle": true
+    },
+    "filters": {}
+  }
+}

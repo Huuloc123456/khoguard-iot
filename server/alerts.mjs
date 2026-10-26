@@ -20,11 +20,11 @@ export function desiredAlerts(message,zone,activeKeys) {
   }
   for (const d of p.doors ?? []) {
     if (d.panic_latched===true) out.push(alert(z,d.door_id,'PANIC_ACTIVE','danger',`Khẩn cấp tại cửa ${d.door_id}`,'Nút khẩn cấp đã chốt: cửa được nhả khóa/mở. Tiếp nhận không đặt lại; cần lệnh đặt lại riêng khi nút đã nhả.'));
-    if (device?.source==='wokwi' && d.local_inputs_healthy===false) out.push(alert(z,d.door_id,'LOCAL_INPUT_FAILURE','warning',`Tín hiệu cửa ${d.door_id} chưa xác định`,'Một hoặc nhiều input cửa/rèm quang/panic chưa ổn định; cổng đóng sẽ chặn.'));
+    if (device?.source==='wokwi' && d.local_inputs_healthy===false) out.push(alert(z,d.door_id,'LOCAL_INPUT_FAILURE','warning',`Tín hiệu cửa ${d.door_id} chưa xác định`,'Một hoặc nhiều input cửa/cảm biến vật cản siêu âm/panic chưa ổn định; cổng đóng sẽ chặn.'));
   }
   const o=p.occupancy;
   if (o?.count_verified && o.current_occupants===0 && o.presence===true)
-    out.push(alert(z,null,'PRESENCE_MISMATCH','warning',`RFID báo 0 người nhưng mmWave còn tín hiệu ở khu ${z}`,'Không đóng cửa; kiểm tra trực tiếp. Hệ thống không tự sửa số người.'));
+    out.push(alert(z,null,'PRESENCE_MISMATCH','warning',`RFID báo 0 người nhưng PIR còn tín hiệu ở khu ${z}`,'Không đóng cửa; kiểm tra trực tiếp. Hệ thống không tự sửa số người.'));
   if (device?.environment && p.environment) {
     const t=p.environment.temperature_c, key=keyOf(z,null,'TEMPERATURE_OUT_OF_RANGE');
     if (t===null) out.push(alert(z,null,'SENSOR_MISSING','warning',`Mất số đo nhiệt độ khu ${z}`,'Thiết bị đang gửi nhưng cảm biến không có giá trị; không coi là 0 °C.'));

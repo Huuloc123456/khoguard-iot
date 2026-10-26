@@ -1,0 +1,16 @@
+
+> khoguard-iot@0.1.0 thingsboard:check
+> node scripts/thingsboard.mjs check
+
+{
+  "checked_at": "2026-10-24T23:56:33.199Z",
+  "dashboard": "https://thingsboard.cloud/dashboards/569b8ac0-cf55-11f1-afdc-397ada9afcbe",
+  "devices": [
+    {
+      "device": "ESP-C01",
+      "freshness": "stale",
+      "temperature": "Dữ liệu cũ",
+      "updated_at": "2026-10-24T23:56:21.326Z"
+    }
+  ]
+}

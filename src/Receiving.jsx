@@ -3,7 +3,7 @@ import Icon from './Icon.jsx';
 import { Pill } from './WarehouseMap.jsx';
 import { areaView, admissionText } from './live-data.js';
 
-const CLASSES = [['ambient', 'Thường (kho A)'], ['chilled', 'Mát 2–8°C (kho B)'], ['frozen', 'Lạnh −22 đến −16°C (kho C)']];
+const CLASSES = [['frozen', 'Đông lạnh −22 đến −16°C (khu C)']];
 const SIZES = [[1, 'Nhỏ'], [2, 'Vừa'], [3, 'Lớn']];
 const STATUS = { pending: ['Đang giữ', 'info'], confirmed: ['Đã nhập kho', 'success'], cancelled: ['Đã hủy', 'neutral'], expired: ['Hết hạn', 'warning'] };
 const TONE = { normal: 'success', warning: 'warning', danger: 'danger' };
@@ -55,7 +55,7 @@ export function Receiving({ revision, canReserve }) {
   return <>
     <section className="panel" aria-labelledby="capacity-title"><div className="panel-heading"><div><h2 id="capacity-title">Sức chứa nhận hàng</h2><p>Tính vị trí đang chứa + đang giữ chỗ trên vị trí khả dụng (bỏ vị trí xả đá). Từ 85% cảnh báo, vượt 95% từ chối. Số liệu chứa hàng là dữ liệu demo, chưa nối WMS.</p></div></div>
       {error && <p className="warning-text panel-footnote" role="status">{error}</p>}
-      {page && <div className="receiving-areas"><Area title="Kho lưu trữ A–C" area={page.storage} note="Ngưỡng 95% là phần đệm an toàn, không trừ thêm lần nữa." /><Area title="Khu đệm D (staging)" area={page.staging} note="Khu đệm từ 95% trở lên: dừng nhận hàng dù kho còn chỗ." /></div>}
+      {page && <div className="receiving-areas"><Area title="Kho lạnh C" area={page.storage} note="80 vị trí vật lý, 2 vị trí xả đá, còn 78 vị trí khả dụng. Ngưỡng từ chối trên 95%." /></div>}
     </section>
     <section className="panel" aria-labelledby="admission-title"><div className="panel-heading"><div><h2 id="admission-title">Yêu cầu nhận hàng</h2><p>Mỗi yêu cầu giữ một vị trí trong 15 phút theo đồng hồ backend.</p></div>{!canReserve && <Pill tone="info">Chỉ xem</Pill>}</div>
       <form className="admission-form" onSubmit={submit}>
@@ -64,7 +64,7 @@ export function Receiving({ revision, canReserve }) {
         <label>Tải trọng (kg)<input type="number" min="1" max="5000" step="1" required value={form.load_kg} onChange={set('load_kg')} disabled={!canReserve} /></label>
         <button className="button primary" disabled={!canReserve || busy}><Icon name="box" size={16} />Giữ chỗ</button>
       </form>
-      <p className="notice visible admission-result" role="status">{message ? <Pill tone={message.tone}>{message.text}</Pill> : <span className="muted">Backend kiểm tra ngưỡng, khu đệm và vị trí phù hợp; giao diện không tự quyết định.</span>}</p>
+      <p className="notice visible admission-result" role="status">{message ? <Pill tone={message.tone}>{message.text}</Pill> : <span className="muted">Backend kiểm tra ngưỡng và vị trí phù hợp trong khu C; giao diện không tự quyết định.</span>}</p>
     </section>
     <section className="panel" aria-labelledby="reservation-title"><div className="panel-heading"><div><h2 id="reservation-title">Giữ chỗ gần đây</h2><p>Mỗi giữ chỗ chỉ có một kết quả: nhập kho, hủy hoặc hết hạn.</p></div></div>
       <div className="table-scroll"><table><thead><tr><th>Mã</th><th>Vị trí</th><th>Hàng</th><th>Trạng thái</th><th>Hết hạn</th><th><span className="sr-only">Thao tác</span></th></tr></thead><tbody>{(page?.items ?? []).map(r => {

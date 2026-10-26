@@ -1,0 +1,9 @@
+M07 C++ PASS: debounce, rollover, mapping/isolation, panic latch and input health
+M08 C++ PASS: whitelist, per-card anti-repeat, no underflow, reconciliation, lost-event invalidation and presence gate
+M08 C++ PASS: serial RFID parser, card table, reconcile only when no card inside, revision on count change
+M09 PASS: close gate blocks on count, presence, beam, unknown, unverified and panic
+M09 PASS: beam/presence reversal while closing and travel timeout fault
+M09 PASS: panic latch opens from closed, unlocks both, survives ack, resets only when released
+M09 PASS: two-door interlock, concurrent requests and unknown inputs
+M11 PASS: door-open 30 s / >60 s, trapped >5 min, reset on close/clear, millis rollover
+M10 PASS: command dedupe, revision mismatch, stale session and bounded command memory

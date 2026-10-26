@@ -1,4 +1,4 @@
-import { validateMqttMessage, validateSnapshot } from '../contracts/validate.js';
+import { registry, validateMqttMessage, validateSnapshot } from '../contracts/validate.js';
 import { telemetryDecision, sessionKey, sqlUtc, buildSnapshot } from './telemetry.mjs';
 import { eventDecision, eventGap, eventView } from './events.mjs';
 import { desiredAlerts, offlineAlert, planAlerts } from './alerts.mjs';
@@ -171,13 +171,13 @@ export function createTelemetryStore(pool,{publish}={}) {
   }
   async function snapshot(connections) {
     const snapshot=await transaction(async connection=>{
-      const [zones]=await execute(connection,'SELECT z.id,z.name,s.temperature_min,s.temperature_max,s.capacity FROM zones z JOIN zone_settings s ON s.zone_id=z.id ORDER BY z.id');
+      const [zones]=await execute(connection,'SELECT z.id,z.name,s.temperature_min,s.temperature_max,s.capacity FROM zones z JOIN zone_settings s ON s.zone_id=z.id WHERE z.id = ? ORDER BY z.id',[registry.zones[0]]);
       const [rows]=await execute(connection,'SELECT * FROM device_current ORDER BY device_id');
       const [stream]=await execute(connection,"SELECT revision FROM warehouse_stream WHERE warehouse_id='WH01'");
       const now=new Date();
       // Active alerts plus those resolved in the last 10 minutes, so an operator sees what just cleared.
-      const [alerts]=await execute(connection,"SELECT * FROM alerts WHERE state='active' OR resolved_at >= ? ORDER BY state='active' DESC, raised_at DESC, id DESC LIMIT 50",
-        [sqlUtc(new Date(now.getTime()-600000))]);
+      const [alerts]=await execute(connection,"SELECT * FROM alerts WHERE zone_id = ? AND device_id = ? AND (state='active' OR resolved_at >= ?) ORDER BY state='active' DESC, raised_at DESC, id DESC LIMIT 50",
+        [registry.zones[0],registry.devices[0].id,sqlUtc(new Date(now.getTime()-600000))]);
       // Expired-but-unmarked reservations do not count as reserved.
       const [slots]=await execute(connection,`SELECT s.zone_id,SUM(s.status='occupied') AS occupied,SUM(s.status<>'defrost') AS capacity,COUNT(r.id) AS reserved
         FROM slots s LEFT JOIN reservations r ON r.active_slot=s.id AND r.expires_at > ? GROUP BY s.zone_id`,[sqlUtc(now)]);
@@ -197,13 +197,13 @@ export function createTelemetryStore(pool,{publish}={}) {
   }
   async function events(query) {
     return transaction(async connection=>{
-      const filters=[],values=[];
+      const filters=['device_id = ?'],values=[registry.devices[0].id];
       if (query.device) {filters.push('device_id = ?');values.push(query.device);}
       if (query.type) {filters.push('event_type = ?');values.push(query.type);}
       if (query.cursor) {filters.push('id < ?');values.push(query.cursor);}
       const where=filters.length ? `WHERE ${filters.join(' AND ')}`:'';
       const [rows]=await execute(connection,`SELECT id,device_id,received_at,message FROM device_events ${where} ORDER BY id DESC LIMIT ?`,[...values,query.limit+1]);
-      const [gaps]=await execute(connection,`SELECT device_id,boot_id,from_seq,to_seq,detected_at FROM event_gaps ${query.device ? 'WHERE device_id = ?':''} ORDER BY id DESC LIMIT 20`,query.device ? [query.device]:[]);
+      const [gaps]=await execute(connection,`SELECT device_id,boot_id,from_seq,to_seq,detected_at FROM event_gaps WHERE device_id = ? ORDER BY id DESC LIMIT 20`,[query.device ?? registry.devices[0].id]);
       if (rows.some(row=>!Number.isSafeInteger(row.id))) throw new Error('CURSOR_OVERFLOW');
       const more=rows.length>query.limit, items=rows.slice(0,query.limit).map(eventView);
       return {schema_version:1,warehouse_id:'WH01',items,next_cursor:more ? items.at(-1).id:null,
@@ -241,7 +241,7 @@ export function createTelemetryStore(pool,{publish}={}) {
   async function getCommand(id) {
     return transaction(async connection=>{
       const [rows]=await execute(connection,'SELECT * FROM door_commands WHERE command_id = ? FOR UPDATE',[id]);
-      if (!rows[0]) return null;
+      if (!rows[0] || !registry.devices.some(d=>d.doors.includes(rows[0].door_id))) return null;
       const view=commandView(rows[0],Date.now());
       if (view.status==='expired' && rows[0].status==='pending') await execute(connection,"UPDATE door_commands SET status='expired',reason='COMMAND_EXPIRED' WHERE id=?",[rows[0].id]);
       return view;
@@ -251,7 +251,7 @@ export function createTelemetryStore(pool,{publish}={}) {
     return transaction(async connection=>{
       const [rows]=await execute(connection,'SELECT * FROM alerts WHERE id = ? FOR UPDATE',[id]);
       const alert=rows[0];
-      if (!alert) return null;
+      if (!alert || !registry.devices.some(d=>d.id===alert.device_id && d.zone_id===alert.zone_id)) return null;
       const at=new Date();
       // Acknowledging records who saw it; it never resolves or downgrades the alert.
       await execute(connection,'INSERT INTO alert_acks (alert_id,acknowledged_at,actor,alert_state,alert_level) VALUES (?,?,?,?,?)',[id,sqlUtc(at),actor,alert.state,alert.level]);

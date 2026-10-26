@@ -57,14 +57,14 @@ try {
   const to=new Date(Date.now()+60000).toISOString(), range=`from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
   const mine=list=>list.filter(e=>e.received_at>=from);
   const rfid=await until(async()=>mine(await walk('events',`${range}&zone=C&type=rfid`)),l=>l.length>=4);
-  const [db]=await pool.execute("SELECT COUNT(*) AS n FROM device_events WHERE zone_id='C' AND event_type='rfid' AND received_at >= ? AND received_at < ?",[from.slice(0,23).replace('T',' '),to.slice(0,23).replace('T',' ')]);
+  const [db]=await pool.execute("SELECT COUNT(*) AS n FROM device_events WHERE zone_id='C' AND device_id='ESP-C01' AND event_type='rfid' AND received_at >= ? AND received_at < ?",[from.slice(0,23).replace('T',' '),to.slice(0,23).replace('T',' ')]);
   assert.equal(rfid.length,Number(db[0].n),'API filter = SQL count');
   assert.deepEqual(rfid.slice(0,4).map(e=>[e.card_id,e.direction]).reverse(),cards);
   assert.equal(new Set(rfid.map(e=>e.id)).size,rfid.length,'no row repeated across pages');
   assert.ok(rfid.every((e,i)=>i===0 || e.id<rfid[i-1].id),'newest first');
-  assert.equal(mine((await report(`/api/reports/events?${range}&zone=A&type=rfid`)).body.items).length,0);
+  assert.equal((await report(`/api/reports/events?${range}&zone=A&type=rfid`)).status,400,'retired zone is rejected');
   assert.equal(mine((await report(`/api/reports/events?${range}&zone=C&type=door`)).body.items).length,1);
-  checks.push(`events zone C + rfid in the test window: API ${rfid.length} rows = MySQL ${db[0].n}; 7-row pages, newest first, no repeats; zone A 0 rows, type door 1 row`);
+  checks.push(`events zone C + rfid in the test window: API ${rfid.length} rows = MySQL ${db[0].n}; 7-row pages, newest first, no repeats; retired zone A 400, type door 1 row`);
 
   stage='every dataset reachable with its permission';
   const day=`from=${encodeURIComponent(new Date(Date.now()-86400000).toISOString())}&to=${encodeURIComponent(to)}`;
@@ -72,8 +72,8 @@ try {
   for (const kind of ['alerts','commands','reservations','access']) {const r=await report(`/api/reports/${kind}?${day}&limit=500`);assert.equal(r.status,200,kind);counts[kind]=r.body.items.length;}
   assert.equal((await report(`/api/reports/access?${day}`,viewer)).status,403);
   assert.equal((await report(`/api/reports/events?${day}&zone=Z`)).status,400);
-  const sql={alerts:'SELECT COUNT(*) AS n FROM alerts WHERE raised_at >= ? AND raised_at < ?',commands:'SELECT COUNT(*) AS n FROM door_commands WHERE created_at >= ? AND created_at < ?',
-    reservations:'SELECT COUNT(*) AS n FROM reservations WHERE created_at >= ? AND created_at < ?',access:'SELECT COUNT(*) AS n FROM access_audit WHERE at >= ? AND at < ?'};
+  const sql={alerts:"SELECT COUNT(*) AS n FROM alerts WHERE zone_id='C' AND device_id='ESP-C01' AND raised_at >= ? AND raised_at < ?",commands:"SELECT COUNT(*) AS n FROM door_commands t JOIN doors d ON d.id=t.door_id WHERE d.zone_id='C' AND t.door_id IN ('D07','D08') AND t.created_at >= ? AND t.created_at < ?",
+    reservations:"SELECT COUNT(*) AS n FROM reservations t JOIN slots s ON s.id=t.slot_id WHERE s.zone_id='C' AND t.created_at >= ? AND t.created_at < ?",access:"SELECT COUNT(*) AS n FROM access_audit t JOIN doors d ON d.id=t.door_id WHERE d.zone_id='C' AND t.door_id IN ('D07','D08') AND t.at >= ? AND t.at < ?"};
   const window=[new Date(Date.now()-86400000),new Date(to)].map(d=>d.toISOString().slice(0,23).replace('T',' '));
   for (const [kind,q] of Object.entries(sql)) {const [r]=await pool.execute(q,window); assert.ok(counts[kind]===Math.min(500,Number(r[0].n)),kind);}
   checks.push(`last 24 h: alerts ${counts.alerts}, commands ${counts.commands}, reservations ${counts.reservations}, access ${counts.access} rows (each ≤500 = MySQL count); viewer refused the access log (403); bad zone 400`);
@@ -92,11 +92,11 @@ try {
   assert.match(csv,/Thẻ demo ca (ngày|đêm)/); assert.match(csv,/giờ Việt Nam/);
   // Every secret value from .local must be absent from the export.
   const secrets=[...Object.values(readJson(join(local,'dashboard-users.json'))),...Object.values(accounts),
-    ...readFileSync(join(local,'runtime.env'),'utf8').split(/\r?\n/).filter(l=>/PASSWORD/.test(l)).map(l=>l.split('=').slice(1).join('='))].filter(v=>v && v.length>=8);
+    ...readFileSync(join(local,'runtime.env'),'utf8').split(/\r?\n/).filter(l=>/PASSWORD/.test(l)).map(l=>l.split('=').slice(1).join('='))].filter(v=>typeof v==='string' && v.length>0);
   assert.ok(secrets.length>=5);
-  assert.ok(secrets.every(v=>!csv.includes(v)),'no secret in CSV');
+  assert.ok(secrets.every(v=>!csv.includes(v)),'no configured credential value in CSV, including short demo values');
   assert.ok(!/kg_session|scrypt\$|token_hash|password/i.test(csv));
-  checks.push(`CSV of ${access.length} access + alert rows: UTF-8 BOM, Vietnamese labels intact, none of ${secrets.length} local secret values or session/hash fields present`);
+  checks.push(`CSV of ${access.length} access + alert rows: UTF-8 BOM, Vietnamese labels intact, none of ${secrets.length} local credential values or session/hash fields present`);
 
   await publish(envelope('status',0,{state:'offline'}),true);
   writeFileSync(join(local,'reports-check.json'),JSON.stringify({checked_at:new Date().toISOString(),checks},null,2));

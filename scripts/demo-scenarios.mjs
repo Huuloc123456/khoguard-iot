@@ -52,10 +52,10 @@ async function scenario2() {
   assert.equal((await command('D07','open')).status,'applied');
   edge.state.count=0; edge.state.presence=true; edge.revision++;
   let s=await until(async()=>{await edge.telemetry();return snap();},x=>alertOf(x,'PRESENCE_MISMATCH'));
-  step(`count 0 + mmWave → cảnh báo "${alertOf(s,'PRESENCE_MISMATCH').title}"`);
+  step(`count 0 + PIR → cảnh báo "${alertOf(s,'PRESENCE_MISMATCH').title}"`);
   const blocked=await command('D07','close'); assert.deepEqual([blocked.status,blocked.reason],['rejected','PRESENCE_DETECTED']); step('đóng D07 → rejected PRESENCE_DETECTED');
   edge.state.presence=false; edge.revision++;
-  s=await until(async()=>{await edge.telemetry();return snap();},x=>!alertOf(x,'PRESENCE_MISMATCH')); step('mmWave hết → cảnh báo tự hết');
+  s=await until(async()=>{await edge.telemetry();return snap();},x=>!alertOf(x,'PRESENCE_MISMATCH')); step('PIR hết → cảnh báo tự hết');
   assert.equal((await command('D07','close')).status,'applied'); step('đóng lại → applied');
 }
 async function scenario3() {
@@ -96,7 +96,7 @@ async function scenario4() {
   try {
     let st=await get('/api/reservations'); const cap=st.storage.capacity, max=Math.floor(95*cap/100);
     while (st.storage.occupied+st.storage.reserved<max-1) {
-      let ok=false; for (const c of ['ambient','chilled','frozen']) {const r=await admit(c); if (r.status===201) {ok=true;break;}}
+      let ok=false; for (const c of ['frozen']) {const r=await admit(c); if (r.status===201) {ok=true;break;}}
       assert.ok(ok,'no demo slots left'); st=await get('/api/reservations');
     }
     step(`giữ chỗ demo tới ${max-1}/${cap} (95% = ${(95*cap/100).toFixed(1)})`);

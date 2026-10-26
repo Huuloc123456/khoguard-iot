@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { spawn, execFileSync } from 'node:child_process';
 import { connect } from 'node:net';
-import { readFileSync, writeFileSync, copyFileSync, mkdirSync, renameSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { readFileSync, writeFileSync, copyFileSync, mkdirSync, renameSync, existsSync, cpSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import {faultSources} from './wokwi-fault-source.mjs';
 import { homedir } from 'node:os';
 import { randomUUID, createHash, X509Certificate } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -78,53 +79,19 @@ async function command(expected) {
     return result;
   }
 }
-function replaceOnce(source,old,next) {assert.equal(source.split(old).length,2,`source anchor changed: ${old.slice(0,45)}`);return source.replace(old,next);}
-const normalSource=readFileSync(join(root,'firmware/src/main.cpp'),'utf8').replaceAll('\r\n','\n');
-function testSource(variant) {
-  let s=replaceOnce(normalSource,'kg::Controller controller;',`kg::Controller controller;
-#include <atomic>
-std::atomic<bool> acceptancePaused{false};
-uint8_t acceptanceMask=0;
-bool acceptancePresence=true; // Test fixture: an occupied presence input at every actual CPU reboot.
-constexpr char ACCEPTANCE_VARIANT[]="${variant}";`);
-  s=replaceOnce(s,'  if (xTaskCreate(networkTask,',`  Serial.printf("ACCEPTANCE_PROFILE variant=%s boot=%s presence_fixture=1\\r\\n",ACCEPTANCE_VARIANT,bootId);
-  if (xTaskCreate(networkTask,`);
-  s=replaceOnce(s,"    line[length]='\\0';length=0;",`    line[length]='\\0';length=0;
-    if(!overflow && std::strncmp(line,"TEST ",5)==0) {
-      if(std::strcmp(line,"TEST REBOOT")==0) {Serial.println("ACCEPTANCE_REBOOT");Serial.flush();ESP.restart();}
-      if(std::strcmp(line,"TEST BEAM_UNKNOWN")==0) acceptanceMask=2;
-      else if(std::strcmp(line,"TEST CONTACT_UNKNOWN")==0) acceptanceMask=1;
-      else if(std::strcmp(line,"TEST PRESENCE_UNKNOWN")==0) acceptanceMask=64;
-      else if(std::strcmp(line,"TEST INPUTS_CLEAR")==0) acceptanceMask=0;
-      else if(std::strcmp(line,"TEST PRESENCE_HIGH")==0) acceptancePresence=true;
-      else if(std::strcmp(line,"TEST PRESENCE_CLEAR")==0) acceptancePresence=false;
-      else if(std::strcmp(line,"TEST PAUSE_TELEMETRY")==0) acceptancePaused.store(true);
-      else if(std::strcmp(line,"TEST RESUME_TELEMETRY")==0) acceptancePaused.store(false);
-      else {Serial.println("ACCEPTANCE_BAD_INPUT");continue;}
-      portENTER_CRITICAL(&sampleLock);controller.revision++;portEXIT_CRITICAL(&sampleLock);
-      Serial.printf("ACCEPTANCE_INPUT mask=%u presence=%d paused=%d\\r\\n",acceptanceMask,acceptancePresence,acceptancePaused.load());
-      continue;
-    }`);
-  s=replaceOnce(s,'  const auto before=controller;',`  raw[6]=acceptancePresence;
-  // An unavailable acquisition never becomes a clear/healthy sample; debounce is held below its confirmation window.
-  for(unsigned i=0;i<7;i++) if(acceptanceMask&(1u<<i)) {controller.inputs[i].known=false;controller.inputs[i].started=false;}
-  const auto before=controller;`);
-  s=replaceOnce(s,'if (client.connected() && millis() - publishedAt >= 2000)', 'if (!acceptancePaused.load() && client.connected() && millis() - publishedAt >= 2000)');
-  s=replaceOnce(s,'        if (net.connect(MQTT_HOST, MQTT_PORT, 1000) && client.connect',`        bool tlsConnected;
-        ${variant==='wrong-hostname' ? 'IPAddress address; tlsConnected=WiFi.hostByName(MQTT_HOST,address) && net.connect(address,MQTT_PORT,"wrong.example.invalid",MQTT_CA_CERT,nullptr,nullptr);' : 'tlsConnected=net.connect(MQTT_HOST,MQTT_PORT,1000);'}
-        if(!tlsConnected) {char detail[180]{};const int error=net.lastError(detail,sizeof(detail));Serial.printf("TLS_REJECT variant=%s error=%d detail=%s\\r\\n",ACCEPTANCE_VARIANT,error,detail);}
-        if (tlsConnected && client.connect`);
-  assert.ok(s.includes('net.setCACert(MQTT_CA_CERT)'));assert.ok(!/\bnet\.setInsecure\s*\(/.test(s));
-  return s;
-}
+const fixturePaths=['src/main.cpp','lib/khoguard/src/kg_edge.cpp','lib/khoguard/src/kg_rfid.cpp','lib/khoguard/src/kg_network.cpp'];
+const normalSources=Object.fromEntries(fixturePaths.map(path=>[path,readFileSync(join(root,'firmware',path),'utf8').replaceAll('\r\n','\n')]));
+// Fail before deploying anything if the module structure has changed.
+faultSources(normalSources,'good');
+cpSync(join(root,'firmware/lib/khoguard'),join(project,'lib/khoguard'),{recursive:true});
 const pio=join(homedir(),'.platformio/penv/Scripts/pio.exe');
 let ini=readFileSync(join(root,'firmware/platformio.ini'),'utf8');
-ini=ini.replace('build_dir = ../.local/firmware-build',`build_dir = ../build\nlibdeps_dir = ${join(root,'firmware/.pio/libdeps').replaceAll('\\','/')}`).replace('build_flags = -I../.local/firmware','');
+ini=ini.replace('build_dir = ../.local/firmware-build',`build_dir = ../build\nlibdeps_dir = ${join(root,'firmware/.pio/libdeps').replaceAll('\\','/')}`).replace('build_flags = -Iinclude -I../.local/firmware','build_flags = -Iinclude');
 writeFileSync(join(project,'platformio.ini'),ini);
-copyFileSync(join(root,'firmware/include/controller.h'),join(project,'include/controller.h'));
+for(const name of ['controller.h','config.h']) copyFileSync(join(root,'firmware/include',name),join(project,'include',name));
 assert.equal(hash(join(project,'include/controller.h')),hash(join(root,'firmware/include/controller.h')));
 async function build(variant) {
-  writeFileSync(join(project,'src/main.cpp'),testSource(variant));
+  for(const [path,source] of Object.entries(faultSources(normalSources,variant))) {mkdirSync(dirname(join(project,path)),{recursive:true});writeFileSync(join(project,path),source);}
   writeFileSync(join(project,'include/kg_secrets.h'),firmwareSecrets(accounts['ESP-C01'],variant==='wrong-ca' ? readFileSync(join(lab,'rogue-ca.crt'),'utf8'):ca));
   say(`Building private ${variant} firmware (controller unchanged; secrets stay in .local).`);
   await new Promise((resolve,reject)=>{
@@ -233,9 +200,9 @@ finally {
     const expected=hash(backupBin);assert.equal(hash(originalBin),expected);
     if(observer) {
       const restoredFrame=await until(latest,f=>f&&(!deployedTest||(f.at>=restoreAt&&f.message.boot_id!==previousBoot))&&/^[a-f0-9]{32}$/.test(f.message.boot_id),30000,'normal firmware restoration');
-      const final=await until(snapshot,s=>s.devices.every(d=>d.freshness==='fresh'),20000,'all five devices fresh');
+      const final=await until(snapshot,s=>s.devices.every(d=>d.freshness==='fresh'),20000,'all active devices fresh');
       restored=true;checks.push({case:'restored normal firmware',sha256:expected,boot:restoredFrame.message.boot_id,devices:final.devices.map(d=>({id:d.id,state:d.state,freshness:d.freshness})),ready:(await fetch(`${base}/api/ready`)).status});
-      say('PASS restore: original firmware SHA256, all 5 devices fresh.');
+      say('PASS restore: original firmware SHA256, all active devices fresh.');
     }
   } catch(error) {say(`RESTORE ATTENTION: ${error.message}`);process.exitCode=1;}
   writeFileSync(join(run,'result.json'),JSON.stringify({checked_at:new Date().toISOString(),pass:process.exitCode!==1,restored,checks,controller_sha256:hash(join(project,'include/controller.h')),note:'Private acquisition-fault image; production controller.h unchanged. TLS checked by ESP32 mbedTLS, not a Node surrogate.'},null,2));

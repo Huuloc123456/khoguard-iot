@@ -1,5 +1,6 @@
 import { sqlUtc } from './telemetry.mjs';
 import { eventView } from './events.mjs';
+import { registry } from '../contracts/validate.js';
 
 // M15 history: one bounded, filtered, paginated query per stored dataset. SQL pieces come only from this table.
 const SPECS = {
@@ -31,7 +32,7 @@ export function parseReportQuery(kind,params,now=new Date()) {
   const to=time('to') ?? now, from=time('from') ?? new Date(to.getTime()-DAY_MS);
   if (to<=from || to-from>MAX_RANGE_MS) invalid();
   const zone=params.get('zone'), type=params.get('type');
-  if (zone!==null && !/^[A-D]$/.test(zone)) invalid();
+  if (zone!==null && !registry.zones.includes(zone)) invalid();
   if (type!==null && !spec.types.includes(type)) invalid();
   return {kind,from:from.toISOString(),to:to.toISOString(),zone,type,limit:integer('limit',1,500) ?? 100,cursor:integer('cursor',1,Number.MAX_SAFE_INTEGER)};
 }
@@ -47,7 +48,9 @@ function plain(row) {
 
 export async function runReport(connection,query) {
   const spec=SPECS[query.kind], where=[`${spec.time} >= ?`,`${spec.time} < ?`], values=[sqlUtc(new Date(query.from)),sqlUtc(new Date(query.to))];
-  if (query.zone) {where.push(spec.zone);values.push(query.zone);}
+  where.push(spec.zone);values.push(query.zone ?? registry.zones[0]);
+  if (query.kind==='events' || query.kind==='alerts') {where.push('t.device_id = ?');values.push(registry.devices[0].id);}
+  if (query.kind==='commands' || query.kind==='access') {where.push('t.door_id IN (?, ?)');values.push(...registry.devices[0].doors);}
   if (query.type) {where.push(spec.type);values.push(query.type);}
   if (query.cursor) {where.push('t.id < ?');values.push(query.cursor);}
   const [rows]=await connection.execute({sql:`${spec.sql} WHERE ${where.join(' AND ')} ORDER BY t.id DESC LIMIT ?`,timeout:3000},[...values,query.limit+1]);

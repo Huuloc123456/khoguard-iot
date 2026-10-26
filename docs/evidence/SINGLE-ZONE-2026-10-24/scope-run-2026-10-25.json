@@ -1,0 +1,20 @@
+{
+  "checked_at": "2026-10-25T01:40:15.147Z",
+  "zones": [
+    "C"
+  ],
+  "devices": [
+    "ESP-C01"
+  ],
+  "doors": [
+    "D07",
+    "D08"
+  ],
+  "usable_slots": 78,
+  "freshness": "fresh",
+  "checks": [
+    "live snapshot is single-zone",
+    "only C reservations, no staging",
+    "retired zone/device queries rejected"
+  ]
+}

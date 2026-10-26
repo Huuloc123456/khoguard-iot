@@ -241,7 +241,7 @@
       "top": -330,
       "left": -700,
       "attrs": {
-        "text": "KHU C · ESP-C01 · cửa D07, D08 (kho lạnh)"
+        "text": "MỘT KHU C · ESP-C01 · cửa D07, D08 (kho lạnh)"
       }
     },
     {
@@ -304,7 +304,7 @@
       "top": -172,
       "left": 260,
       "attrs": {
-        "text": "Rèm quang: kéo < 100 cm = CHE"
+        "text": "Siêu âm: kéo < 100 cm = CHE"
       }
     },
     {
@@ -331,7 +331,7 @@
       "top": -172,
       "left": 480,
       "attrs": {
-        "text": "Rèm quang: kéo < 100 cm = CHE"
+        "text": "Siêu âm: kéo < 100 cm = CHE"
       }
     },
     {
@@ -486,6 +486,65 @@
       "attrs": {
         "text": "Thẻ Đỏ = DEMO-999 (đã thu hồi)"
       }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r-lock07",
+      "top": -55,
+      "left": -560,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r-lock08",
+      "top": -55,
+      "left": -330,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r-light",
+      "top": 80,
+      "left": -690,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r-heater",
+      "top": 65,
+      "left": -330,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r-fan",
+      "top": 65,
+      "left": -280,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "note-simulation",
+      "top": 335,
+      "left": -700,
+      "attrs": {
+        "text": "CHỈ MÔ PHỎNG WOKWI · PIR = chuyển động, HC-SR04 = vật cản\nECHO nối trực tiếp chỉ trong mô phỏng. Mạch thật cần hạ mức 5V → 3,3V và nguồn tải riêng.\nGạt contact xác nhận vị trí cửa sau khi servo chạy. Không dùng làm hệ thống an toàn thật."
+      }
     }
   ],
   "connections": [
@@ -580,7 +639,7 @@
       []
     ],
     [
-      "led-light:A",
+      "r-light:2",
       "esp:D32",
       "white",
       []
@@ -671,7 +730,7 @@
     ],
     [
       "relay07:NO",
-      "led-lock07:A",
+      "r-lock07:1",
       "green",
       []
     ],
@@ -701,7 +760,7 @@
     ],
     [
       "relay08:NO",
-      "led-lock08:A",
+      "r-lock08:1",
       "green",
       []
     ],
@@ -887,13 +946,13 @@
     ],
     [
       "relay-climate:NO",
-      "led-heater:A",
+      "r-heater:1",
       "red",
       []
     ],
     [
       "relay-climate:NC",
-      "led-fan:A",
+      "r-fan:1",
       "cyan",
       []
     ],
@@ -919,6 +978,36 @@
       "pulldown08:2",
       "esp:GND.1",
       "black",
+      []
+    ],
+    [
+      "r-lock07:2",
+      "led-lock07:A",
+      "green",
+      []
+    ],
+    [
+      "r-lock08:2",
+      "led-lock08:A",
+      "green",
+      []
+    ],
+    [
+      "led-light:A",
+      "r-light:1",
+      "white",
+      []
+    ],
+    [
+      "r-heater:2",
+      "led-heater:A",
+      "red",
+      []
+    ],
+    [
+      "r-fan:2",
+      "led-fan:A",
+      "cyan",
       []
     ]
   ],

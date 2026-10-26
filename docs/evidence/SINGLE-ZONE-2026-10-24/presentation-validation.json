@@ -1,0 +1,261 @@
+{
+  "schemaVersion": "presentation-finalization.v1",
+  "finalSha256": "d013339e17d19c5a180a7f73464a2f78d3e3e72030edf38363ce6743c44338a9",
+  "byteCount": 3124496,
+  "packageIntegrity": {
+    "chart_count": 0,
+    "claim_boundary": "Structural package checks only; no slide text, notes, formulas, chart values, or native PowerPoint execution were inspected.",
+    "finding_count": 0,
+    "findings": [],
+    "notes_parts_skipped": 33,
+    "relationship_part_count": 81,
+    "slide_count": 33,
+    "status": "pass",
+    "exitCode": 0,
+    "findingCount": 0,
+    "warnings": []
+  },
+  "presentationLayout": {
+    "finding_count": 0,
+    "findings": [],
+    "font_policy": {
+      "checked_text_script_count": 394,
+      "native_font_rendering_verified": false,
+      "observed_font_families": [
+        "Arial",
+        "Arial Bold",
+        "Calibri (MS)",
+        "Montserrat",
+        "Roboto",
+        "Roboto Bold"
+      ],
+      "observed_font_use_counts": {
+        "Arial": 5,
+        "Arial Bold": 5,
+        "Calibri (MS)": 6,
+        "Montserrat": 374,
+        "Roboto": 2,
+        "Roboto Bold": 2
+      },
+      "passed": true,
+      "performed": true
+    },
+    "slide_count": 33,
+    "slide_size_in": [
+      20,
+      11.25
+    ],
+    "warning_count": 0,
+    "warnings": [],
+    "exitCode": 0,
+    "findingCount": 0,
+    "fontPolicy": {
+      "checked_text_script_count": 394,
+      "native_font_rendering_verified": false,
+      "observed_font_families": [
+        "Arial",
+        "Arial Bold",
+        "Calibri (MS)",
+        "Montserrat",
+        "Roboto",
+        "Roboto Bold"
+      ],
+      "observed_font_use_counts": {
+        "Arial": 5,
+        "Arial Bold": 5,
+        "Calibri (MS)": 6,
+        "Montserrat": 374,
+        "Roboto": 2,
+        "Roboto Bold": 2
+      },
+      "passed": true,
+      "performed": true
+    }
+  },
+  "fontSelection": {
+    "basis": "reference",
+    "approvedFamilies": [
+      "Montserrat",
+      "Roboto",
+      "Roboto Bold",
+      "Montserrat Ultra-Bold",
+      "Arial",
+      "Arial Bold",
+      "Calibri (MS)",
+      "Consolas"
+    ],
+    "scriptFonts": {},
+    "referenceSha256": "579369158b63b8e79f12a86d2f397f4284f0dbcb8c08522b26bd3f54c56cabf4",
+    "referenceFontsVerifiedInEncodedText": true,
+    "checked_text_script_count": 394,
+    "native_font_rendering_verified": false,
+    "observed_font_families": [
+      "Arial",
+      "Arial Bold",
+      "Calibri (MS)",
+      "Montserrat",
+      "Roboto",
+      "Roboto Bold"
+    ],
+    "observed_font_use_counts": {
+      "Arial": 5,
+      "Arial Bold": 5,
+      "Calibri (MS)": 6,
+      "Montserrat": 374,
+      "Roboto": 2,
+      "Roboto Bold": 2
+    },
+    "passed": true,
+    "performed": true
+  },
+  "firstPartyImport": {
+    "performed": true,
+    "passed": true,
+    "slideCount": 33,
+    "sha256": "d013339e17d19c5a180a7f73464a2f78d3e3e72030edf38363ce6743c44338a9",
+    "runtimeNodeModules": "C:/Users/LECOO/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules",
+    "nodeExecutable": "C:\\Users\\LECOO\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe"
+  },
+  "nativeTableArithmetic": {
+    "performed": true,
+    "checked_column_count": 0,
+    "checks": [],
+    "claim_boundary": "Displayed-value arithmetic with rounding tolerance; not source-data verification.",
+    "eligible_table_count": 0,
+    "finding_count": 0,
+    "findings": [],
+    "native_table_count": 11,
+    "passed": true,
+    "schema_version": "presentation-native-table-arithmetic.v1",
+    "skipped_tables": [
+      {
+        "reason": "no_numeric_amounts",
+        "slide": 6,
+        "table": 1
+      },
+      {
+        "reason": "no_numeric_amounts",
+        "slide": 9,
+        "table": 1
+      },
+      {
+        "reason": "no_unambiguous_bottom_total",
+        "slide": 10,
+        "table": 1
+      },
+      {
+        "reason": "no_unambiguous_bottom_total",
+        "slide": 11,
+        "table": 1
+      },
+      {
+        "reason": "no_numeric_amounts",
+        "slide": 13,
+        "table": 1
+      },
+      {
+        "reason": "no_numeric_amounts",
+        "slide": 16,
+        "table": 1
+      },
+      {
+        "reason": "no_numeric_amounts",
+        "slide": 19,
+        "table": 1
+      },
+      {
+        "reason": "no_numeric_amounts",
+        "slide": 21,
+        "table": 1
+      },
+      {
+        "reason": "no_numeric_amounts",
+        "slide": 23,
+        "table": 1
+      },
+      {
+        "reason": "no_numeric_amounts",
+        "slide": 27,
+        "table": 1
+      },
+      {
+        "reason": "no_numeric_amounts",
+        "slide": 28,
+        "table": 1
+      }
+    ],
+    "slide_count": 33,
+    "warning_count": 0,
+    "warnings": []
+  },
+  "nativeChartTitles": {
+    "performed": true,
+    "checks": [],
+    "finding_count": 0,
+    "findings": [],
+    "native_chart_count": 0,
+    "native_powerpoint_verified": false,
+    "passed": true,
+    "presentation_sha256": "d013339e17d19c5a180a7f73464a2f78d3e3e72030edf38363ce6743c44338a9",
+    "schema_version": "presentation-native-chart-titles.v1",
+    "slide_count": 33,
+    "source_text_emitted": false,
+    "unresolved_linked_title_count": 0
+  },
+  "sourceDerivedPolicyFlags": [
+    "--expected-slide-size-emu",
+    "18288000,10287000",
+    "--validate-bullet-geometry",
+    "--validate-heading-fit",
+    "--require-native-table-slide",
+    "6",
+    "--require-native-table-slide",
+    "9",
+    "--require-native-table-slide",
+    "10",
+    "--require-native-table-slide",
+    "11",
+    "--require-native-table-slide",
+    "13",
+    "--require-native-table-slide",
+    "16",
+    "--require-native-table-slide",
+    "19",
+    "--require-native-table-slide",
+    "21",
+    "--require-native-table-slide",
+    "23",
+    "--require-native-table-slide",
+    "27",
+    "--require-native-table-slide",
+    "28",
+    "--cover-role",
+    "none",
+    "--expected-slide-count",
+    "33",
+    "--approved-font-family",
+    "Montserrat",
+    "--approved-font-family",
+    "Roboto",
+    "--approved-font-family",
+    "Roboto Bold",
+    "--approved-font-family",
+    "Montserrat Ultra-Bold",
+    "--approved-font-family",
+    "Arial",
+    "--approved-font-family",
+    "Arial Bold",
+    "--approved-font-family",
+    "Calibri (MS)",
+    "--approved-font-family",
+    "Consolas"
+  ],
+  "nativeChartValidation": {
+    "detectedOwnerSlides": [],
+    "detectedChartCount": 0,
+    "targetApplication": "portable",
+    "sourceChartOwnersExplicitlyDeclared": true,
+    "validatorRan": false,
+    "passed": true
+  }
+}

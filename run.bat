@@ -1,10 +1,6 @@
 @echo off
+rem One zone C, ESP-C01, D07-D08. run.bat web skips Wokwi; status is read-only.
 rem KhoGuard - mo nhanh cac dich vu demo. Huong dan day du: docs\HUONG_DAN_DEMO.md
-rem   run.bat          broker + backend + dashboard + cua D09 (Node) + gateway + 4 cua so VS Code Wokwi (mac dinh)
-rem                    ESP-C01 (khu C) va 3 nut khu A, B, D deu chay tren Wokwi
-rem   run.bat fake     khong can Wokwi: khu A/B/D va ESP-C01 deu gia lap bang Node
-rem   run.bat web      khu A/B/D gia lap bang Node, khong co ESP-C01
-rem   run.bat status   chi xem dich vu nao dang chay
 setlocal
 rem Double-click: keep the window open at the end so the messages can be read.
 if "%KG_INNER%"=="" (
@@ -17,8 +13,8 @@ chcp 65001 >nul
 cd /d "%~dp0"
 set "MODE=%~1"
 if "%MODE%"=="" set "MODE=wokwi"
-if /i not "%MODE%"=="wokwi" if /i not "%MODE%"=="fake" if /i not "%MODE%"=="web" if /i not "%MODE%"=="status" (
-  echo Cách dùng: run.bat [wokwi^|fake^|web^|status]
+if /i not "%MODE%"=="wokwi" if /i not "%MODE%"=="web" if /i not "%MODE%"=="status" (
+  echo Cách dùng: run.bat [wokwi^|web^|status]
   exit /b 1
 )
 set "PORTCHECK=powershell -NoProfile -ExecutionPolicy Bypass -File scripts\wait-port.ps1"
@@ -44,14 +40,12 @@ call :launch 18884 "T1 Broker" "npm.cmd run infra:mqtt:start" 15 || goto :failed
 call :launch 3001 "T2 Backend" "npm.cmd run backend:start" 30 || goto :failed
 call :launch 5173 "T3 Dashboard" "npm.cmd run dev -- --strictPort" 30 || goto :failed
 
-set "SIM=npm.cmd run demo:warehouse -- --seed=17"
-if /i "%MODE%"=="web" set "SIM=%SIM% --with-fake-zones"
-if /i "%MODE%"=="fake" set "SIM=%SIM% --with-fake-zones --with-fake-esp"
-powershell -NoProfile -Command "if (Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Where-Object CommandLine -match 'simulate-warehouse\.mjs') { exit 0 } else { exit 1 }" && (
-  echo [BỎ QUA] T4 Mô phỏng các khu đang chạy.
-) || (
-  echo [MỞ] T4 Mô phỏng các khu
-  start "KhoGuard-T4 Mo phong" cmd /k "title KhoGuard-T4 Mo phong & %SIM%"
+if exist ".local\thingsboard-cloud.json" (
+  powershell -NoProfile -Command "if (Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Where-Object CommandLine -match 'scripts[/\\]thingsboard\.mjs bridge') { exit 0 } else { exit 1 }" && (
+    echo [BỎ QUA] Bridge ThingsBoard đã chạy.
+  ) || (
+    start "KhoGuard-T4 ThingsBoard" cmd /k "cd /d %~dp0 & title KhoGuard-T4 ThingsBoard & npm.cmd run thingsboard:bridge"
+  )
 )
 
 if /i "%MODE%"=="wokwi" (
@@ -59,10 +53,10 @@ if /i "%MODE%"=="wokwi" (
     echo [LỖI] Chưa có gateway Wokwi. Chạy: npm.cmd run firmware:gateway:setup
     goto :failed
   )
-  for %%E in (esp32dev zone_a zone_b zone_d) do if not exist ".local\firmware-build\%%E\firmware.bin" echo [CẢNH BÁO] Chưa có firmware %%E. Chạy: npm.cmd run firmware:build
+  for %%E in (esp32dev) do if not exist ".local\firmware-build\%%E\firmware.bin" echo [CẢNH BÁO] Chưa có firmware %%E. Chạy: npm.cmd run firmware:build
   call :launch 9011 "T5 Gateway Wokwi" "npm.cmd run firmware:gateway:start" 15 || goto :failed
-  where code >nul 2>&1 || echo [CẢNH BÁO] Không tìm thấy lệnh code. Mở bằng VS Code thủ công: firmware, firmware\wokwi\zone-a, zone-b, zone-d.
-  where code >nul 2>&1 && for %%F in (firmware firmware\wokwi\zone-a firmware\wokwi\zone-b firmware\wokwi\zone-d) do call code --new-window "%~dp0%%F"
+  where code >nul 2>&1 || echo [CẢNH BÁO] Không tìm thấy lệnh code. Mở bằng VS Code thủ công: firmware.
+  where code >nul 2>&1 && for %%F in (firmware) do call code --new-window "%~dp0%%F"
 )
 
 start "" "http://127.0.0.1:5173"
@@ -70,11 +64,9 @@ echo.
 echo === Đã mở xong ===
 echo  - Dashboard: http://127.0.0.1:5173  ^(Nguồn dữ liệu: Backend / MQTT, đăng nhập operator^)
 if /i "%MODE%"=="wokwi" (
-  echo  - Trong TỪNG cửa sổ VS Code vừa mở ^(4 cửa sổ^): F1 ^> Wokwi: Start Simulator, giữ tab Simulator hiển thị.
-  echo    Serial Monitor: khu C có KHOGUARD_M12 ...; khu A/B/D có KHOGUARD_ZONE ...; cả 4 phải có MQTT_ONLINE.
+  echo  - Trong cửa sổ VS Code firmware: F1 ^> Wokwi: Start Simulator, giữ tab Simulator hiển thị.
+  echo    Serial Monitor: ESP-C01 phải có MQTT_ONLINE. Chỉ chạy một Simulator.
 )
-if /i "%MODE%"=="fake" echo  - Khu A/B/D và ESP-C01 là bản giả lập Node nhưng giao diện vẫn ghi Wokwi. KHÔNG mở Wokwi cùng lúc.
-if /i "%MODE%"=="web" echo  - Khu A/B/D là bản giả lập Node nhưng giao diện vẫn ghi Wokwi. KHÔNG mở Wokwi khu A/B/D cùng lúc.
 echo  - Đóng tất cả: close.bat
 exit /b 0
 
@@ -85,7 +77,7 @@ rem %1 cổng, %2 tên cửa sổ, %3 lệnh, %4 số giây chờ cổng mở
   exit /b 0
 )
 echo [MỞ] %~2 ...
-start "KhoGuard-%~2" cmd /k "title KhoGuard-%~2 & %~3"
+start "KhoGuard-%~2" cmd /k "cd /d %~dp0 & title KhoGuard-%~2 & %~3"
 %PORTCHECK% -Port %1 -Seconds %4 >nul 2>&1 && (
   echo       sẵn sàng ở cổng %1.
   exit /b 0
@@ -101,7 +93,6 @@ call :show 18885 "Broker MQTT TLS   "
 call :show 3001  "Backend           "
 call :show 5173  "Dashboard         "
 call :show 9011  "Gateway Wokwi     "
-powershell -NoProfile -Command "if (Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Where-Object CommandLine -match 'simulate-warehouse\.mjs') { exit 0 } else { exit 1 }" && echo   Mô phỏng các khu   : đang chạy || echo   Mô phỏng các khu   : đã tắt
 exit /b 0
 
 :show

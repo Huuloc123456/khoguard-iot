@@ -13,7 +13,7 @@ test('MySQL telemetry DDL does not reference auto-increment id in a CHECK constr
   assert.doesNotMatch(telemetryMigration.sql,/CHECK\s*\(\s*id\b/i);
   assert.match(telemetryMigration.sql,/UNIQUE KEY telemetry_dedupe/);
 });
-test('seed contains only registry inventory, including both owners of zone C and no measured safety state', () => {
+test('immutable v1 seed preserves history and contains the active registry assignments', () => {
   assert.equal(inventorySeed.warehouse.id,'WH01');
   assert.equal(inventorySeed.zones.length,4);
   assert.equal(inventorySeed.devices.length,5);

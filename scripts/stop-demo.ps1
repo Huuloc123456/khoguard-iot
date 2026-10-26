@@ -7,10 +7,8 @@ $gateway = Join-Path $root '.local\wokwigw-2.0.1\wokwigw.exe'
 
 function Find-Targets {
     $all = Get-CimInstance Win32_Process
-    # Vite may be started with a relative path, so it is recognised by the dashboard port instead.
-    $dashboard = @(Get-NetTCPConnection -LocalPort 5173 -State Listen -ErrorAction SilentlyContinue | ForEach-Object OwningProcess)
     # Windows opened by run.bat carry this marker in their command line; killing their tree stops npm, node, mosquitto and the gateway inside.
-    $windows = @($all | Where-Object { $_.Name -eq 'cmd.exe' -and $_.CommandLine -like '*title KhoGuard-T*' })
+    $windows = @($all | Where-Object { $_.Name -eq 'cmd.exe' -and $_.CommandLine -like '*title KhoGuard-T*' -and $_.CommandLine -like "*$root*" })
     # Anything left over (window closed by hand, started from another terminal) is matched by the exact project script or path.
     # Only these entry points: other node processes may mention the project path too (editors, agents) and must survive.
     $leftovers = @($all | Where-Object {
@@ -18,8 +16,9 @@ function Find-Targets {
         ($_.Name -eq 'wokwigw.exe' -and $_.ExecutablePath -eq $gateway) -or
         ($_.Name -eq 'node.exe' -and (
             $_.CommandLine -like "*$root\node_modules\vite\*" -or
-            ($dashboard -contains $_.ProcessId -and $_.CommandLine -match 'vite') -or
-            $_.CommandLine -match '\s(server[\\/]start|scripts[\\/]simulate-warehouse|scripts[\\/]start-mqtt)\.mjs(\s|"|$)'))
+            $_.CommandLine -like "*$root\server\start.mjs*" -or
+            $_.CommandLine -like "*$root\scripts\start-mqtt.mjs*" -or
+            ($_.CommandLine -like "*$root\scripts\thingsboard.mjs*" -and $_.CommandLine -match '\sbridge(\s|$)')))
     })
     [pscustomobject]@{ Windows = $windows; Leftovers = $leftovers }
 }

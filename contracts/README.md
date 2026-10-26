@@ -1,6 +1,6 @@
 # Hợp đồng KhoGuard v1 — M01
 
-Ngày chốt: 12/10/2026. Đây là hợp đồng và bộ kiểm tra **trước khi tích hợp**; chưa có MQTT consumer, HTTP server hoặc firmware KhoGuard. M02 đã tạo broker/schema infrastructure theo [hướng dẫn](../infra/README.md), chưa lưu dữ liệu nghiệp vụ. Các JSON example là fixture, không phải kết quả thiết bị đang online.
+Cập nhật 25/10/2026. Registry hoạt động: WH01 / C / ESP-C01 / D07–D08. Schema và validator được dùng trong backend thật. JSON example là fixture, không chứng minh thiết bị đang online.
 
 ## File và cách kiểm tra
 
@@ -10,7 +10,7 @@ Ngày chốt: 12/10/2026. Đây là hợp đồng và bộ kiểm tra **trước
 | `mqtt.schema.json` | JSON Schema draft-07 cho năm loại message |
 | `snapshot.schema.json` | Response dự kiến của `GET /api/snapshot` |
 | `examples.json` | Telemetry, RFID event, Last Will offline, command và acknowledgment |
-| `snapshot.example.json` | Fixture 4 khu/12 cửa từ số liệu demo hiện có, thêm metadata nguồn/kết nối |
+| `snapshot.example.json` | Fixture một khu, một thiết bị và hai cửa, có metadata nguồn/kết nối |
 | `validate.js` | Validator Node: schema, giới hạn byte, mapping và các bất biến snapshot |
 | `../tests/contracts.test.js` | Kiểm thử contract, không gọi broker/DB |
 
@@ -21,21 +21,17 @@ npm test
 
 `validateMqttMessage(topic, raw)` nhận string hoặc Buffer UTF-8; `validateSnapshot(object)` nhận snapshot đã parse. Thành công trả `{ ok: true, value }`; thất bại trả `{ ok: false, error: { code, message, details? } }`. Không coerce kiểu, bỏ trường lạ hoặc tự thêm giá trị mặc định. Validator không thay thế xác thực MQTT/API.
 
-Ajv được compile một lần, bật strict; `ajv-formats` kiểm tra `date-time`. Giới hạn payload 65.536 byte và timestamp 24 ký tự được áp dụng để giới hạn input. Clock ứng dụng dùng UTC, giây 00–59, phần thập phân tùy chọn 1–3 chữ số; không nhận leap second hay độ chính xác nhỏ hơn mili giây. Các package hiện là dev dependency cho kiểm tra M01; khi backend dùng validator trong runtime, phải đưa dependency vào manifest runtime tương ứng. [Ajv](https://ajv.js.org/guide/getting-started.html), [format validation](https://ajv.js.org/guide/formats.html).
+Ajv được compile một lần, bật strict; `ajv-formats` kiểm tra `date-time`. Giới hạn payload 65.536 byte và timestamp 24 ký tự được áp dụng để giới hạn input. Clock ứng dụng dùng UTC, giây 00–59, phần thập phân tùy chọn 1–3 chữ số; không nhận leap second hay độ chính xác nhỏ hơn mili giây. Ajv và ajv-formats là runtime dependency của backend. [Ajv](https://ajv.js.org/guide/getting-started.html), [format validation](https://ajv.js.org/guide/formats.html).
 
 ## Registry và quyền ghi
 
 | ID | Khu/cửa | Nguồn dự kiến | Số liệu cấp khu |
 | --- | --- | --- | --- |
-| SIM-A01 | A / D01–D03 | Node giả lập | Môi trường + occupancy |
-| SIM-B01 | B / D04–D06 | Node giả lập | Môi trường + occupancy |
-| ESP-C01 | C / D07–D08 | ESP32 Wokwi | Môi trường + occupancy |
-| SIM-C02 | C / D09 | Node giả lập | Chỉ trạng thái D09 |
-| SIM-D01 | D / D10–D12 | Node giả lập | Môi trường + occupancy |
+| ESP-C01 | C / D07–D08 | ESP32 Wokwi | Môi trường + occupancy + điều khiển hai cửa |
 
-D07–D08 là cặp airlock. D09 không thuộc bộ điều khiển airlock; node D09 không được ghi đè số người hoặc nhiệt độ khu C. `source` do backend lấy từ registry, không nhận do MQTT publisher tự khai. Registry này là cấu hình demo 12 cửa; mở rộng 50 node ở M16 phải bổ sung mapping/schema/fixture phù hợp rồi kiểm tra lại.
+D07–D08 là cặp cửa liên động. `source` do backend lấy từ registry, không nhận do MQTT publisher tự khai. Các danh tính/khu khác bị loại khỏi phạm vi hoạt động. Lịch sử MySQL và seed v1 vẫn được giữ.
 
-Mỗi telemetry là **snapshot đầy đủ phần thiết bị sở hữu**: có mọi door được gán và mọi nhóm environment/occupancy được phép. Cảm biến lỗi gửi null/unknown, không bỏ trường. SIM-C02 chỉ gửi doors. Như vậy message door-only không thể làm dữ liệu nhiệt độ hoặc count cũ được coi là fresh.
+Telemetry phải có đầy đủ hai cửa, environment và occupancy của ESP-C01. Cảm biến lỗi gửi null/unknown, không bỏ trường. Validator không chuyển tín hiệu chưa rõ thành 0/false. Snapshot phải có đúng C, ESP-C01, D07–D08.
 
 ## MQTT, QoS và ACL
 
@@ -133,5 +129,5 @@ Telemetry có thể thêm: `doors[].locked`, `doors[].open_ms` (ms cửa đã m�
 ## Thay đổi M12–M14 (13/10/2026)
 
 - Snapshot: `zones[].capacity` là số vị trí khả dụng (bỏ vị trí xả đá; khu C = 78), `occupied` và `reserved` lấy từ bảng `slots`/`reservations` (demo seed, không phải WMS). Giữ chỗ đã quá hạn không tính.
-- Quy tắc sức chứa ở bảng trên được áp dụng ở `server/admission.mjs` cho kho lưu trữ A–C; khu đệm D là cổng riêng (DEC-029).
+- Quy tắc sức chứa ở bảng trên được áp dụng ở `server/admission.mjs` cho một khu C. Chỉ nhận frozen, 78 vị trí khả dụng, không còn staging D (DEC-047).
 - Ca 06:00/18:00 dùng như bảng trên; kết quả chỉ ghi `access_audit` (DEC-028).

@@ -1,5 +1,6 @@
 import { sqlUtc } from './telemetry.mjs';
-import { capacityDecision, stagingBlocked, pickSlot, reservationAction, RESERVATION_TTL_MS } from './admission.mjs';
+import { registry } from '../contracts/validate.js';
+import { capacityDecision, pickSlot, reservationAction, RESERVATION_TTL_MS } from './admission.mjs';
 
 const execute = (connection,sql,values=[]) => connection.execute({sql,timeout:1500},values);
 const conflict = code => Object.assign(new Error(code),{code,conflict:true});
@@ -10,7 +11,7 @@ const view = r => ({id:Number(r.id),request_id:r.request_id,slot_id:r.slot_id,zo
   finished_at:iso(r.finished_at),finished_by:r.finished_by});
 // Slot counts with pending reservations past expires_at already excluded (they are marked expired first).
 const COUNTS = `SELECT s.staging,SUM(s.status='occupied') AS occupied,SUM(s.status<>'defrost') AS capacity,COUNT(r.id) AS reserved
-  FROM slots s LEFT JOIN reservations r ON r.active_slot=s.id GROUP BY s.staging`;
+  FROM slots s LEFT JOIN reservations r ON r.active_slot=s.id WHERE s.zone_id = ? GROUP BY s.staging`;
 const area = rows => staging => {const r=rows.find(x=>Boolean(x.staging)===staging); return {capacity:Number(r?.capacity ?? 0),occupied:Number(r?.occupied ?? 0),reserved:Number(r?.reserved ?? 0)};};
 
 // now() is the backend clock (injectable for boundary checks); the browser clock is never used.
@@ -36,13 +37,14 @@ export function createReservationStore(pool,{now=()=>new Date()}={}) {
       } finally {clearTimeout(deadline);connection?.release();}
     }
   }
-  const expireDue = (connection,at) => execute(connection,"UPDATE reservations SET status='expired',finished_at=expires_at WHERE status='pending' AND expires_at <= ?",[sqlUtc(at)]);
+  const expireDue = (connection,at) => execute(connection,"UPDATE reservations r JOIN slots s ON s.id=r.slot_id SET r.status='expired',r.finished_at=r.expires_at WHERE s.zone_id = ? AND r.status='pending' AND r.expires_at <= ?",[registry.zones[0],sqlUtc(at)]);
   const bump = connection => execute(connection,"UPDATE warehouse_stream SET revision = revision + 1 WHERE warehouse_id = 'WH01'");
 
   async function admit(request,actor) {
     return transaction(async(connection,at)=>{
       const [same]=await execute(connection,'SELECT * FROM reservations WHERE request_id = ?',[request.request_id]);
       if (same.length) {
+        if (!registry.zones.includes(same[0].slot_id.split('-')[0])) throw conflict('REQUEST_ID_REUSED');
         const r=same[0];
         // Retrying the same request returns the original result; a different body under the same id is refused.
         if (r.temperature_class!==request.temperature_class || r.size_class!==request.size_class || r.load_kg!==request.load_kg) throw conflict('REQUEST_ID_REUSED');
@@ -50,13 +52,12 @@ export function createReservationStore(pool,{now=()=>new Date()}={}) {
       }
       // A refusal rolls back this expiry too; it is re-applied by the next transaction, so nothing is lost.
       await expireDue(connection,at);
-      const [rows]=await execute(connection,COUNTS);
+      const [rows]=await execute(connection,COUNTS,[registry.zones[0]]);
       const counts=area(rows);
-      if (stagingBlocked(counts(true))) throw conflict('STAGING_BLOCKED');
       const decision=capacityDecision(counts(false));
       if (!decision.ok) throw conflict('CAPACITY_LIMIT');
       const [free]=await execute(connection,`SELECT s.id,s.temperature_class,s.size_class,s.max_load_kg FROM slots s LEFT JOIN reservations r ON r.active_slot=s.id
-        WHERE s.status='available' AND NOT s.staging AND s.temperature_class = ? AND r.id IS NULL ORDER BY s.id FOR UPDATE`,[request.temperature_class]);
+        WHERE s.zone_id = ? AND s.status='available' AND NOT s.staging AND s.temperature_class = ? AND r.id IS NULL ORDER BY s.id FOR UPDATE`,[registry.zones[0],request.temperature_class]);
       const slot=pickSlot(free,request);
       if (!slot) throw conflict('NO_SUITABLE_SLOT');
       const expires=new Date(at.getTime()+RESERVATION_TTL_MS);
@@ -71,7 +72,7 @@ export function createReservationStore(pool,{now=()=>new Date()}={}) {
     return transaction(async(connection,at)=>{
       const [rows]=await execute(connection,'SELECT * FROM reservations WHERE id = ? FOR UPDATE',[id]);
       const r=rows[0];
-      if (!r) return null;
+      if (!r || !registry.zones.includes(r.slot_id.split('-')[0])) return null;
       const step=reservationAction(r,action,at);
       if (step.expire) {
         await execute(connection,"UPDATE reservations SET status='expired',finished_at=expires_at WHERE id = ? AND status='pending'",[id]);
@@ -94,10 +95,10 @@ export function createReservationStore(pool,{now=()=>new Date()}={}) {
     return transaction(async(connection,at)=>{
       const [expired]=await expireDue(connection,at);
       if (expired.affectedRows) await bump(connection);
-      const [rows]=await execute(connection,COUNTS);
-      const [items]=await execute(connection,'SELECT * FROM reservations ORDER BY id DESC LIMIT ?',[limit]);
+      const [rows]=await execute(connection,COUNTS,[registry.zones[0]]);
+      const [items]=await execute(connection,'SELECT r.* FROM reservations r JOIN slots s ON s.id=r.slot_id WHERE s.zone_id = ? ORDER BY r.id DESC LIMIT ?',[registry.zones[0],limit]);
       const counts=area(rows);
-      return {storage:counts(false),staging:counts(true),generated_at:at.toISOString(),items:items.map(view)};
+      return {storage:counts(false),generated_at:at.toISOString(),items:items.map(view)};
     });
   }
   return {admit,confirm:(id,actor)=>finish(id,'confirm',actor),cancel:(id,actor)=>finish(id,'cancel',actor),list};

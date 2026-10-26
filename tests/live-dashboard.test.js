@@ -9,8 +9,8 @@ test('door provenance uses its registered device rather than the zone environmen
   const view=snapshotToView(fixture);
   assert.equal(view.doors.find(d=>d.id==='D07').source,'Wokwi');
   assert.equal(view.doors.find(d=>d.id==='D08').source,'Wokwi');
-  assert.equal(view.doors.find(d=>d.id==='D09').source,'Node mô phỏng');
-  assert.equal(view.doors.find(d=>d.id==='D09').deviceId,'SIM-C02');
+  assert.equal(view.doors.find(d=>d.id==='D09'),undefined);
+  assert.deepEqual(view.doors.map(d=>d.deviceId),['ESP-C01','ESP-C01']);
 });
 test('live adapter preserves unknowns/provenance and stale data never permits closing',()=>{
   const value=structuredClone(fixture);value.zones[0].occupied=null;value.zones[0].reserved=null;
@@ -19,9 +19,9 @@ test('live adapter preserves unknowns/provenance and stale data never permits cl
   const view=snapshotToView(value);
   assert.equal(view.zones[0].temperature,null);assert.equal(view.doors[0].open,null);
   assert.equal(getSummary(view).occupied,null);assert.equal(getSummary(view).people,null);
-  assert.equal(view.zones[2].source,'Wokwi');
-  view.zones[2].freshness='stale';view.zones[2].people=0;view.zones[2].presence=false;view.zones[2].beam=false;view.zones[2].panic=false;
-  assert.equal(canCloseDoor(view.zones[2]),false);
+  assert.equal(view.zones[0].source,'Wokwi');
+  view.zones[0].freshness='stale';view.zones[0].people=0;view.zones[0].presence=false;view.zones[0].beam=false;view.zones[0].panic=false;
+  assert.equal(canCloseDoor(view.zones[0]),false);
 });
 test('full snapshots resync skipped revisions; old revisions/time and malformed snapshots are refused',()=>{
   assert.equal(acceptSnapshot(fixture,null),true);
@@ -54,15 +54,15 @@ test('live alerts keep active/acknowledged/resolved separate; only active unackn
   value.alerts=[{...base,id:'AL-1',state:'active',acknowledged:true,acknowledged_at:'2026-10-13T01:00:05.000Z'},
     {...base,id:'AL-2',state:'active',acknowledged:false,level:'danger'},
     {...base,id:'AL-3',state:'resolved',acknowledged:false,resolved_at:'2026-10-13T01:01:00.000Z'}];
-  value.doors[6]={...value.doors[6],locked:true};
+  value.doors[0]={...value.doors[0],locked:true};
   const view=snapshotToView(value);
   assert.deepEqual(view.alerts.map(a=>[a.id,a.state,a.acknowledged]),[['AL-1','active',true],['AL-2','active',false],['AL-3','resolved',false]]);
   assert.deepEqual(view.alerts.filter(needsAttention).map(a=>a.id),['AL-2']);
   assert.match(view.alerts[2].resolvedTime,/^\d{2}:\d{2}:\d{2}$/);
-  assert.equal(lockLabel(view.doors[6]),'Đã khóa');assert.equal(lockLabel({locked:false}),'Không khóa');assert.equal(lockLabel({locked:null}),'Chưa xác định');
+  assert.equal(lockLabel(view.doors[0]),'Đã khóa');assert.equal(lockLabel({locked:false}),'Không khóa');assert.equal(lockLabel({locked:null}),'Chưa xác định');
   assert.equal(commandText({status:'pending'}),'Đang chờ ESP-C01 xác nhận…');
   assert.match(commandText({status:'applied'}),/Đã áp dụng tại thiết bị/);
-  assert.equal(commandText({status:'rejected',reason:'PRESENCE_DETECTED'}),'Bị từ chối: mmWave còn phát hiện người trong kho');
+  assert.equal(commandText({status:'rejected',reason:'PRESENCE_DETECTED'}),'Bị từ chối: PIR còn phát hiện người trong kho');
   assert.equal(commandText({status:'rejected',reason:'INTERLOCK_ACTIVE'}),'Bị từ chối: liên động hai cửa, cửa còn lại chưa đóng');
   assert.match(commandText({status:'expired',reason:'COMMAND_EXPIRED',late_ack:'applied'}),/Hết hạn.*phản hồi muộn: applied/);
   assert.match(commandText({error:'DEVICE_NOT_LIVE'}),/ESP-C01 chưa trực tuyến/);

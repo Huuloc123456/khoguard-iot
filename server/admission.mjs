@@ -1,7 +1,7 @@
 // M14 receiving rules. Percentages are compared as exact integers (count*100 vs limit*capacity); the UI's rounded percent decides nothing.
 export const WARN_PCT = 85, LIMIT_PCT = 95;
 export const RESERVATION_TTL_MS = 15 * 60 * 1000;
-export const TEMPERATURE_CLASSES = ['ambient', 'chilled', 'frozen'];
+export const TEMPERATURE_CLASSES = ['frozen'];
 const fail = () => { throw Object.assign(new Error('INVALID_ADMISSION'), { code: 'INVALID_ADMISSION' }); };
 
 // The 95% ceiling is the safety buffer (5% of usable slots); it is not subtracted again from capacity.
@@ -10,9 +10,6 @@ export function capacityDecision({ capacity, occupied, reserved }) {
   if (capacity <= 0 || after * 100 > LIMIT_PCT * capacity) return { ok: false, code: 'CAPACITY_LIMIT', used, after };
   return { ok: true, used, after, warning: after * 100 >= WARN_PCT * capacity ? 'NEAR_CAPACITY' : null };
 }
-// Inbound pallets pass the staging area (zone D); at 95% it is congested and receiving stops.
-export const stagingBlocked = ({ capacity, occupied, reserved }) => capacity <= 0 || (occupied + reserved) * 100 >= LIMIT_PCT * capacity;
-
 // Best fit: smallest size, then smallest load rating, then id, so large/heavy slots stay free and the order is stable.
 export function pickSlot(slots, request) {
   return slots.filter(s => s.temperature_class === request.temperature_class && s.size_class >= request.size_class && s.max_load_kg >= request.load_kg)

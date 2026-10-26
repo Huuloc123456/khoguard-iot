@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { writeFileSync } from 'node:fs';
-import { setTimeout as delay } from 'node:timers/promises';
 import mqtt from 'mqtt';
 import { local, readJson } from './local-config.mjs';
 import { validateMqttMessage, registry } from '../contracts/validate.js';
@@ -33,8 +32,7 @@ try {
   const devices = new Map();
   for (const device of registry.devices) devices.set(device.id, await connect(device.id));
   const device = devices.get('ESP-C01');
-  const other = devices.get('SIM-B01');
-  checks.push('all seven accounts authenticate');
+  checks.push('all three active accounts authenticate');
   const topic = 'khoguard/v1/WH01/devices/ESP-C01/telemetry';
   await backend.subscribeAsync(topic, { qos: 1 });
   await observer.subscribeAsync(topic, { qos: 1 });
@@ -68,13 +66,8 @@ try {
   const [appliedRequest] = await Promise.all([receive(device, commands, commandRaw), backend.publishAsync(commands, commandRaw, { qos: 1 })]);
   assert.equal(appliedRequest, commandRaw);
   checks.push('backend command delivered only as a request');
-  const unexpected = [];
-  other.on('message', (name, payload) => { if (name === topic) unexpected.push(payload.toString()); });
-  try { await other.subscribeAsync(topic, { qos: 1 }); } catch (error) { assert.ok(denied(error)); }
-  await Promise.all([receive(backend, topic, raw), device.publishAsync(topic, raw, { qos: 1 })]);
-  await delay(400);
-  assert.deepEqual(unexpected, []);
-  checks.push('other device cannot receive private telemetry');
+  await assert.rejects(backend.publishAsync(topic.replace('ESP-C01','SIM-B01').replace('telemetry','commands'), '{}', {qos:1}),denied);
+  checks.push('even backend cannot command retired device topics');
   const legacy = await connect('ESP-C01', accounts['ESP-C01'], 4);
   const [legacyReceived] = await Promise.all([receive(backend, topic, raw), legacy.publishAsync(topic, raw, { qos: 1 })]);
   assert.equal(legacyReceived, raw);

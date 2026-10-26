@@ -8,7 +8,7 @@ export function Pill({ tone = 'neutral', children }) {
 
 export function WarehouseMap({ demo, selected, onSelect }) {
   return <section className="panel map-panel" aria-labelledby="map-title">
-    <div className="panel-heading"><div><h2 id="map-title">Sơ đồ toàn kho</h2><p>Chọn khu vực để xem chi tiết</p></div><span className="muted">{demo.zones.length} khu vực</span></div>
+    <div className="panel-heading"><div><h2 id="map-title">Sơ đồ kho lạnh C</h2><p>Một khu vực · Hai cửa liên động D07–D08</p></div><span className="muted">{demo.zones.length} khu vực</span></div>
     <div className="warehouse-plan">
       {demo.zones.map(zone => {
         const warning = demo.alerts.some(alert => alert.zone === zone.id);
@@ -40,7 +40,7 @@ export function ZoneDetail({ zone, doors, alerts }) {
       <div className="storage-heading"><span>Sức chứa khu vực</span><strong>{zone.occupied===null?'—':Math.round(zone.occupied / zone.capacity * 100)}%</strong></div>
       {zone.occupied!==null&&<progress className={zone.occupied / zone.capacity >= .95 ? 'capacity-danger' : ''} value={reading(zone.occupied)} max={zone.capacity} aria-label={`Sức chứa ${zone.name}`} />}
       <p className="capacity-caption">{reading(zone.occupied)} / {zone.capacity} vị trí đã sử dụng</p>
-      {isCold && <div className="safety-section"><h3>Liên động an toàn</h3><div className="signal-row"><span>Bộ đếm RFID</span><strong>{reading(zone.people)} người</strong></div><div className="signal-row"><span>Cảm biến mmWave</span><strong>{signal(zone.presence,'Có tín hiệu','Không có tín hiệu')}</strong></div><div className="signal-row"><span>Rèm quang</span><strong>{signal(zone.beam,'Có vật cản','Thông thoáng')}</strong></div><div className={`safety-message ${zone.panic ? 'danger' : blocked ? 'warning' : 'success'}`} role="status"><Icon name={blocked ? 'lock' : 'check'} size={17} /><div><strong>{zone.panic ? 'Chế độ khẩn cấp' : blocked ? 'Chặn đóng cửa' : zone.mode==='live'?'Đủ tín hiệu để xét đóng':'Cho phép đóng cửa'}</strong><p>{zone.panic ? 'Cắt chốt, mở cửa và bật cảnh báo giả lập.' : blocked ? zone.mode==='live'?'Còn người, tín hiệu chưa xác minh hoặc dữ liệu cũ.':'Còn người hoặc tín hiệu hiện diện bên trong.' : 'Bộ đếm và các cảm biến đều đã thông thoáng.'}</p></div></div></div>}
+      {isCold && <div className="safety-section"><h3>Liên động an toàn</h3><div className="signal-row"><span>Bộ đếm RFID</span><strong>{reading(zone.people)} người</strong></div><div className="signal-row"><span>Cảm biến PIR</span><strong>{signal(zone.presence,'Có tín hiệu','Không có tín hiệu')}</strong></div><div className="signal-row"><span>Vật cản siêu âm</span><strong>{signal(zone.beam,'Có vật cản','Thông thoáng')}</strong></div><div className={`safety-message ${zone.panic ? 'danger' : blocked ? 'warning' : 'success'}`} role="status"><Icon name={blocked ? 'lock' : 'check'} size={17} /><div><strong>{zone.panic ? 'Chế độ khẩn cấp' : blocked ? 'Chặn đóng cửa' : zone.mode==='live'?'Đủ tín hiệu để xét đóng':'Cho phép đóng cửa'}</strong><p>{zone.panic ? 'Cắt chốt, mở cửa và bật cảnh báo giả lập.' : blocked ? zone.mode==='live'?'Còn người, tín hiệu chưa xác minh hoặc dữ liệu cũ.':'Còn người hoặc tín hiệu hiện diện bên trong.' : 'Bộ đếm và các cảm biến đều đã thông thoáng.'}</p></div></div></div>}
     </div>
   </section>;
 }

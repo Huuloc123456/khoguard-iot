@@ -40,7 +40,7 @@ struct Occupancy {
 };
 inline bool countAllowsClose(const Occupancy& o,bool presence) {return o.verified && o.count==0 && !presence;}
 struct RfidRead {unsigned door=0,card=0;bool entering=false;char cardId[33]{};};
-// Wokwi has no RC522 part; the serial monitor line "RFID D07 DEMO-017 IN|OUT" simulates one read.
+// The Wokwi MFRC522 is the interactive reader; this serial form remains for scripted tests.
 inline bool parseRfid(const char* line,RfidRead& out) {
   char words[4][34];unsigned count=0,length=0;
   for(const char* c=line;;c++) {

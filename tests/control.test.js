@@ -34,8 +34,8 @@ test('temperature uses hysteresis; missing reading is a sensor alert, never 0 °
   assert.deepEqual(at(-16 - TEMPERATURE_HYSTERESIS_C / 2, new Set([key])), ['-:TEMPERATURE_OUT_OF_RANGE:warning']);
   assert.deepEqual(at(-16 - TEMPERATURE_HYSTERESIS_C, new Set([key])), []);
   assert.deepEqual(at(null), ['-:SENSOR_MISSING:warning']);
-  const sim = { device_id: 'SIM-C02', payload: { zone_id: 'C', controller_revision: 0, doors: [door('D09', { local_inputs_healthy: false, state: 'unknown' })] } };
-  assert.deepEqual(desiredAlerts(sim, zone, new Set()), [], 'simulators without real inputs do not raise input faults');
+  const unverified=esp({doors:[door('D07',{local_inputs_healthy:false,state:'unknown'}),door('D08')]});
+  assert.ok(desiredAlerts(unverified,zone,new Set()).some(a=>a.code==='LOCAL_INPUT_FAILURE'),'active inputs must remain visible when unverified');
 });
 
 test('alert plan raises, updates level, resolves and reopens a recently resolved alert instead of spamming rows', () => {
@@ -56,7 +56,7 @@ test('command requests only accept known actions on registered doors', () => {
   assert.deepEqual(parseCommandRequest('D07', '{"action":"close"}'), { door: 'D07', action: 'close', device: 'ESP-C01' });
   for (const [doorId, body] of [['D99', '{"action":"close"}'], ['D07', '{"action":"unlock"}'], ['D07', '{"action":"close","force":true}'], ['D07', 'x'], ['D07', '[]']])
     assert.throws(() => parseCommandRequest(doorId, body), /INVALID_COMMAND/);
-  assert.throws(() => parseCommandRequest('D01', '{"action":"open"}'), /NOT_COMMANDABLE/);
+  assert.throws(() => parseCommandRequest('D01', '{"action":"open"}'), /INVALID_COMMAND/);
 });
 
 test('commands are bound to the live device session/revision, expire and accept one final ack', () => {

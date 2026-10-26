@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { registry } from '../scripts/local-config.mjs';
 
 const text = path => readFileSync(new URL(path,import.meta.url),'utf8').replaceAll('\r\n','\n');
 const hash = value => createHash('sha256').update(value).digest('hex');
@@ -19,18 +18,16 @@ export const reservationMigration = {version:'006_reservations',sql:text('./migr
 reservationMigration.checksum = hash(reservationMigration.sql);
 export const deviceSourcesMigration = {version:'007_device_sources',sql:text('./migrations/007_device_sources.sql')};
 deviceSourcesMigration.checksum = hash(deviceSourcesMigration.sql);
-// The inventory seed checksum is tied to the registry as first seeded. 007_device_sources later moved zones A/B/D to
-// Wokwi and marked ESP-C01 as the only door controller; undo exactly that to recover the seeded registry.
-const V1_SOURCES = {'SIM-A01':'node-simulator','SIM-B01':'node-simulator','SIM-D01':'node-simulator'};
-const seededRegistry = {...registry,devices:registry.devices.map(({door_control,...device})=>V1_SOURCES[device.id] ? {...device,source:V1_SOURCES[device.id]} : device)};
+// Immutable v1 inventory preserves applied seed checksums and historical foreign keys after scope changes.
+const seededRegistry = JSON.parse(text('./seeds/registry-v1.json'));
 const seedText = text('./seeds/inventory.json');
 const labels = JSON.parse(seedText);
 export const seedChecksum = hash(JSON.stringify(seededRegistry)+seedText);
 export const inventorySeed = {
-  warehouse:{id:registry.warehouse_id,name:labels.warehouse_name},
-  zones:registry.zones.map(id=>({id,warehouse_id:registry.warehouse_id,name:labels.zone_names[id]})),
-  devices:registry.devices,
-  doors:registry.devices.flatMap(device=>device.doors.map(id=>({id,zone_id:device.zone_id,device_id:device.id}))),
+  warehouse:{id:seededRegistry.warehouse_id,name:labels.warehouse_name},
+  zones:seededRegistry.zones.map(id=>({id,warehouse_id:seededRegistry.warehouse_id,name:labels.zone_names[id]})),
+  devices:seededRegistry.devices,
+  doors:seededRegistry.devices.flatMap(device=>device.doors.map(id=>({id,zone_id:device.zone_id,device_id:device.id}))),
 };
 const tables = ['warehouses','zones','devices','doors'];
 

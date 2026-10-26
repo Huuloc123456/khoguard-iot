@@ -1,3 +1,5 @@
+> **Bản hiện hành một khu:** dùng [kiến trúc SVG](../diagrams/kien-truc-mot-khu.svg) và [sơ đồ nối dây](../diagrams/so-do-noi-day.svg). Các bản HTML dưới đây lưu kiến trúc nhiều khu trước rút gọn.
+
 # Sơ đồ kiến trúc KhoGuard
 
 Mở file `.html` bằng trình duyệt (không cần mạng). Ảnh `.png` cùng tên để chèn vào báo cáo.
