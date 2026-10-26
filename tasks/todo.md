@@ -7,7 +7,7 @@
 - [x] Đối chiếu toàn bộ linh kiện, điện trở, chân GPIO trong cấu hình; có bảng dây và sơ đồ.
 - [x] README, hướng dẫn demo, ADR và nhật ký được cập nhật.
 - [x] PowerPoint 33 slide và Word 13 trang cập nhật, render và kiểm tra bố cục.
-- [x] 128 unit, build web/ESP32, hai bộ C++ và 17 bước integration đạt; lưu bằng chứng và trạng thái còn thiếu.
+- [x] Nghiệm thu tự động 26/10: 130 unit, build web/ESP32, hai bộ C++ qua WSL, 4 bài Python, audit dependency và 17 bước integration đạt; xem [bằng chứng](../docs/evidence/ACCEPTANCE-2026-10-26.md).
 
 ## Cần nghiệm thu tương tác riêng
 
@@ -16,12 +16,14 @@
 
 [Kết quả và giới hạn](../docs/evidence/SINGLE-ZONE-2026-10-24.md), hoàn thiện ngày 25/10/2026.
 
-## Nghiệm thu toàn bộ 25/10/2026
+## Nghiệm thu tương tác còn lại sau lượt 26/10/2026
 
-- [x] Wokwi trực tiếp: MFRC522 Blue IN/OUT; Red bị từ chối; PIR chặn đóng; sonar tĩnh chặn D07/D08; liên động; DHT22 cảnh báo/phục hồi; timer 30/>60 giây; Panic D07/D08; broker offline với Panic cục bộ và sự kiện MySQL sau reconnect.
-- [ ] Wokwi: vật cản động trong lúc đang đóng để xác nhận đảo chiều (chưa bắt được thời điểm); reset Panic sau khi nhả nút trong cùng phiên (chưa hoàn tất).
-- [ ] Fault cases chưa chạy/đủ bằng chứng: reboot, unknown, mất nguồn, stale, chứng chỉ sai và replay lệnh.
-- [ ] Unit/C++/build và toàn bộ integration/API/security/storage/load chạy trên bản cuối.
-- [ ] React desktop/mobile, vai trò, sáu trang, luồng thao tác/lỗi và console; ThingsBoard UI/API và phục hồi.
-- [x] Hướng dẫn demo, lời nói theo 33 trang, sơ đồ nối dây có giải thích đơn giản, README và nhật ký được cập nhật.
-- [ ] Báo cáo nghiệm thu còn lại: chạy các ca chưa có bằng chứng, lưu ảnh/log tải được trên điện thoại và kiểm tra dịch vụ sau lượt demo.
+- [x] Unit 130/130, build web, PlatformIO, hai bộ C++ qua WSL, Python 4/4, `npm audit` 0 lỗ hổng; `verify:all` 17 bước đạt, nhánh C++ bị bỏ qua trên Windows đã chạy riêng qua WSL.
+- [x] Fault-suite Wokwi: reboot, beam/presence/contact unknown, mất dòng RFID, stale telemetry, CA sai, hostname sai, CA đúng kết nối lại và firmware gốc phục hồi đúng SHA.
+- [ ] Wokwi hiện hành: vật cản động khi cửa đang đóng để xác nhận đảo chiều; MFRC522/contact/servo/relay; chuỗi nhả nút Panic rồi reset D07/D08.
+- [ ] Wokwi hiện hành: dừng broker khi Panic, nối lại và đối chiếu event MySQL; lệnh trùng/phiên cũ; timer mở cửa 30/>60 s và presence liên tục >5 phút.
+- [ ] Mất nguồn vật lý chưa thử; đồ án giữ phạm vi mô phỏng, không cần board thật để hoàn thành phần trình diễn.
+- [ ] React/ThingsBoard: xem trên desktop và điện thoại sau khi rút gọn; kiểm tra trang, vai trò, luồng lỗi, console và thời gian tới DOM.
+- [ ] Cập nhật ảnh/log tương tác sau khi chạy các ca trên; giữ bằng chứng đã loại secret.
+
+Kết quả chi tiết của lượt tự động 26/10 ở [docs/evidence/ACCEPTANCE-2026-10-26.md](../docs/evidence/ACCEPTANCE-2026-10-26.md). Bằng chứng Wokwi trước 24/10 là cấu hình một khu nhưng chỉ chứng minh boot/telemetry; bằng chứng 13/10 thuộc bản trước khi rút gọn.

@@ -1,8 +1,10 @@
 # KhoGuard — kế hoạch triển khai và kiểm thử
 
-> **Phạm vi hiện hành 25/10/2026:** một khu C, ESP-C01, hai cửa D07–D08. Các mục M00–M18 bên dưới lưu quá trình của bản nhiều khu và không còn là cấu hình hoạt động. Theo [kế hoạch rút gọn](tasks/plan.md), [công việc](tasks/todo.md) và [README](README.md) để chạy bản hiện tại. Bằng chứng cũ không thay nghiệm thu lại linh kiện Wokwi mới.
+> **Phạm vi hiện hành 26/10/2026:** một khu C, ESP-C01, hai cửa D07–D08. Các mục M00–M18 bên dưới lưu quá trình của bản nhiều khu và không còn là cấu hình hoạt động. Theo [kế hoạch rút gọn](tasks/plan.md), [công việc](tasks/todo.md) và [README](README.md) để chạy bản hiện tại. Bằng chứng cũ không thay nghiệm thu lại linh kiện Wokwi mới.
 
 > **Cập nhật sau demo trực tiếp 25/10/2026:** RFID Blue/Red, PIR, chặn đóng bằng sonar tĩnh ở cả hai cửa, liên động, DHT22, cảnh báo cửa giữ mở, Panic D07/D08 và Panic cục bộ khi broker gián đoạn đã được quan sát. Sự kiện Panic đến MySQL sau reconnect. Vật cản động để xác nhận đảo chiều và chuỗi nhả Panic rồi reset vẫn cần nghiệm thu. Xem [kịch bản demo](docs/HUONG_DAN_DEMO.md) và [kịch bản thuyết trình](docs/KICH_BAN_THUYET_TRINH.md). Bộ sinh slide cũ được lưu trong `.local/archive/legacy-slides-2026-10-25/`.
+
+> **Nghiệm thu tự động 26/10/2026:** 130 unit, build web, hai bộ C++ qua WSL, 4 bài Python và `npm audit` đều đạt. Fault-suite Wokwi đạt reboot, input unknown, mất dòng RFID, stale, CA/hostname sai và phục hồi firmware. Các ca tương tác còn thiếu và UI mobile được liệt kê trong [todo](tasks/todo.md); báo cáo hiện hành là [ACCEPTANCE-2026-10-26](docs/evidence/ACCEPTANCE-2026-10-26.md).
 
 ## M19 — Rút gọn một khu và đồng bộ hồ sơ
 

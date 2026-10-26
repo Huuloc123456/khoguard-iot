@@ -137,7 +137,7 @@ npm.cmd run verify:all
 npm.cmd run scope:check
 ```
 
-Runner dùng dữ liệu kiểm thử, có thể giả lập ESP-C01. Không chạy cạnh Wokwi vì cùng danh tính thiết bị. Kết quả trong `.local/verify-all.json`; bằng chứng bản một khu ở `docs/evidence/SINGLE-ZONE-2026-10-24.md`. Kiểm tra tự động không thay thế thao tác Wokwi với linh kiện tương tác.
+Runner dùng dữ liệu kiểm thử, có thể giả lập ESP-C01. Không chạy cạnh Wokwi vì cùng danh tính thiết bị. Sau runner, Start/Restart Wokwi để firmware thật phát presence/telemetry mới thay retained status kiểm thử. Kết quả chi tiết trong `.local/verify-all.json`; bằng chứng bản một khu ở `docs/evidence/SINGLE-ZONE-2026-10-24.md` và [lượt 26/10](docs/evidence/ACCEPTANCE-2026-10-26.md). Kiểm tra tự động không thay thế thao tác Wokwi với linh kiện tương tác.
 
 `close.bat` nhận diện cửa sổ do `run.bat` mở và các tiến trình mang đường dẫn tuyệt đối của dự án. Nếu tự chạy bằng lệnh tương đối trong terminal riêng, dùng Ctrl+C tại terminal đó để dừng. Mã nguồn nhiều khu đã chuyển vào `.local/single-zone-backup-20261024/retired/`; không còn được build hoặc gọi từ launcher.
 

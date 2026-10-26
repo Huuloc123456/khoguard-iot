@@ -426,3 +426,12 @@ Còn thiếu / bước tiếp theo:
 - Đối chiếu năm bộ slide IoT, hướng dẫn đồ án PDF, báo cáo nhóm và tài liệu Phần 1/2. Chưa thấy danh sách lab riêng có mã số; các slide 3 có ví dụ thực hành Arduino/ESP32, Raspberry Pi GPIO/PWM/ngắt, Flask và truyền dữ liệu ESP32–server. Bảng đối chiếu ở `docs/DOI_CHIEU_BAI_LAB.md` ghi trạng thái và giới hạn từng phần.
 - Bổ sung Flask web lab trên Windows với GPIO giả lập: ba LED, nút ảo có edge callback/debounce, PWM và trang HTML/CSS. Chỉ bind `127.0.0.1`; không gọi backend chính hoặc điều khiển thiết bị thật. Thêm venv/requirements instructions và ignore `__pycache__`.
 - MQTT, HTTP, auth/TLS và đường Wokwi→MySQL đã có thực hành tương ứng trong project; AMQP/RabbitMQ là ví dụ giao thức trong slide, không thuộc kiến trúc đồ án đã chọn.
+
+## 26/10/2026 — Nghiệm thu bổ sung sau khi public repo
+
+- `npm.cmd audit fix` cập nhật `fast-uri` 3.1.8 → 3.1.9 trong lockfile; `npm.cmd audit` sau đó báo 0 lỗ hổng.
+- Hồi quy sau cập nhật dependency: `npm.cmd test` 130/130; `npm.cmd run build` thành công với 104 module; Python lab 4/4.
+- `npm.cmd run verify:all`: 17 bước đạt, nhánh C++ Windows bỏ qua do thiếu g++ trên PATH. Chạy hai bộ C++ riêng trên WSL Ubuntu/g++ 15.2: đều đạt.
+- Wokwi fault-suite trên ESP32 mô phỏng đạt reboot với count chưa xác minh, beam/presence/contact unknown, mất dòng RFID, stale telemetry bị từ chối, CA sai và hostname sai bị ESP32 từ chối; CA đúng nối lại và firmware gốc được khôi phục đúng SHA. Sau Restart Wokwi, snapshot C/ESP-C01/D07–D08 trở lại fresh.
+- Bằng chứng tóm tắt, không chứa secret: [ACCEPTANCE-2026-10-26.md](docs/evidence/ACCEPTANCE-2026-10-26.md). Log chi tiết fault-suite được giữ trong `.local/wokwi-remaining/` và không commit.
+- Còn cần thao tác tay trên sơ đồ một khu: đảo chiều khi sonar bị chắn trong lúc đóng; nhả/reset Panic; broker offline trong Panic và gửi event sau reconnect; lệnh trùng/phiên cũ; timer cửa mở và PIR >5 phút. Chưa xem UI hiện tại trên mobile/ThingsBoard mobile.
