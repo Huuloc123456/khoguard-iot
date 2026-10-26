@@ -317,3 +317,7 @@ Loại firmware A/B/D, script mô phỏng nhiều khu và thư viện LCD khỏi
 ## DEC-048 — Dùng template HUIT cho PowerPoint
 
 Ngày 25/10/2026. Theo yêu cầu người dùng, dùng `docs/slides/2-template-bvkltn-khoa12-2024.pptx` làm mẫu bố cục, giữ logo, thanh đầu trang, chân trang và hệ thống trang chia chương; thay nội dung ví dụ bằng nội dung KhoGuard theo roster 33 trang đã được duyệt. Dùng quy trình Edit Native PPTX của `hugohe3/ppt-master`. Không sửa bản template gốc. PPTX sinh ra là đầu ra; outline giữ nội dung chuẩn. Build trung gian và bản dựng bảo toàn layout nằm trong `.local/ppt-master-projects/khoguard-huit-template/`.
+
+## DEC-049 — Python dùng cho bài lab, backend vẫn dùng Node.js
+
+Ngày 26/10/2026. Tài liệu Phần 2 mục 2.7 có ví dụ Python cho lọc ô theo vùng nhiệt độ/tải trọng/thể tích, ngưỡng kho 95% và giữ chỗ 15 phút. Thêm ví dụ chạy độc lập trong `labs/python/` để đáp ứng nội dung lab. Không gọi Python từ backend: nghiệp vụ live đã chạy bằng JavaScript/MySQL transaction, nên không tạo hai bộ quy tắc vận hành. Bài lab chỉ dùng thư viện chuẩn Python 3.10+.

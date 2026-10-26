@@ -4,7 +4,7 @@ Thực hiện tại thư mục gốc dự án bằng PowerShell. Phạm vi: C, E
 
 ## Công cụ
 
-Node.js 24/npm, Git, MySQL Server, Mosquitto, VS Code, PlatformIO và Wokwi. Wokwi for VS Code cần license hợp lệ theo nhà cung cấp. Docker/PostgreSQL không cần cho ThingsBoard Cloud.
+Node.js 24/npm, Git, MySQL Server, Mosquitto, VS Code, PlatformIO và Wokwi. Python 3.10+ chỉ cần cho bài lab tiếp nhận hàng trong [labs/python](../labs/python/README.md), không có thư viện ngoài. Wokwi for VS Code cần license hợp lệ theo nhà cung cấp. Docker/PostgreSQL không cần cho ThingsBoard Cloud.
 
 ## Cài và cấu hình lần đầu
 

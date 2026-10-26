@@ -58,7 +58,7 @@ Phiên bản dưới đây là kết quả kiểm tra môi trường trong phiê
 | Wokwi native gateway 2.0.1 | Đã tải/đối chiếu SHA-256, publish/reconnect với simulator đạt | Bật khi chạy mô phỏng; cổng HTTP forward 9080 mặc định, dừng sau demo |
 | Node.js 24.19 / npm 11.17 | Đã cài | Dùng cho frontend, backend và script giả lập các node còn lại |
 | Git 2.55 | Đã cài; repository đã có commit giao diện | Ghi từng thay đổi có thể kiểm chứng; không đổi cấu hình Git toàn máy |
-| Python 3.12.10 | Đã cài | Công cụ phụ để đọc tài liệu; không bắt buộc cho runtime |
+| Python 3.12.10 | Đã cài | Chạy bài lab tiếp nhận hàng trong `labs/python/`; không bắt buộc cho runtime web |
 | Mosquitto 2.1.2 | Dịch vụ cũ và broker dự án riêng đang chạy | ACL/account đã có; cấu hình TLS ở M12 |
 | MQTTX 1.13.1 | Đã cài | Quan sát topic/payload, thử dữ liệu hợp lệ/sai, kiểm tra quyền truy cập |
 | MySQL Server 26.7.0 / service `MySQL267` | Đang chạy 3306; schema/account riêng đã tạo | Migration/seed nghiệp vụ ở M04 |

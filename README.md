@@ -48,7 +48,7 @@ Lệnh cửa đi ngược từ React qua API/MQTT đến ESP32. Firmware kiểm 
 
 ## Công cụ cần có
 
-Windows, Node.js 24, npm, Git, MySQL Server, Mosquitto, VS Code với PlatformIO và Wokwi. Python chỉ dùng khi tạo tài liệu. MQTTX/MySQL Workbench là tùy chọn. Cloud không cần Docker/PostgreSQL.
+Windows, Node.js 24, npm, Git, MySQL Server, Mosquitto, VS Code với PlatformIO và Wokwi. Python 3.10+ dùng cho [bài lab tiếp nhận hàng](labs/python/README.md), không phải runtime của website/backend. MQTTX/MySQL Workbench là tùy chọn. Cloud không cần Docker/PostgreSQL.
 
 Firmware khóa platform `espressif32@7.0.1`, MQTT 2.5.3, ArduinoJson 7.4.3, DHT 1.4.7, Adafruit Unified Sensor 1.1.15 và MFRC522 1.4.11. PlatformIO cài theo `firmware/platformio.ini`. DHT library hiện giữ theo bản đã build; nếu gặp đọc lỗi, telemetry phải về null, không sửa thành số 0 để che lỗi.
 

@@ -413,3 +413,10 @@ Còn thiếu / bước tiếp theo:
 - Sửa nhãn số liệu bị đặt lệch khỏi thẻ (trang 6 và các trang số liệu), khoảng cách tiêu đề/phụ đề ở trang kiểm thử, và dòng chữ đè lên tranh cảm ơn. Render lại xác nhận các lỗi hình thức này đã hết.
 - Delivery check: gói PPTX và quan hệ nội bộ hợp lệ; trạng thái `passed-with-advisories` do theme font được kế thừa từ template HUIT. Có thể có thay font nhẹ trên máy không có cùng font; cần mở bằng PowerPoint trước khi trình chiếu.
 - Cập nhật hướng dẫn slide, README và DEC-048 để ghi rõ mẫu và quy trình. Giữ bản trước HUIT trong `.local` trước khi thay PowerPoint hiện hành.
+
+## 26/10/2026 — Bổ sung bài lab Python về giữ chỗ
+
+- Đối chiếu tài liệu Phần 2, mục 2.7: ví dụ `validate_inbound_request` lọc vị trí theo nhiệt độ/tải trọng/thể tích, từ chối khi kho đạt 95% và giữ ô 15 phút.
+- Thêm `labs/python/inbound_reservation.py` chạy độc lập bằng thư viện chuẩn; hướng dẫn cách chạy trong `labs/python/README.md`. Cập nhật README, cấu hình máy, Agent.md, `.gitignore` và DEC-049.
+- Backend thật vẫn dùng Node.js/MySQL transaction; Python chỉ hiện thực bài lab để tránh duy trì hai đường xử lý đơn hàng trong runtime. Không thêm package Python ngoài.
+- Chưa chạy script hoặc test trong lượt này.
