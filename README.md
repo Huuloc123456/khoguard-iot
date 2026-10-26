@@ -15,6 +15,8 @@ Phạm vi cập nhật 24–25/10/2026. Các khu A/B/D, SIM-C02 và cửa ngoài
 | [Chạy demo](docs/HUONG_DAN_DEMO.md) | Chuẩn bị, kịch bản trình diễn, kết quả đã xác nhận và kết thúc an toàn |
 | [Kịch bản thuyết trình](docs/KICH_BAN_THUYET_TRINH.md) | Lời nói mẫu theo đủ 33 trang và câu trả lời thường gặp |
 | [ThingsBoard](docs/THINGSBOARD.md) | Cloud phụ, setup, bridge, kiểm tra dữ liệu |
+| [Đối chiếu bài thực hành](docs/DOI_CHIEU_BAI_LAB.md) | Ma trận bài thực hành từ tài liệu môn học và project |
+| [Lab Python](labs/python/README.md) | GPIO/PWM/Flask giả lập và tiếp nhận hàng bằng Python |
 | [Nội dung slide](docs/NOI_DUNG_SLIDE.md) | 33 trang, chia 5 chương, nội dung/hình và lời nói |
 | [PowerPoint](docs/slides/KhoGuard-thuyet-trinh.pptx) | Bản thuyết trình 33 trang; nguồn bố cục ở [outline.json](docs/slides/outline.json) |
 | [Tài liệu thư mục slide](docs/slides/README.md) | Deck theo template HUIT, outline và cách dựng |
@@ -48,7 +50,7 @@ Lệnh cửa đi ngược từ React qua API/MQTT đến ESP32. Firmware kiểm 
 
 ## Công cụ cần có
 
-Windows, Node.js 24, npm, Git, MySQL Server, Mosquitto, VS Code với PlatformIO và Wokwi. Python 3.10+ dùng cho [bài lab tiếp nhận hàng](labs/python/README.md), không phải runtime của website/backend. MQTTX/MySQL Workbench là tùy chọn. Cloud không cần Docker/PostgreSQL.
+Windows, Node.js 24, npm, Git, MySQL Server, Mosquitto, VS Code với PlatformIO và Wokwi. Python 3.10+ cùng Flask chỉ cần cho [các bài lab Python](labs/python/README.md), không phải runtime của website/backend. MQTTX/MySQL Workbench là tùy chọn. Cloud không cần Docker/PostgreSQL.
 
 Firmware khóa platform `espressif32@7.0.1`, MQTT 2.5.3, ArduinoJson 7.4.3, DHT 1.4.7, Adafruit Unified Sensor 1.1.15 và MFRC522 1.4.11. PlatformIO cài theo `firmware/platformio.ini`. DHT library hiện giữ theo bản đã build; nếu gặp đọc lỗi, telemetry phải về null, không sửa thành số 0 để che lỗi.
 

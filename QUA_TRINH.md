@@ -418,5 +418,11 @@ Còn thiếu / bước tiếp theo:
 
 - Đối chiếu tài liệu Phần 2, mục 2.7: ví dụ `validate_inbound_request` lọc vị trí theo nhiệt độ/tải trọng/thể tích, từ chối khi kho đạt 95% và giữ ô 15 phút.
 - Thêm `labs/python/inbound_reservation.py` chạy độc lập bằng thư viện chuẩn; hướng dẫn cách chạy trong `labs/python/README.md`. Cập nhật README, cấu hình máy, Agent.md, `.gitignore` và DEC-049.
-- Backend thật vẫn dùng Node.js/MySQL transaction; Python chỉ hiện thực bài lab để tránh duy trì hai đường xử lý đơn hàng trong runtime. Không thêm package Python ngoài.
-- Chưa chạy script hoặc test trong lượt này.
+- Backend thật vẫn dùng Node.js/MySQL transaction; Python chỉ hiện thực bài lab để tránh duy trì hai đường xử lý đơn hàng trong runtime.
+- Chưa chạy script hoặc test trong lượt thêm bài giữ chỗ.
+
+## 26/10/2026 — Rà soát bài thực hành trong tài liệu môn học
+
+- Đối chiếu năm bộ slide IoT, hướng dẫn đồ án PDF, báo cáo nhóm và tài liệu Phần 1/2. Chưa thấy danh sách lab riêng có mã số; các slide 3 có ví dụ thực hành Arduino/ESP32, Raspberry Pi GPIO/PWM/ngắt, Flask và truyền dữ liệu ESP32–server. Bảng đối chiếu ở `docs/DOI_CHIEU_BAI_LAB.md` ghi trạng thái và giới hạn từng phần.
+- Bổ sung Flask web lab trên Windows với GPIO giả lập: ba LED, nút ảo có edge callback/debounce, PWM và trang HTML/CSS. Chỉ bind `127.0.0.1`; không gọi backend chính hoặc điều khiển thiết bị thật. Thêm venv/requirements instructions và ignore `__pycache__`.
+- MQTT, HTTP, auth/TLS và đường Wokwi→MySQL đã có thực hành tương ứng trong project; AMQP/RabbitMQ là ví dụ giao thức trong slide, không thuộc kiến trúc đồ án đã chọn.

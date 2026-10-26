@@ -320,4 +320,4 @@ Ngày 25/10/2026. Theo yêu cầu người dùng, dùng `docs/slides/2-template-
 
 ## DEC-049 — Python dùng cho bài lab, backend vẫn dùng Node.js
 
-Ngày 26/10/2026. Tài liệu Phần 2 mục 2.7 có ví dụ Python cho lọc ô theo vùng nhiệt độ/tải trọng/thể tích, ngưỡng kho 95% và giữ chỗ 15 phút. Thêm ví dụ chạy độc lập trong `labs/python/` để đáp ứng nội dung lab. Không gọi Python từ backend: nghiệp vụ live đã chạy bằng JavaScript/MySQL transaction, nên không tạo hai bộ quy tắc vận hành. Bài lab chỉ dùng thư viện chuẩn Python 3.10+.
+Ngày 26/10/2026. Tài liệu Phần 2 mục 2.7 có ví dụ Python cho lọc ô theo vùng nhiệt độ/tải trọng/thể tích, ngưỡng kho 95% và giữ chỗ 15 phút. Slide lập trình IoT còn có bài Raspberry Pi GPIO/PWM/ngắt và Flask. Thêm các bài thực hành chạy độc lập trong `labs/python/`; GPIO chạy bằng adapter giả lập, Flask bind localhost. Không gọi Python từ backend: nghiệp vụ live vẫn do JavaScript/MySQL transaction xử lý. GPIO/Flask cần Flask trong venv `.local/labs-python`; ví dụ giữ chỗ chỉ dùng thư viện chuẩn Python 3.10+.

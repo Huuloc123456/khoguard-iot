@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lab Python GPIO · KhoGuard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="eyebrow">LAB LẬP TRÌNH IoT · PYTHON + FLASK</p>
+      <h1>Phòng thực hành GPIO</h1>
+      <p>Điều khiển chân GPIO giả lập, xem trạng thái nút nhấn và thử PWM.</p>
+    </header>
+
+    <section class="notice" role="status">
+      <strong>Đang mô phỏng.</strong> Không cần Raspberry Pi; trang này không điều khiển ESP32, relay hay thiết bị thật.
+    </section>
+
+    <section class="panel" aria-labelledby="led-heading">
+      <div class="section-heading">
+        <div><p class="eyebrow">GPIO OUTPUT</p><h2 id="led-heading">Ba đèn trạng thái</h2></div>
+        <span class="chip">Chế độ {{ state.mode }}</span>
+      </div>
+      <div class="led-grid">
+        {% for color, pin in leds.items() %}
+        <article class="led-card">
+          <span class="led-dot {{ color }}" data-led="{{ color }}" aria-hidden="true"></span>
+          <h3>Đèn {{ {'red':'đỏ','yellow':'vàng','green':'xanh'}[color] }}</h3>
+          <p>BCM GPIO {{ pin }}</p>
+          <p class="state" id="led-{{ color }}">{% if state.pins[pin|string].value %}Đang bật{% else %}Đang tắt{% endif %}</p>
+          <div class="actions">
+            <form method="post" action="{{ url_for('control_led', color=color, action='on') }}"><button type="submit">Bật</button></form>
+            <form method="post" action="{{ url_for('control_led', color=color, action='off') }}"><button class="secondary" type="submit">Tắt</button></form>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="two-col">
+      <article class="panel">
+        <p class="eyebrow">GPIO INPUT · EDGE EVENT</p>
+        <h2>Nút nhấn ảo</h2>
+        <p>BCM GPIO 17 · PUD_DOWN · phát hiện cạnh lên, chống dội 600 ms.</p>
+        <p class="reading">Trạng thái: <strong id="button-state">LOW</strong></p>
+        <p>Số lần callback: <strong id="event-count">{{ state.event_counts['17'] }}</strong></p>
+        <form method="post" action="{{ url_for('press_button') }}"><button type="submit">Nhấn nút ảo</button></form>
+        <p class="hint">Mỗi lần nhấn sẽ đổi trạng thái đèn đỏ.</p>
+      </article>
+
+      <article class="panel">
+        <p class="eyebrow">PWM OUTPUT</p>
+        <h2>Độ sáng giả lập</h2>
+        <p>BCM GPIO 18 · 100 Hz · PWM mô phỏng bằng phần trăm.</p>
+        <form method="post" action="{{ url_for('set_pwm') }}" class="pwm-form">
+          <label for="duty">Duty cycle: <output id="duty-label">{{ state.pwm['18'].duty_cycle|int }}</output>%</label>
+          <input id="duty" name="duty_cycle" type="range" min="0" max="100" value="{{ state.pwm['18'].duty_cycle|int }}" oninput="document.getElementById('duty-label').value=this.value">
+          <button type="submit">Áp dụng PWM</button>
+        </form>
+      </article>
+    </section>
+
+    <footer>Chỉ phục vụ bài lab trên máy cá nhân · Dừng bằng Ctrl+C trong terminal</footer>
+  </main>
+  <script>
+    async function refreshState() {
+      try {
+        const response = await fetch("{{ url_for('state') }}", { cache: "no-store" });
+        if (!response.ok) return;
+        const state = await response.json();
+        for (const [color, pin] of Object.entries({red: 13, yellow: 19, green: 26})) {
+          const on = state.pins[String(pin)].value === 1;
+          document.getElementById(`led-${color}`).textContent = on ? "Đang bật" : "Đang tắt";
+          document.querySelector(`[data-led="${color}"]`).classList.toggle("on", on);
+        }
+        document.getElementById("button-state").textContent = state.pins["17"].value ? "HIGH" : "LOW";
+        document.getElementById("event-count").textContent = state.event_counts["17"];
+      } catch { /* Keep the last visible simulated state. */ }
+    }
+    refreshState();
+    setInterval(refreshState, 1000);
+  </script>
+</body>
+</html>
