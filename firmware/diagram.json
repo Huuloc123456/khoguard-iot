@@ -155,6 +155,24 @@
       }
     },
     {
+      "type": "wokwi-relay-module",
+      "id": "safety07",
+      "top": 95,
+      "left": 260,
+      "attrs": {
+        "transistor": "pnp"
+      }
+    },
+    {
+      "type": "wokwi-relay-module",
+      "id": "safety08",
+      "top": 95,
+      "left": 480,
+      "attrs": {
+        "transistor": "pnp"
+      }
+    },
+    {
       "type": "wokwi-servo",
       "id": "servo07",
       "top": -210,
@@ -350,6 +368,24 @@
       "left": 480,
       "attrs": {
         "text": "Panic D08 (phím 8)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-safety07",
+      "top": 73,
+      "left": 260,
+      "attrs": {
+        "text": "Safety relay 07: Panic → cắt nguồn khóa"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-safety08",
+      "top": 73,
+      "left": 480,
+      "attrs": {
+        "text": "Safety relay 08: Panic → cắt nguồn khóa"
       }
     },
     {
@@ -759,12 +795,6 @@
       []
     ],
     [
-      "relay07:COM",
-      "esp:3V3",
-      "red",
-      []
-    ],
-    [
       "relay07:NO",
       "r-lock07:1",
       "green",
@@ -789,15 +819,69 @@
       []
     ],
     [
-      "relay08:COM",
-      "esp:3V3",
+      "relay08:NO",
+      "r-lock08:1",
+      "green",
+      []
+    ],
+    [
+      "panic07:1.r",
+      "safety07:IN",
       "red",
       []
     ],
     [
-      "relay08:NO",
-      "r-lock08:1",
-      "green",
+      "panic08:1.r",
+      "safety08:IN",
+      "red",
+      []
+    ],
+    [
+      "safety07:VCC",
+      "esp:VIN",
+      "red",
+      []
+    ],
+    [
+      "safety07:GND",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "safety08:VCC",
+      "esp:VIN",
+      "red",
+      []
+    ],
+    [
+      "safety08:GND",
+      "esp:GND.2",
+      "black",
+      []
+    ],
+    [
+      "safety07:COM",
+      "esp:3V3",
+      "orange",
+      []
+    ],
+    [
+      "safety07:NC",
+      "safety08:COM",
+      "orange",
+      []
+    ],
+    [
+      "safety08:NC",
+      "relay07:COM",
+      "orange",
+      []
+    ],
+    [
+      "safety08:NC",
+      "relay08:COM",
+      "orange",
       []
     ],
     [

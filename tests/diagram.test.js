@@ -52,7 +52,9 @@ test('ESP-C01 outputs: lock relays, door servos, buzzer and indicator LEDs on th
     // The green lock lamp is the relay's load: it lights only while the relay holds the lock.
     assert.deepEqual(wired(`relay${door}:NO`),[`r-lock${door}:1`]);
     assert.deepEqual(wired(`r-lock${door}:2`),[`led-lock${door}:A`]);
-    assert.deepEqual(wired(`relay${door}:COM`),['esp:3V3']);
+    // Lock power comes through the safety relay chain (Chương 2), not straight from 3V3.
+    assert.ok(wired('safety08:NC').includes(`relay${door}:COM`),`relay${door}:COM fed by safety chain`);
+    assert.deepEqual(wired(`relay${door}:COM`),[]);
     assert.equal(part(`servo${door}`)?.type,'wokwi-servo');
     assert.deepEqual(wired(`servo${door}:PWM`),[esp(servos[i])]);
   }
@@ -137,4 +139,17 @@ test('MQ-2 gas sensor stands in for CO2: AOUT on GPIO36 (ADC1, works with WiFi)'
   assert.deepEqual(wired('gas:AOUT'),[esp(36)]);
   assert.deepEqual(wired('gas:VCC'),['esp:VIN']);
   assert.deepEqual(wired('gas:GND'),['esp:GND.1']);
+});
+
+test('safety relays cut lock power in hardware while a Panic button is held (Chương 2 safety relay)',()=>{
+  for (const door of ['07','08']) {
+    assert.equal(part(`safety${door}`)?.type,'wokwi-relay-module');
+    assert.equal(part(`safety${door}`).attrs.transistor,'pnp','Panic HIGH opens COM–NC');
+    assert.deepEqual(wired(`panic${door}:1.r`),[`safety${door}:IN`]);
+    assert.deepEqual(wired(`safety${door}:VCC`),['esp:VIN']);
+    assert.deepEqual(wired(`safety${door}:GND`),['esp:GND.2']);
+  }
+  assert.deepEqual(wired('safety07:COM'),['esp:3V3']);
+  assert.deepEqual(wired('safety07:NC'),['safety08:COM']);
+  assert.deepEqual(wired('safety08:NC').sort(),['relay07:COM','relay08:COM']);
 });
