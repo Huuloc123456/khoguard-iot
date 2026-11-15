@@ -23,7 +23,7 @@ Xem [bảng linh kiện và toàn bộ dây](../docs/LINH_KIEN_VA_NOI_DAY.md), [
 - HC-SR04 <100 cm hoặc echo quá 250 ms = vật cản. Hai đầu đo nhận TRIG chung mỗi 60 ms.
 - Panic HIGH khi nhấn, có điện trở kéo xuống 10 kΩ ngoài. Hai nút dùng phím 7/8.
 - PIR OUT HIGH = chuyển động. Không dùng tên mmWave cho linh kiện này.
-- MQ-2 AOUT → GPIO36 (ADC1). `co2Ppm()` trong `controller.h` đổi ADC → ppm theo `CO2_CAL_*` (giá trị tạm, đo lại bằng `gas_raw=` trong `SENSOR_HEARTBEAT`). ADC = 0 nghĩa là rút dây, gửi `null`.
+- MQ-2 AOUT → GPIO36 (ADC1). `co2Ppm()` trong `controller.h` đổi ADC → ppm theo bảng `CO2_CAL_RAW` đo trên Wokwi (sai số ≤ 1%, xem `../docs/evidence/MQ2-CALIBRATION-2026-11-15.md`). ADC = 0 nghĩa là rút dây, gửi `null`.
 - MFRC522: Blue DEMO-017, Green DEMO-018, Red DEMO-999 bị thu hồi. Công tắc HIGH IN, LOW OUT. Serial `RFID D07 DEMO-017 IN|OUT` dùng cho kiểm tra.
 - Servo 0° đóng, 90° mở. Relay khóa HIGH giữ khóa, LOW nhả. Mỗi LED có điện trở 220 Ω.
 

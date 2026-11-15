@@ -22,7 +22,7 @@ void poll() {
     float h = dht.readHumidity();
     float t = dht.readTemperature();
     const int gasRaw = analogRead(config::GAS_AOUT_PIN);
-    const float c = co2Ppm(gasRaw, config::CO2_CAL_RAW0, config::CO2_CAL_PPM0, config::CO2_CAL_RAW1, config::CO2_CAL_PPM1);
+    const float c = co2Ppm(gasRaw);
     portENTER_CRITICAL(&state::sampleLock);
     state::temperature = t;
     state::humidity = h;

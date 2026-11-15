@@ -82,10 +82,16 @@ constexpr int DHT_PIN = 15;
 // Chuong 2: MQ-2 gas sensor stands in for CO2 (Wokwi has no CO2 part). AOUT -> GPIO36 (VP): ADC1 works while WiFi is on.
 // Real board: MQ-2 AOUT can reach 5 V; it needs a divider before the 3.3 V ADC. Wokwi only.
 constexpr int GAS_AOUT_PIN = 36;
-// Calibration knob for controller.h co2Ppm(): {raw0, ppm0, raw1, ppm1}. Wokwi documents no ppm->voltage curve.
-// PLACEHOLDER until measured: set the gas part to two ppm values, read "gas_raw=" in SENSOR_HEARTBEAT, write them here.
-constexpr int CO2_CAL_RAW0 = 1000, CO2_CAL_RAW1 = 3000;
-constexpr float CO2_CAL_PPM0 = 400, CO2_CAL_PPM1 = 5000;
+// Calibration knob for controller.h co2Ppm(), measured on Wokwi 15/11/2026 (docs/evidence/MQ2-CALIBRATION-2026-11-15.md).
+// The gas part's slider is log10(ppm) from -1 to 5; CO2_CAL_RAW[i] = analogRead at log10(ppm) = CO2_CAL_LOG0 + i*CO2_CAL_LOG_STEP.
+// A real MQ-2 has its own curve: re-measure and replace this table on hardware.
+constexpr float CO2_CAL_LOG0 = -1, CO2_CAL_LOG_STEP = 0.1f;
+constexpr int CO2_CAL_RAW[] = {
+    843,  908,  976,  1048, 1124, 1202, 1284, 1368, 1456, 1545, 1637, 1731, 1826, 1922, 2018, 2115,  // 0.1 .. 3.2 ppm
+    2211, 2307, 2401, 2494, 2585, 2674, 2760, 2844, 2924, 3002, 3076, 3146, 3213, 3277, 3337, 3393,  // 4 .. 126 ppm
+    3447, 3497, 3543, 3587, 3627, 3665, 3700, 3732, 3762, 3790, 3816, 3839, 3861, 3881, 3899, 3916,  // 158 .. 5012 ppm
+    3932, 3946, 3959, 3971, 3982, 3992, 4001, 4009, 4017, 4024, 4030, 4036, 4041};                   // 6310 .. 100000 ppm
+constexpr size_t CO2_CAL_N = sizeof(CO2_CAL_RAW) / sizeof(CO2_CAL_RAW[0]);
 // Servo chi de nhin: 0 do = dong, 90 do = mo. Vi tri cua van do cong tac contact bao (cam bien doc lap voi motor).
 constexpr int SERVO_CLOSED_DEG = 0;
 constexpr int SERVO_OPEN_DEG = 90;

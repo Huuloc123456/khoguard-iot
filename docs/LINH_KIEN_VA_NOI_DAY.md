@@ -84,7 +84,7 @@ Tổng cộng **33 phần tử điện**. Nhãn chữ trong `diagram.json` khôn
 | MQ-2 AOUT | 36 / VP | VCC VIN, GND chung, DOUT để trống. ADC1 nên đọc được khi WiFi bật. Đổi ADC → ppm bằng `CO2_CAL_*` trong `config.h` |
 | Panic D07 / D08 chân 1.r | — (không GPIO) | Nối thẳng IN của safety relay 07 / 08, cùng nút với chân 1.l |
 
-MQ-2: ≥ 1000 ppm backend cảnh báo `CO2_HIGH` (tự hết dưới 900 ppm); khi hai cửa đóng, CO₂ ≥ 1500 ppm và tăng ≥ 200 ppm so với lúc kho đóng kín được firmware tính là dấu hiệu mắc kẹt như PIR, đủ 5 phút thì bật `TRAPPED_PERSON`. Hệ số `CO2_CAL_*` hiện là **giá trị tạm**, cần đo lại trên Wokwi (`gas_raw=` trong dòng `SENSOR_HEARTBEAT`).
+MQ-2: ≥ 1000 ppm backend cảnh báo `CO2_HIGH` (tự hết dưới 900 ppm); khi hai cửa đóng, CO₂ ≥ 1500 ppm và tăng ≥ 200 ppm so với lúc kho đóng kín được firmware tính là dấu hiệu mắc kẹt như PIR, đủ 5 phút thì bật `TRAPPED_PERSON`. Bảng `CO2_CAL_RAW` đo trên Wokwi: thanh trượt là log₁₀(ppm), 400 ppm = ADC 3628, 1000 ppm = 3762; sai số nội suy ≤ 1% ([số liệu](evidence/MQ2-CALIBRATION-2026-11-15.md)). Phần cứng thật phải đo lại.
 
 HC-SR04: khoảng cách **<100 cm** hoặc mất echo mới quá **250 ms** được coi là bị chắn. Cửa sổ chống dội input 30 ms. Đây là tham số của mô hình hiện tại.
 

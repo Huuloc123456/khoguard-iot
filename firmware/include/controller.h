@@ -77,13 +77,14 @@ constexpr uint32_t DOOR_WARNING_MS=30000,DOOR_CRITICAL_MS=60000,TRAPPED_MS=30000
 // Evidence needs both: level >= CO2_TRAPPED_PPM and a rise of CO2_RISE_PPM over the value when both doors sealed,
 // so CO2 left over from a normal shift (sealed high, then falling) never reads as a trapped person.
 constexpr float CO2_TRAPPED_PPM=1500,CO2_RISE_PPM=200;
-// Two-point linear ADC->ppm calibration (config.h CO2_CAL). raw<=0 (unplugged/unpowered) or a below-zero extrapolation
-// (fault or bad calibration; ambient CO2 is never < 0) -> NAN (unknown), never 0 ppm.
-// ponytail: linear fit, a real MQ-2/NDIR curve is logarithmic; add a lookup table if readings drift from the reference points.
-inline float co2Ppm(int raw,int raw0,float ppm0,int raw1,float ppm1) {
-  if(raw<=0 || raw1==raw0) return NAN;
-  const float ppm=ppm0+(raw-raw0)*(ppm1-ppm0)/float(raw1-raw0);
-  return ppm<0 ? NAN:ppm;
+// ADC->ppm from the measured table (config.h CO2_CAL_*), linear in log10(ppm) between points.
+// raw outside the table (0 = unplugged/unpowered) -> NAN (unknown), never 0 ppm.
+inline float co2Ppm(int raw) {
+  for(size_t i=0;i+1<config::CO2_CAL_N;i++) {
+    const int lo=config::CO2_CAL_RAW[i],hi=config::CO2_CAL_RAW[i+1];
+    if(raw>=lo && raw<=hi) return std::pow(10.f,config::CO2_CAL_LOG0+config::CO2_CAL_LOG_STEP*(i+float(raw-lo)/(hi-lo)));
+  }
+  return NAN;
 }
 struct Alarms {std::array<bool,2> doorWarning{{false,false}},doorCritical{{false,false}};bool trapped=false;};
 struct Outputs {std::array<bool,2> lock{{false,false}},motorOpen{{false,false}},motorClose{{false,false}};bool light=false,buzzer=false,heater=false,fan=false;};

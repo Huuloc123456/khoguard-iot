@@ -47,9 +47,11 @@ int main() {
   const auto r=room.revision;assert(room.scan(read.card,true)==kg::ScanResult::unauthorized && room.revision==r);
   assert(room.scan(0,true)==kg::ScanResult::accepted && room.revision==r+1 && room.occupancy.count==1);
   std::puts("M08 C++ PASS: serial RFID parser, card table, reconcile only when no card inside, revision on count change");
-  assert(std::isnan(kg::co2Ppm(0,1000,400,3000,5000)));
-  assert(kg::co2Ppm(1000,1000,400,3000,5000)==400);
-  assert(kg::co2Ppm(2000,1000,400,3000,5000)==2700);
-  assert(std::isnan(kg::co2Ppm(1,1000,400,3000,5000)));            // below-zero extrapolation = fault, not 0 ppm
-  std::puts("CO2 C++ PASS: ADC->ppm, unplugged=NaN, clamp");
+  // Wokwi gas sensor measured 15/11/2026 (slider = log10 ppm). Off-grid points are the 20-run check, max error 1%.
+  for(const auto& m:{std::array<float,2>{3628,400},{3762,1000},{3337,100},{4041,100000},{843,0.1f},
+      {3811,1514},{3751,912},{3889,3467},{3774,1096},{3956,9550},{3853,2291},{3017,33.1f}})
+    assert(std::fabs(kg::co2Ppm(int(m[0]))-m[1])<=m[1]*0.011f);
+  assert(std::isnan(kg::co2Ppm(0)) && std::isnan(kg::co2Ppm(842)) && std::isnan(kg::co2Ppm(4042)));  // unplugged / outside measured range
+  for(int raw=843;raw<4041;raw++) assert(kg::co2Ppm(raw)<kg::co2Ppm(raw+1));                       // table stays monotonic
+  std::puts("CO2 C++ PASS: measured Wokwi curve, unplugged/out-of-range=NaN, monotonic");
 }

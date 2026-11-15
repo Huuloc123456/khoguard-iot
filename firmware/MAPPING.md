@@ -23,7 +23,7 @@ Prefix `khoguard/v1/WH01/devices/ESP-C01/`
 |---|---|---|---|
 | `state::temperature` | `environment.temperature_c` | số / `null` | DHT22, `null` nếu mẫu cũ hơn `SENSOR_STALE_MS` |
 | `state::humidity` | `environment.humidity_pct` | số / `null` | như trên |
-| `state::co2` | `environment.co2_ppm` | số / `null` | MQ-2 trên GPIO36 thay cảm biến CO2, đổi ADC → ppm bằng `CO2_CAL_*`; `null` khi mẫu cũ hoặc ADC đọc 0 (rút dây) |
+| `state::co2` | `environment.co2_ppm` | số / `null` | MQ-2 trên GPIO36 thay cảm biến CO2, đổi ADC → ppm bằng bảng đo `CO2_CAL_RAW` (nội suy theo log ppm); `null` khi mẫu cũ hoặc ADC đọc 0 (rút dây) |
 | `controller.occupancy.count` | `occupancy.current_occupants` | số / `null` | `null` khi chưa xác minh phòng trống |
 | `controller.occupancy.verified` | `occupancy.count_verified` | bool | |
 | `controller.inputs[6]` | `occupancy.presence` | bool / `null` | cảm biến hiện diện |
