@@ -11,6 +11,8 @@ Hãy tưởng tượng mô hình là một bạn nhỏ trông cửa kho:
 - **Dây nguồn giống như đồ ăn cho linh kiện.** Dây 3V3 hoặc 5V cấp điện; dây GND là đường điện quay về. Hai thiết bị muốn nói chuyện cần nối đúng dây tín hiệu.
 - **Dây tín hiệu giống như mẩu giấy nhắn:** nó mang một trạng thái bật/tắt hoặc con số về chân GPIO của ESP32. Cắm nhầm chân giống gửi thư nhầm địa chỉ.
 - **Relay là công tắc được ESP32 bấm hộ.** Trong hình này nó chỉ bật LED để mình nhìn thấy; nó không thật sự chạy máy sưởi, quạt hay khóa cửa.
+- **Safety relay là công tắc do chính nút Panic bấm.** Giữ nút là nguồn đèn khóa bị ngắt ngay, kể cả khi ESP32 bị treo.
+- **MQ-2 là cái mũi:** nó "ngửi" khí; trong mô phỏng ta coi đó là CO₂ tăng lên khi có người thở trong kho đóng kín.
 - **Servo giống cánh cửa đồ chơi:** nó quay để minh họa đóng/mở. Người demo tự gạt công tắc contact để báo cửa đã tới vị trí nào.
 - **Website là bảng theo dõi; MySQL là cuốn sổ ghi lại; ThingsBoard là màn hình phụ trên Internet.**
 
@@ -36,7 +38,8 @@ Thẻ / cảm biến / nút  ──báo tin──>  ESP32 (bộ não)
 - Đã bổ sung **5 điện trở 220 Ω**, mỗi LED một điện trở nối tiếp. Không coi relay là điện trở hạn dòng.
 - Relay Wokwi dùng `transistor: pnp`. Theo phần Operation trong tài liệu Wokwi, cấu hình này làm HIGH nối COM–NO, LOW nối COM–NC. Firmware xuất HIGH khi cần giữ khóa hoặc bật sưởi. Mục Attributes và Operation trong tài liệu có cách mô tả cực tính khác nhau, vì vậy chưa coi việc đối chiếu cấu hình là kiểm chứng chuyển mạch khi chạy.
 - Servo chỉ biểu diễn cánh cửa. Công tắc contact độc lập báo vị trí, người demo phải gạt bằng tay sau lệnh di chuyển.
-- Bản Word trước có Reset vật lý, công tắc hiện diện riêng, MQ-2 và các chân đề xuất khác. Các linh kiện đó **không có trong bản đang triển khai** và đã được bỏ khỏi mô tả hiện hành.
+- Bản Word trước có Reset vật lý và công tắc hiện diện riêng; hai linh kiện đó **không có trong bản đang triển khai**.
+- Theo Chương 2 (15/11/2026): **MQ-2** thay cảm biến CO₂ (AOUT → GPIO36/VP) và **2 safety relay** nối dây cứng với nút Panic để cắt nguồn khóa mà không qua ESP32.
 
 ## Danh sách linh kiện đầy đủ
 
@@ -46,17 +49,18 @@ Thẻ / cảm biến / nút  ──báo tin──>  ESP32 (bộ não)
 | DHT22 | 1 | Nhiệt độ, độ ẩm giả lập |
 | MFRC522 | 1 | Quét UID tại D07 |
 | PIR | 1 | Tín hiệu chuyển động chung |
+| MQ-2 (gas sensor) | 1 | Thay cảm biến CO₂: CO₂ tăng do hô hấp khi có người mắc kẹt |
 | HC-SR04 | 2 | Vật cản tại D07, D08 |
 | Công tắc gạt SPDT | 3 | Hai contact cửa, một chọn IN/OUT |
 | Nút nhấn đỏ | 2 | Panic D07 và D08 |
 | Micro servo | 2 | Cánh cửa D07 và D08 |
-| Relay module | 3 | Hai khóa và một chuyển mạch sưởi/quạt |
+| Relay module | 5 | Hai khóa, một chuyển mạch sưởi/quạt, hai safety relay theo Panic |
 | LED | 5 | Khóa D07, khóa D08, đèn, sưởi, quạt |
 | Buzzer | 1 | Còi cảnh báo |
 | Điện trở 10 kΩ | 3 | Một DHT pull-up, hai Panic pull-down |
 | Điện trở 220 Ω | 5 | Hạn dòng cho năm LED |
 
-Tổng cộng **30 phần tử điện**. Nhãn chữ trong `diagram.json` không tính là linh kiện. Không có LCD, MQ-2, radar, camera hoặc nút Reset vật lý.
+Tổng cộng **33 phần tử điện**. Nhãn chữ trong `diagram.json` không tính là linh kiện. Không có LCD, radar, camera hoặc nút Reset vật lý.
 
 ## Đầu vào và bus RFID
 
@@ -77,6 +81,10 @@ Tổng cộng **30 phần tử điện**. Nhãn chữ trong `diagram.json` khôn
 | MFRC522 SDA / CS | 12 | Chip-select SPI, active LOW |
 | MFRC522 RST | 3V3 | Giữ reset ở HIGH, không dùng GPIO reset |
 | Công tắc chiều RFID chân 2 | 35 | Chân 1 GND, chân 3 3V3. HIGH IN, LOW OUT |
+| MQ-2 AOUT | 36 / VP | VCC VIN, GND chung, DOUT để trống. ADC1 nên đọc được khi WiFi bật. Đổi ADC → ppm bằng `CO2_CAL_*` trong `config.h` |
+| Panic D07 / D08 chân 1.r | — (không GPIO) | Nối thẳng IN của safety relay 07 / 08, cùng nút với chân 1.l |
+
+MQ-2: ≥ 1000 ppm backend cảnh báo `CO2_HIGH` (tự hết dưới 900 ppm); ≥ 1500 ppm khi hai cửa đóng được firmware tính là dấu hiệu mắc kẹt như PIR, đủ 5 phút thì bật `TRAPPED_PERSON`. Hệ số `CO2_CAL_*` hiện là **giá trị tạm**, cần đo lại trên Wokwi (`gas_raw=` trong dòng `SENSOR_HEARTBEAT`).
 
 HC-SR04: khoảng cách **<100 cm** hoặc mất echo mới quá **250 ms** được coi là bị chắn. Cửa sổ chống dội input 30 ms. Đây là tham số của mô hình hiện tại.
 
@@ -84,20 +92,24 @@ HC-SR04: khoảng cách **<100 cm** hoặc mất echo mới quá **250 ms** đư
 
 | Đầu ra | GPIO hoặc tiếp điểm | Tải mô phỏng |
 | --- | --- | --- |
-| Relay khóa D07 IN | 25 | COM lên 3V3. NO → 220 Ω → LED khóa D07 A, C về GND |
+| Relay khóa D07 IN | 25 | COM nhận nguồn từ chuỗi safety relay. NO → 220 Ω → LED khóa D07 A, C về GND |
 | Relay khóa D08 IN | 26 | Như D07 |
 | Servo D07 PWM | 27 | 0° đóng, 90° mở |
 | Servo D08 PWM | 14 | Như D07 |
 | Đèn chiếu sáng | 32 | GPIO → 220 Ω → LED trắng A, C về GND |
 | Còi | 33 | Buzzer chân 2 nhận tone, chân 1 GND |
 | Relay sưởi/quạt IN | 4 | COM 3V3. NO → 220 Ω → LED sưởi. NC → 220 Ω → LED quạt |
+| Safety relay 07 / 08 IN | Nút Panic (dây cứng) | 3V3 → COM/NC safety 07 → COM/NC safety 08 → COM hai relay khóa. Giữ Panic: tiếp điểm NC mở, khóa mất nguồn ngay, kể cả khi firmware treo |
 
 Hai servo dùng LEDC kênh 0/1 ở 50 Hz. Buzzer dùng kênh 2 để không đổi tần số servo. Một relay chuyển mạch đủ vì mô hình quy định sưởi và quạt luôn ngược nhau.
+
+Safety relay chỉ cắt nguồn khóa **trong lúc giữ nút**. Sau khi nhả, firmware vẫn chốt Panic và giữ khóa nhả đến khi operator đặt lại. Cực tính PNP (HIGH = COM–NO) theo tài liệu Wokwi; phải kiểm tra trên simulator, nếu ngược thì đổi NC thành NO trong chuỗi.
 
 ## Nguồn cấp và giới hạn
 
 - **3V3:** DHT22 VCC, MFRC522 3.3V/RST, các mức HIGH của công tắc/Panic, COM của relay tải LED.
-- **VIN 5 V trong Wokwi:** servo V+, HC-SR04 VCC, PIR VCC, relay VCC. Mọi GND chung.
+- **VIN 5 V trong Wokwi:** servo V+, HC-SR04 VCC, PIR VCC, MQ-2 VCC, relay VCC. Mọi GND chung.
+- MQ-2 thật cần 5 V cho phần tử nhiệt và AOUT có thể lên 5 V: phải có cầu chia trước ADC 3,3 V. MQ-2 đo khí dễ cháy/khói, không đo CO₂; trong mô phỏng chỉ thay vai trò cảm biến CO₂.
 - **Chỉ trong mô phỏng số**, ECHO của HC-SR04 nối trực tiếp GPIO. Không lấy đây làm sơ đồ chế tạo: phần cứng 5 V cần mạch chuyển mức/cầu chia phù hợp trước đầu vào ESP32 3,3 V. Wokwi chỉ mô phỏng analog cơ bản nên không dùng kết quả resistor divider trong simulator làm chứng cứ điện áp.
 - Mạch thật cần nguồn 5 V riêng đủ dòng cho servo/relay, nối chung mass, kiểm tra module relay tương thích 3,3 V và bảo vệ tải. Không cấp tải động từ chân 3V3.
 - GPIO2/5/12/15 liên quan strapping. Sơ đồ mô phỏng chưa nghiệm thu khởi động trên bo thật, đặc biệt mức HIGH tại GPIO12 có thể ảnh hưởng điện áp flash.
@@ -109,6 +121,7 @@ Hai servo dùng LEDC kênh 0/1 ở 50 Hz. Buzzer dùng kênh 2 để không đ�
 
 - [Sơ đồ nối dây tổng hợp](diagrams/so-do-noi-day.svg)
 - [Sơ đồ kiến trúc một khu](diagrams/kien-truc-mot-khu.svg)
+- [Kiến trúc 3 lớp theo Chương 2](diagrams/kien-truc-3-lop.svg)
 - [Mạch Wokwi có thể chạy](../firmware/diagram.json)
 - [Ánh xạ firmware và JSON](../firmware/MAPPING.md)
 

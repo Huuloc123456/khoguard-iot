@@ -435,3 +435,9 @@ Còn thiếu / bước tiếp theo:
 - Wokwi fault-suite trên ESP32 mô phỏng đạt reboot với count chưa xác minh, beam/presence/contact unknown, mất dòng RFID, stale telemetry bị từ chối, CA sai và hostname sai bị ESP32 từ chối; CA đúng nối lại và firmware gốc được khôi phục đúng SHA. Sau Restart Wokwi, snapshot C/ESP-C01/D07–D08 trở lại fresh.
 - Bằng chứng tóm tắt, không chứa secret: [ACCEPTANCE-2026-10-26.md](docs/evidence/ACCEPTANCE-2026-10-26.md). Log chi tiết fault-suite được giữ trong `.local/wokwi-remaining/` và không commit.
 - Còn cần thao tác tay trên sơ đồ một khu: đảo chiều khi sonar bị chắn trong lúc đóng; nhả/reset Panic; broker offline trong Panic và gửi event sau reconnect; lệnh trùng/phiên cũ; timer cửa mở và PIR >5 phút. Chưa xem UI hiện tại trên mobile/ThingsBoard mobile.
+
+## 15/11/2026 — Đồng bộ code với Chương 2 (MQ-2, safety relay)
+
+- So sánh Chương 2 với code: thiếu MQ-2/CO₂ và safety relay phần cứng; broker và VLAN được giữ theo thiết kế riêng (Mosquitto TLS + ACL). Kế hoạch: `docs/superpowers/plans/2026-11-15-chuong2-mq2-safety-relay.md`, quyết định DEC-050.
+- Thêm MQ-2 (GPIO36) → `environment.co2_ppm`, CO₂ cao tính là dấu hiệu mắc kẹt, cảnh báo `CO2_HIGH`, hiển thị trên React/ThingsBoard; thêm 2 safety relay theo Panic; sơ đồ mới `kien-truc-3-lop.svg`.
+- Kiểm tra: C++ (CO2 PASS), `npm.cmd test`, `npm.cmd run build`, `npm.cmd run firmware:build` đạt. Chưa đo hệ số MQ-2 và chưa xác nhận cực tính relay trên Wokwi.

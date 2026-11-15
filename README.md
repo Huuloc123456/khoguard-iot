@@ -8,7 +8,7 @@ Phạm vi cập nhật 24–25/10/2026. Các khu A/B/D, SIM-C02 và cửa ngoài
 
 | Tài liệu | Nội dung |
 | --- | --- |
-| [Linh kiện và nối dây](docs/LINH_KIEN_VA_NOI_DAY.md) | Toàn bộ 30 linh kiện, GPIO, nguồn và giới hạn mô phỏng |
+| [Linh kiện và nối dây](docs/LINH_KIEN_VA_NOI_DAY.md) | Toàn bộ 33 linh kiện, GPIO, nguồn và giới hạn mô phỏng |
 | [Sơ đồ nối dây](docs/diagrams/so-do-noi-day.svg) | Sơ đồ tổng hợp ESP-C01 |
 | [Kiến trúc](ARCHITECTURE.md) | Dữ liệu, lệnh cửa, lớp lưu trữ và Cloud |
 | [Cấu hình máy](docs/HUONG_DAN_CAU_HINH.md) | Cài và cấu hình lần đầu |
@@ -25,7 +25,8 @@ Phạm vi cập nhật 24–25/10/2026. Các khu A/B/D, SIM-C02 và cửa ngoài
 
 ## Chức năng
 
-- Đo nhiệt độ/độ ẩm DHT22, trạng thái hai cửa, UID RFID và tín hiệu PIR/vật cản trong Wokwi.
+- Đo nhiệt độ/độ ẩm DHT22, khí MQ-2 (thay cảm biến CO₂), trạng thái hai cửa, UID RFID và tín hiệu PIR/vật cản trong Wokwi.
+- Hai safety relay nối dây cứng với nút Panic: giữ Panic là nguồn khóa bị cắt ngay, không cần firmware hay mạng (theo Chương 2).
 - ESP32 quyết định liên động hai cửa, từ chối đóng khi còn người/tín hiệu chưa rõ, xử lý Panic và cảnh báo mở lâu tại chỗ.
 - Website gửi yêu cầu mở, đóng hoặc đặt lại Panic. Chỉ ACK từ firmware mới xác nhận lệnh đã áp dụng.
 - MySQL lưu telemetry, sự kiện, cảnh báo, lệnh, tài khoản, lịch ca và giữ chỗ. Viewer xem, operator vận hành, admin xem thêm nhật ký xác thực.
@@ -35,7 +36,8 @@ Phạm vi cập nhật 24–25/10/2026. Các khu A/B/D, SIM-C02 và cửa ngoài
 ## Kiến trúc
 
 ```text
-DHT22 / RFID / PIR / contact / Panic / HC-SR04
+DHT22 / MQ-2 / RFID / PIR / contact / Panic / HC-SR04
+      Panic ── safety relay ── nguồn relay khóa (dây cứng)
                          │
                     ESP-C01 (Wokwi)
                          │ MQTT/TLS
@@ -107,10 +109,11 @@ Chọn nguồn **Backend / MQTT** và đăng nhập để dùng dữ liệu lưu
 - Hai công tắc contact: HIGH = mở, LOW = đóng. Servo không tự đổi công tắc.
 - HC-SR04: <100 cm là bị chắn, >=100 cm và echo còn mới là thông. Mất echo quá 250 ms được coi là bị chắn.
 - PIR: bấm Simulate Motion. Nó chỉ báo chuyển động, không đo người bất động.
-- Panic D07/D08: nút đỏ hoặc phím 7/8. Nhả nút không tự xóa latch. Khi đủ điều kiện, operator gửi Đặt lại khẩn cấp trên web.
+- MQ-2: kéo thanh ppm. Từ 1000 ppm web cảnh báo CO₂ cao; từ 1500 ppm khi hai cửa đóng được tính là dấu hiệu mắc kẹt như PIR. Hệ số đổi ADC → ppm (`CO2_CAL_*` trong `firmware/include/config.h`) là giá trị tạm, đo lại bằng `gas_raw=` trên Serial.
+- Panic D07/D08: nút đỏ hoặc phím 7/8. Nhả nút không tự xóa latch. Khi đủ điều kiện, operator gửi Đặt lại khẩn cấp trên web. Trong lúc giữ nút, safety relay tắt LED khóa bằng phần cứng.
 - Serial hỗ trợ `RFID D07 DEMO-017 IN` và `RFID D07 DEMO-017 OUT` cho kiểm tra tự động.
 
-Các ngưỡng: input debounce 30 ms, DHT/telemetry 2 s, dữ liệu live tối đa 10 s, lệnh cửa TTL 10 s, hành trình contact timeout 10 s, servo biểu diễn hành trình 1,5 s, cảnh báo mở từ 30 s, còi sau 60 s, nghi mắc kẹt sau 5 phút tín hiệu PIR khi hai cửa đóng.
+Các ngưỡng: input debounce 30 ms, DHT/telemetry 2 s, dữ liệu live tối đa 10 s, lệnh cửa TTL 10 s, hành trình contact timeout 10 s, servo biểu diễn hành trình 1,5 s, cảnh báo mở từ 30 s, còi sau 60 s, nghi mắc kẹt sau 5 phút tín hiệu PIR hoặc CO₂ ≥ 1500 ppm khi hai cửa đóng, cảnh báo CO₂ từ 1000 ppm (hết dưới 900 ppm).
 
 ## ThingsBoard Cloud
 

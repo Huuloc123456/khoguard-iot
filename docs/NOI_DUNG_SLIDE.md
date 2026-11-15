@@ -75,15 +75,15 @@
 | Nhóm | Số lượng và vai trò |
 | --- | --- |
 | Bộ điều khiển | 1 ESP32 DevKit v1 |
-| Môi trường / RFID | 1 DHT22, 1 MFRC522 |
+| Môi trường / RFID | 1 DHT22, 1 MQ-2 (thay CO₂), 1 MFRC522 |
 | Chuyển động / vật cản | 1 PIR, 2 HC-SR04 |
 | Đầu vào thao tác | 2 contact, 1 công tắc chiều, 2 Panic |
-| Chấp hành minh họa | 2 servo, 3 relay, 5 LED, 1 buzzer |
+| Chấp hành minh họa | 2 servo, 5 relay (2 khóa, 1 sưởi/quạt, 2 safety theo Panic), 5 LED, 1 buzzer |
 | Điện trở | 3 × 10 kΩ, 5 × 220 Ω |
 
 **Hình:** Ảnh minh họa nhóm linh kiện; không phải ảnh chụp thiết bị đang đấu.
 
-**Lưu ý khi trình bày:** Tổng 30 phần tử điện. Không có LCD, MQ-2, radar hoặc nút Reset vật lý.
+**Lưu ý khi trình bày:** Tổng 33 phần tử điện. Không có LCD, radar hoặc nút Reset vật lý. MQ-2 chỉ thay vai trò cảm biến CO₂ trong mô phỏng.
 
 ## Trang 10 Nối dây đầu vào và RFID
 
@@ -94,6 +94,7 @@
 | Sonar TRIG chung | 5 | Xung 10 µs, mỗi 60 ms |
 | Panic D07 / D08 | 18 / 22 | Nhấn HIGH, kéo xuống 10 kΩ |
 | PIR / DHT22 | 23 / 15 | PIR chuyển động, DHT pull-up 10 kΩ |
+| MQ-2 AOUT | 36 (VP) | ADC1, thay CO₂ |
 | RFID SCK / MOSI / MISO / CS | 2 / 13 / 34 / 12 | Nguồn và RST 3V3, SPI |
 | Chiều RFID | 35 | HIGH IN, LOW OUT |
 

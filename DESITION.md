@@ -321,3 +321,12 @@ Ngày 25/10/2026. Theo yêu cầu người dùng, dùng `docs/slides/2-template-
 ## DEC-049 — Python dùng cho bài lab, backend vẫn dùng Node.js
 
 Ngày 26/10/2026. Tài liệu Phần 2 mục 2.7 có ví dụ Python cho lọc ô theo vùng nhiệt độ/tải trọng/thể tích, ngưỡng kho 95% và giữ chỗ 15 phút. Slide lập trình IoT còn có bài Raspberry Pi GPIO/PWM/ngắt và Flask. Thêm các bài thực hành chạy độc lập trong `labs/python/`; GPIO chạy bằng adapter giả lập, Flask bind localhost. Không gọi Python từ backend: nghiệp vụ live vẫn do JavaScript/MySQL transaction xử lý. GPIO/Flask cần Flask trong venv `.local/labs-python`; ví dụ giữ chỗ chỉ dùng thư viện chuẩn Python 3.10+.
+
+## DEC-050 — Đồng bộ code với Chương 2: MQ-2 thay CO₂ và safety relay theo Panic
+
+Ngày 15/11/2026. Chương 2 của báo cáo mô tả cảm biến CO₂ (mô phỏng bằng MQ-2) và safety relay phần cứng cắt nguồn chốt điện từ khi khẩn cấp, nhưng bản code trước không có hai phần này. Người dùng chọn: relay chuỗi theo Panic; MQ-2 vừa là telemetry vừa là dấu hiệu mắc kẹt; giữ Mosquitto riêng (TLS + ACL thay VLAN); không thêm RGB LED.
+
+- MQ-2 AOUT → GPIO36/VP, chân trống duy nhất trên ADC1 nên đọc được khi WiFi bật. `co2Ppm()` nội suy tuyến tính hai điểm `CO2_CAL_*`; ADC = 0 cho ra `null`. Wokwi không công bố đường đặc tuyến ppm → điện áp, nên `CO2_CAL_*` hiện là **giá trị tạm** (1000 → 400 ppm, 3000 → 5000 ppm) cho tới khi đo `gas_raw=` trên simulator.
+- Firmware: CO₂ ≥ 1500 ppm khi hai cửa đóng được tính là dấu hiệu mắc kẹt như PIR, vẫn cần đủ 5 phút. Backend: `CO2_HIGH` từ 1000 ppm, tự hết dưới 900 ppm.
+- Safety relay: 2 relay PNP, IN nối thẳng chân 1.r của Panic, chuỗi 3V3 → COM/NC 07 → COM/NC 08 → COM hai relay khóa. Không tốn GPIO (ESP32 chỉ còn VP/VN, đều là chân chỉ đọc). Cực tính theo tài liệu Wokwi (HIGH = COM–NO), cần xác nhận trên simulator.
+- Hệ quả: phần cứng chỉ cắt nguồn khóa **trong lúc giữ nút**; firmware vẫn chốt Panic sau khi nhả. Liên động đóng cửa vẫn là phần mềm cục bộ vì HC-SR04 cần MCU đo xung. MQ-2 thật không đo CO₂ và AOUT 5 V cần cầu chia. BOM tăng từ 30 lên 33 phần tử điện.
