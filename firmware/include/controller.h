@@ -3,6 +3,7 @@
 #include <array>
 #include <cstring>
 #include <cctype>
+#include <cmath>
 #include "config.h"
 namespace kg {
 struct Input {
@@ -72,6 +73,15 @@ enum class Motion : uint8_t {idle,opening,closing};
 enum class DoorState : uint8_t {unknown,open,closed,opening,closing};
 // Demo thresholds (Agent.md 8.2); all intervals use wrapping uint32 millis differences.
 constexpr uint32_t DOOR_WARNING_MS=30000,DOOR_CRITICAL_MS=60000,TRAPPED_MS=300000,TRAVEL_TIMEOUT_MS=10000;
+// Chuong 2: MQ-2 stands in for a CO2 sensor. CO2 rising from breathing in a closed room is trapped-person evidence.
+constexpr float CO2_TRAPPED_PPM=1500;
+// Two-point linear ADC->ppm calibration (config.h CO2_CAL). raw<=0 means unplugged/unpowered -> NAN (unknown), never 0 ppm.
+// ponytail: linear fit, a real MQ-2/NDIR curve is logarithmic; add a lookup table if readings drift from the reference points.
+inline float co2Ppm(int raw,int raw0,float ppm0,int raw1,float ppm1) {
+  if(raw<=0 || raw1==raw0) return NAN;
+  const float ppm=ppm0+(raw-raw0)*(ppm1-ppm0)/float(raw1-raw0);
+  return ppm<0 ? 0:ppm;
+}
 struct Alarms {std::array<bool,2> doorWarning{{false,false}},doorCritical{{false,false}};bool trapped=false;};
 struct Outputs {std::array<bool,2> lock{{false,false}},motorOpen{{false,false}},motorClose{{false,false}};bool light=false,buzzer=false,heater=false,fan=false;};
 struct CommandIn {char id[65];unsigned door;Action action;uint64_t expectedRevision;bool sessionMatches;};
@@ -118,6 +128,10 @@ struct Controller {
   std::array<bool,2> openTiming{{false,false}};
   std::array<Reason,2> reversalReason{{Reason::none,Reason::none}};
   bool trappedTiming=false;
+  // NAN (unknown/stale) compares false, so an unknown CO2 reading is never trapped evidence; presence still is.
+  // ponytail: no hysteresis at CO2_TRAPPED_PPM; noise only restarts the 5-min timer (later alarm), add a band if Wokwi jitters.
+  bool co2High=false;
+  void setCo2(float ppm) {co2High=ppm>=CO2_TRAPPED_PPM;}
   uint32_t trappedSince=0;
   CommandLog commands;
   bool anyPanic() const {return panic[0] || panic[1];}
@@ -167,7 +181,7 @@ struct Controller {
       if(isOpen(d)) {if(!openTiming[d]) {openTiming[d]=true;openSince[d]=now;}}
       else openTiming[d]=false;
     }
-    const bool trapped=inputs[6].known && inputs[6].value && isClosed(0) && isClosed(1);
+    const bool trapped=((inputs[6].known && inputs[6].value) || co2High) && isClosed(0) && isClosed(1);
     if(trapped && !trappedTiming) trappedSince=now;
     trappedTiming=trapped;
   }

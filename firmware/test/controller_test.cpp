@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cmath>
 #include <cstdio>
 #include <string>
 #include "../include/controller.h"
@@ -46,4 +47,9 @@ int main() {
   const auto r=room.revision;assert(room.scan(read.card,true)==kg::ScanResult::unauthorized && room.revision==r);
   assert(room.scan(0,true)==kg::ScanResult::accepted && room.revision==r+1 && room.occupancy.count==1);
   std::puts("M08 C++ PASS: serial RFID parser, card table, reconcile only when no card inside, revision on count change");
+  assert(std::isnan(kg::co2Ppm(0,1000,400,3000,5000)));
+  assert(kg::co2Ppm(1000,1000,400,3000,5000)==400);
+  assert(kg::co2Ppm(2000,1000,400,3000,5000)==2700);
+  assert(kg::co2Ppm(1,1000,400,3000,5000)>=0);
+  std::puts("CO2 C++ PASS: ADC->ppm, unplugged=NaN, clamp");
 }

@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstdio>
 #include <cstring>
+#include <cmath>
 #include "../include/controller.h"
 using kg::Reason;using kg::Action;using kg::Motion;using kg::DoorState;
 // Slots: D07 contact(open) beam(clear) panic, D08 contact beam panic, presence.
@@ -88,6 +89,16 @@ int main() {
     auto wrap=ready(now);uint32_t w=0xFFFFFF00u;settle(wrap,with(SAFE_CLOSED,0,true),w);
     assert(!wrap.alarms(w+29000).doorWarning[0] && wrap.alarms(w+30000).doorWarning[0]);
     std::puts("M11 PASS: door-open 30 s / >60 s, trapped >5 min, reset on close/clear, millis rollover");
+  }
+  {
+    // Chuong 2: MQ-2 stands in for CO2; high CO2 with both doors closed >5 min is trapped-person evidence like PIR.
+    auto g=ready(now);g.setCo2(1500);const uint32_t seen=now+30;settle(g,SAFE_CLOSED,now);
+    assert(!g.alarms(seen+300000).trapped && g.alarms(seen+300001).trapped && g.outputs(seen+300001).buzzer);
+    g.setCo2(900);g.tick(seen+300002);assert(!g.alarms(seen+300003).trapped);
+    auto low=ready(now);low.setCo2(1499);settle(low,SAFE_CLOSED,now);assert(!low.alarms(now+400000).trapped);
+    auto nan=ready(now);nan.setCo2(NAN);settle(nan,SAFE_CLOSED,now);assert(!nan.alarms(now+400000).trapped);
+    auto open=ready(now);open.setCo2(5000);settle(open,with(SAFE_CLOSED,0,true),now);assert(!open.alarms(now+400000).trapped);
+    std::puts("CO2 PASS: high CO2 + both doors closed >5 min = trapped; low/unknown/open door = not");
   }
   {
     // Commands: session-bound, revision-checked, deduplicated by ID; a duplicate never runs twice.
