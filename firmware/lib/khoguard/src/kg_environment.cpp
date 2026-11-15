@@ -8,7 +8,7 @@
 namespace kg {
 namespace environment {
 namespace {
-DHT dht(board::DHT_PIN, DHT22);
+DHT dht(config::DHT_PIN, DHT22);
 }
 
 void begin() {
@@ -21,13 +21,17 @@ void poll() {
     readAt = millis();
     float h = dht.readHumidity();
     float t = dht.readTemperature();
+    const int gasRaw = analogRead(config::GAS_AOUT_PIN);
+    const float c = co2Ppm(gasRaw, config::CO2_CAL_RAW0, config::CO2_CAL_PPM0, config::CO2_CAL_RAW1, config::CO2_CAL_PPM1);
     portENTER_CRITICAL(&state::sampleLock);
     state::temperature = t;
     state::humidity = h;
+    state::co2 = c;
     state::sampleAt = millis();
     portEXIT_CRITICAL(&state::sampleLock);
-    Serial.printf("SENSOR_HEARTBEAT ms=%llu temperature=%.1f humidity=%.1f\r\n",
-                  static_cast<unsigned long long>(esp_timer_get_time() / 1000), t, h);
+    // gas_raw is the calibration reading for config.h CO2_CAL_*.
+    Serial.printf("SENSOR_HEARTBEAT ms=%llu temperature=%.1f humidity=%.1f gas_raw=%d co2=%.0f\r\n",
+                  static_cast<unsigned long long>(esp_timer_get_time() / 1000), t, h, gasRaw, c);
   }
 }
 }  // namespace environment

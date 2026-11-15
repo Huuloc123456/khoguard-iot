@@ -5,7 +5,7 @@ const diagram=JSON.parse(readFileSync(new URL('../firmware/diagram.json',import.
 const config=readFileSync(new URL('../firmware/include/config.h',import.meta.url),'utf8');
 const list=name=>new RegExp(`${name}\\[\\]\\s*=\\s*\\{([\\d,\\s]+)\\}`).exec(config)[1].split(',').map(Number);
 const scalar=name=>Number(new RegExp(`\\b${name}\\s*=\\s*(\\d+)`).exec(config)[1]);
-const esp=n=>({16:'esp:RX2',17:'esp:TX2'})[n] ?? `esp:D${n}`;
+const esp=n=>({16:'esp:RX2',17:'esp:TX2',36:'esp:VP',39:'esp:VN'})[n] ?? `esp:D${n}`;
 const wired=from=>diagram.connections.filter(c=>c[0]===from).map(c=>c[1]);
 const part=id=>diagram.parts.find(p=>p.id===id);
 
@@ -94,6 +94,7 @@ const PART_PINS={
   'wokwi-relay-module':['VCC','GND','IN','NC','COM','NO'], 'wokwi-servo':['GND','V+','PWM'], 'wokwi-buzzer':['1','2'],
   'board-mfrc522':['3.3V','RST','GND','IRQ','MISO','MOSI','SCK','SDA'], 'wokwi-hc-sr04':['VCC','TRIG','ECHO','GND'],
   'wokwi-lcd1602':['GND','VCC','SDA','SCL'],
+  'wokwi-gas-sensor':['VCC','GND','DOUT','AOUT'],
 };
 const diagrams=[['firmware/diagram.json',diagram]];
 
@@ -128,4 +129,12 @@ test('every indicator LED has its own 220 ohm series resistor',()=>{
     assert.equal(ends.length,2,`${name}: resistor has exactly two connections`);
     assert.ok(ends.some(c=>c.includes(`led-${name}:A`)),`${name}: resistor is in series with the anode`);
   }
+});
+
+test('MQ-2 gas sensor stands in for CO2: AOUT on GPIO36 (ADC1, works with WiFi)',()=>{
+  assert.equal(part('gas')?.type,'wokwi-gas-sensor');
+  assert.equal(scalar('GAS_AOUT_PIN'),36);
+  assert.deepEqual(wired('gas:AOUT'),[esp(36)]);
+  assert.deepEqual(wired('gas:VCC'),['esp:VIN']);
+  assert.deepEqual(wired('gas:GND'),['esp:GND.1']);
 });

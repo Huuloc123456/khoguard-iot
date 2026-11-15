@@ -21,12 +21,13 @@ void envelope(JsonDocument &doc, const char *kind, uint64_t seq, bool will) {
 
 void telemetry(JsonDocument &doc, uint64_t seq) {
   envelope(doc, "telemetry", seq);
-  float t, h;
+  float t, h, co2;
   uint32_t at;
   kg::Controller c;
   portENTER_CRITICAL(&state::sampleLock);
   t = state::temperature;
   h = state::humidity;
+  co2 = state::co2;
   at = state::sampleAt;
   c = state::controller;
   portEXIT_CRITICAL(&state::sampleLock);
@@ -37,6 +38,8 @@ void telemetry(JsonDocument &doc, uint64_t seq) {
   else payload["environment"]["temperature_c"] = nullptr;
   if (fresh && isfinite(h) && h >= 0 && h <= 100) payload["environment"]["humidity_pct"] = h;
   else payload["environment"]["humidity_pct"] = nullptr;
+  if (fresh && isfinite(co2) && co2 >= 0 && co2 <= 100000) payload["environment"]["co2_ppm"] = co2;
+  else payload["environment"]["co2_ppm"] = nullptr;
   // Unverified count is never published as a number, so 0 cannot be mistaken for an empty room.
   if(c.occupancy.verified) payload["occupancy"]["current_occupants"] = c.occupancy.count;
   else payload["occupancy"]["current_occupants"] = nullptr;

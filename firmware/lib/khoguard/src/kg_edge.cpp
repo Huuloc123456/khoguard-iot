@@ -11,6 +11,8 @@ void step() {
   portENTER_CRITICAL(&state::sampleLock);
   const auto before=state::controller;
   const uint32_t now=millis();
+  // A stale CO2 sample is unknown (NAN), never evidence; the controller treats NAN as "no CO2 sign".
+  state::controller.setCo2(now-state::sampleAt<=config::SENSOR_STALE_MS ? state::co2 : NAN);
   state::controller.update(raw,now);
   state::controller.tick(now);
   const auto after=state::controller;

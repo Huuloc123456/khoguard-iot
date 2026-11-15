@@ -79,6 +79,13 @@ constexpr int BUZZER_PIN = 33;
 // NO -> den suoi, NC -> den quat. Chan GPIO5 cu cua quat duoc dung lam TRIG cho HC-SR04 (DEC-045).
 constexpr int CLIMATE_RELAY_PIN = 4;
 constexpr int DHT_PIN = 15;
+// Chuong 2: MQ-2 gas sensor stands in for CO2 (Wokwi has no CO2 part). AOUT -> GPIO36 (VP): ADC1 works while WiFi is on.
+// Real board: MQ-2 AOUT can reach 5 V; it needs a divider before the 3.3 V ADC. Wokwi only.
+constexpr int GAS_AOUT_PIN = 36;
+// Calibration knob for controller.h co2Ppm(): {raw0, ppm0, raw1, ppm1}. Wokwi documents no ppm->voltage curve.
+// PLACEHOLDER until measured: set the gas part to two ppm values, read "gas_raw=" in SENSOR_HEARTBEAT, write them here.
+constexpr int CO2_CAL_RAW0 = 1000, CO2_CAL_RAW1 = 3000;
+constexpr float CO2_CAL_PPM0 = 400, CO2_CAL_PPM1 = 5000;
 // Servo chi de nhin: 0 do = dong, 90 do = mo. Vi tri cua van do cong tac contact bao (cam bien doc lap voi motor).
 constexpr int SERVO_CLOSED_DEG = 0;
 constexpr int SERVO_OPEN_DEG = 90;

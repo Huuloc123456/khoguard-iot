@@ -128,6 +128,15 @@
       }
     },
     {
+      "type": "wokwi-gas-sensor",
+      "id": "gas",
+      "top": 80,
+      "left": 700,
+      "attrs": {
+        "ppm": "400"
+      }
+    },
+    {
       "type": "wokwi-relay-module",
       "id": "relay07",
       "top": -90,
@@ -359,6 +368,15 @@
       "left": 700,
       "attrs": {
         "text": "Nhiệt độ / độ ẩm (DHT22)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label-gas",
+      "top": 58,
+      "left": 700,
+      "attrs": {
+        "text": "Khí MQ-2 (thay CO2) → VP"
       }
     },
     {
@@ -700,6 +718,24 @@
     ],
     [
       "presence:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "gas:AOUT",
+      "esp:VP",
+      "orange",
+      []
+    ],
+    [
+      "gas:VCC",
+      "esp:VIN",
+      "red",
+      []
+    ],
+    [
+      "gas:GND",
       "esp:GND.1",
       "black",
       []

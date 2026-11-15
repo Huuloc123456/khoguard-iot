@@ -13,6 +13,8 @@ extern char sessionId[33];
 // Latest DHT22 sample; NAN until the first read, sampleAt in millis().
 extern float temperature;
 extern float humidity;
+// Latest MQ-2 reading converted to ppm (CO2 stand-in); NAN until the first read or when the sensor reads 0 (unplugged).
+extern float co2;
 extern uint32_t sampleAt;
 
 void randomId(char *output);

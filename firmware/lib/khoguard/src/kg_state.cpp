@@ -8,6 +8,7 @@ char bootId[33];
 char sessionId[33];
 float temperature = NAN;
 float humidity = NAN;
+float co2 = NAN;
 uint32_t sampleAt = 0;
 
 void randomId(char *output) {
