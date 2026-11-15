@@ -141,36 +141,28 @@
       "id": "relay07",
       "top": -90,
       "left": -700,
-      "attrs": {
-        "transistor": "pnp"
-      }
+      "attrs": {}
     },
     {
       "type": "wokwi-relay-module",
       "id": "relay08",
       "top": -90,
       "left": -470,
-      "attrs": {
-        "transistor": "pnp"
-      }
+      "attrs": {}
     },
     {
       "type": "wokwi-relay-module",
       "id": "safety07",
       "top": 95,
       "left": 260,
-      "attrs": {
-        "transistor": "pnp"
-      }
+      "attrs": {}
     },
     {
       "type": "wokwi-relay-module",
       "id": "safety08",
       "top": 95,
       "left": 480,
-      "attrs": {
-        "transistor": "pnp"
-      }
+      "attrs": {}
     },
     {
       "type": "wokwi-servo",
@@ -238,9 +230,7 @@
       "id": "relay-climate",
       "top": 30,
       "left": -470,
-      "attrs": {
-        "transistor": "pnp"
-      }
+      "attrs": {}
     },
     {
       "type": "wokwi-resistor",

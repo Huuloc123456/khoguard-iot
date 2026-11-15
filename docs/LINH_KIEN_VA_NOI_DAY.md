@@ -36,7 +36,7 @@ Thẻ / cảm biến / nút  ──báo tin──>  ESP32 (bộ não)
 - PIR là cảm biến chuyển động, không phải radar mmWave. HC-SR04 tạo tín hiệu vật cản, không phải rèm quang an toàn. Giao diện và tài liệu đã dùng tên đúng.
 - Hai nút Panic có điện trở kéo xuống ngoài 10 kΩ. DHT22 có điện trở kéo lên 10 kΩ.
 - Đã bổ sung **5 điện trở 220 Ω**, mỗi LED một điện trở nối tiếp. Không coi relay là điện trở hạn dòng.
-- Relay Wokwi dùng `transistor: pnp`. Theo phần Operation trong tài liệu Wokwi, cấu hình này làm HIGH nối COM–NO, LOW nối COM–NC. Firmware xuất HIGH khi cần giữ khóa hoặc bật sưởi. Mục Attributes và Operation trong tài liệu có cách mô tả cực tính khác nhau, vì vậy chưa coi việc đối chiếu cấu hình là kiểm chứng chuyển mạch khi chạy.
+- Relay Wokwi dùng loại mặc định `npn`: IN HIGH nối COM–NO, LOW nối COM–NC. Đã đo trên wokwi.com ngày 15/11/2026; `pnp` cho kết quả ngược lại (IN HIGH nối COM–NC). Firmware xuất HIGH khi cần giữ khóa hoặc bật sưởi.
 - Servo chỉ biểu diễn cánh cửa. Công tắc contact độc lập báo vị trí, người demo phải gạt bằng tay sau lệnh di chuyển.
 - Bản Word trước có Reset vật lý và công tắc hiện diện riêng; hai linh kiện đó **không có trong bản đang triển khai**.
 - Theo Chương 2 (15/11/2026): **MQ-2** thay cảm biến CO₂ (AOUT → GPIO36/VP) và **2 safety relay** nối dây cứng với nút Panic để cắt nguồn khóa mà không qua ESP32.
@@ -103,7 +103,7 @@ HC-SR04: khoảng cách **<100 cm** hoặc mất echo mới quá **250 ms** đư
 
 Hai servo dùng LEDC kênh 0/1 ở 50 Hz. Buzzer dùng kênh 2 để không đổi tần số servo. Một relay chuyển mạch đủ vì mô hình quy định sưởi và quạt luôn ngược nhau.
 
-Safety relay chỉ cắt nguồn khóa **trong lúc giữ nút**. Sau khi nhả, firmware vẫn chốt Panic và giữ khóa nhả đến khi operator đặt lại. Cực tính PNP (HIGH = COM–NO) theo tài liệu Wokwi; phải kiểm tra trên simulator, nếu ngược thì đổi NC thành NO trong chuỗi.
+Safety relay chỉ cắt nguồn khóa **trong lúc giữ nút**. Sau khi nhả, firmware vẫn chốt Panic và giữ khóa nhả đến khi operator đặt lại. Đã kiểm tra 20 trường hợp trên wokwi.com (4 trạng thái nút × khóa giữ/nhả). Ở cả 20 ca, LED khóa chỉ sáng khi firmware giữ khóa và không nút nào bị giữ. Sketch thử vẫn xuất HIGH trong lúc giữ Panic, tương tự firmware bị treo, mà khóa vẫn mất điện.
 
 ## Nguồn cấp và giới hạn
 

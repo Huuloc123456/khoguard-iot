@@ -43,11 +43,13 @@ test('each ESP-C01 input part drives exactly the controller slot assigned to it 
   assert.equal(new Set(pins).size,pins.length);
   assert.ok(!pins.includes(scalar('DHT_PIN')),'DHT22 data pin must stay separate from safety inputs');
 });
+// Measured on wokwi.com 15/11/2026 (20-case matrix): npn = IN HIGH connects COM–NO; pnp is the inverse (IN HIGH = COM–NC).
+const NPN='relay must be npn so a HIGH output (lock held, heater on, Panic pressed) closes COM–NO';
 test('ESP-C01 outputs: lock relays, door servos, buzzer and indicator LEDs on their configured pins',()=>{
   const relays=list('LOCK_RELAY_PINS'), servos=list('DOOR_SERVO_PINS');
   for (const [i,door] of ['07','08'].entries()) {
     assert.equal(part(`relay${door}`)?.type,'wokwi-relay-module');
-    assert.equal(part(`relay${door}`).attrs.transistor,'pnp','IN HIGH switches COM to NO');
+    assert.equal(part(`relay${door}`).attrs.transistor ?? 'npn','npn',NPN);
     assert.deepEqual(wired(`relay${door}:IN`),[esp(relays[i])]);
     // The green lock lamp is the relay's load: it lights only while the relay holds the lock.
     assert.deepEqual(wired(`relay${door}:NO`),[`r-lock${door}:1`]);
@@ -65,7 +67,7 @@ test('ESP-C01 outputs: lock relays, door servos, buzzer and indicator LEDs on th
   assert.deepEqual(wired('r-light:2'),[esp(scalar('LIGHT_PIN'))]);
   // Fan is always the opposite of the heater (controller.h), so one changeover relay drives both lamps.
   assert.equal(part('relay-climate')?.type,'wokwi-relay-module');
-  assert.equal(part('relay-climate').attrs.transistor,'pnp');
+  assert.equal(part('relay-climate').attrs.transistor ?? 'npn','npn',NPN);
   assert.deepEqual(wired('relay-climate:IN'),[esp(scalar('CLIMATE_RELAY_PIN'))]);
   assert.deepEqual(wired('relay-climate:COM'),['esp:3V3']);
   assert.deepEqual(wired('relay-climate:NO'),['r-heater:1']);
@@ -144,7 +146,7 @@ test('MQ-2 gas sensor stands in for CO2: AOUT on GPIO36 (ADC1, works with WiFi)'
 test('safety relays cut lock power in hardware while a Panic button is held (Chương 2 safety relay)',()=>{
   for (const door of ['07','08']) {
     assert.equal(part(`safety${door}`)?.type,'wokwi-relay-module');
-    assert.equal(part(`safety${door}`).attrs.transistor,'pnp','Panic HIGH opens COM–NC');
+    assert.equal(part(`safety${door}`).attrs.transistor ?? 'npn','npn',NPN);
     assert.deepEqual(wired(`panic${door}:1.r`),[`safety${door}:IN`]);
     assert.deepEqual(wired(`safety${door}:VCC`),['esp:VIN']);
     assert.deepEqual(wired(`safety${door}:GND`),['esp:GND.2']);
