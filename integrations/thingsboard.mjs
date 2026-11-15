@@ -6,10 +6,11 @@ function deviceView(spec,device,zone,doors,available) {
   const unknown=available ? (device.freshness==='stale'?'Dữ liệu cũ':'Chưa rõ'):'Nguồn không khả dụng';
   const values={source:spec.source,zone:spec.zone_id,source_available:available,state:available?device.state:'unknown',
     freshness:available?device.freshness:'unknown',last_seen_at:device.last_seen_at??'Chưa rõ',
-    temperature_display:unknown,humidity_display:unknown,occupants_display:unknown,presence_display:unknown};
+    temperature_display:unknown,humidity_display:unknown,co2_display:unknown,occupants_display:unknown,presence_display:unknown};
   if(fresh && spec.environment) {
     values.temperature_display=Number.isFinite(zone.environment.temperature_c)?`${zone.environment.temperature_c} °C`:'Chưa rõ';
     values.humidity_display=Number.isFinite(zone.environment.humidity_pct)?`${zone.environment.humidity_pct} %`:'Chưa rõ';
+    values.co2_display=Number.isFinite(zone.environment.co2_ppm)?`${Math.round(zone.environment.co2_ppm)} ppm`:'Chưa rõ';
   }
   if(fresh && spec.occupancy) {
     values.occupants_display=zone.occupancy.count_verified && Number.isInteger(zone.occupancy.current_occupants)?String(zone.occupancy.current_occupants):'Chưa xác minh';
@@ -35,7 +36,7 @@ export function toThingsBoard(snapshot,now=Date.now()) {
     const {values,fresh}=deviceView(spec,device,zone,snapshot.doors,available);
     values.active_alerts=snapshot.alerts.filter(a=>a.zone===spec.zone_id && a.state==='active').length;
     const frames=[{ts:time,values}],measurements={};
-    if(fresh && spec.environment) for(const key of ['temperature_c','humidity_pct']) if(Number.isFinite(zone.environment[key])) measurements[key]=zone.environment[key];
+    if(fresh && spec.environment) for(const key of ['temperature_c','humidity_pct','co2_ppm']) if(Number.isFinite(zone.environment[key])) measurements[key]=zone.environment[key];
     if(fresh && spec.occupancy && zone.occupancy.count_verified && Number.isInteger(zone.occupancy.current_occupants)) measurements.current_occupants=zone.occupancy.current_occupants;
     if(Object.keys(measurements).length) frames.push({ts:Date.parse(device.last_seen_at),values:measurements});
     return [spec.id,frames];

@@ -11,7 +11,7 @@ export function warehouseDashboard(deviceId) {
   }
   for(const [i,zone] of registry.zones.entries()) {
     const devices=registry.devices.filter(d=>d.zone_id===zone),owner=devices.find(d=>d.environment),prefix=owner.id.replaceAll('-','_');
-    const keys=[['source_available','Nguồn có dữ liệu'],['freshness','Độ mới'],['temperature_display','Nhiệt độ'],['humidity_display','Độ ẩm'],['occupants_display','Số người'],['presence_display','Hiện diện'],['last_seen_at','Lần nhận cuối']].map(([name,label])=>[`${prefix}_${name}`,label]);
+    const keys=[['source_available','Nguồn có dữ liệu'],['freshness','Độ mới'],['temperature_display','Nhiệt độ'],['humidity_display','Độ ẩm'],['co2_display','CO₂'],['occupants_display','Số người'],['presence_display','Hiện diện'],['last_seen_at','Lần nhận cuối']].map(([name,label])=>[`${prefix}_${name}`,label]);
     for(const device of devices)for(const door of device.doors)keys.push([`${device.id.replaceAll('-','_')}_${door}_state`,door]);
     add(`Khu ${zone} · xem độ mới trước khi dùng số liệu`,'system.cards.entities_table','latest',keys,i*5,5);
   }

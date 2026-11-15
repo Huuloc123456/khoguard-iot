@@ -31,7 +31,7 @@ export function snapshotToView(snapshot) {
       const doors=snapshot.doors.filter(d=>d.zone===zone.id);
       const any=(field,value)=>doors.some(d=>d[field]===value);
       const all=(field,value)=>doors.every(d=>d[field]===value);
-      return {...zone,mode:'live',temperature:zone.environment.temperature_c,humidity:zone.environment.humidity_pct,
+      return {...zone,mode:'live',temperature:zone.environment.temperature_c,humidity:zone.environment.humidity_pct,co2:zone.environment.co2_ppm ?? null,
         people:zone.occupancy.current_occupants,countVerified:zone.occupancy.count_verified,presence:zone.occupancy.presence,
         beam:any('beam_clear',false) ? true:all('beam_clear',true) ? false:null,
         panic:any('panic_latched',true) ? true:all('panic_latched',false) ? false:null,

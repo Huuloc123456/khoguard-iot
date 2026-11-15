@@ -96,3 +96,9 @@ test('receiving view: percent is display-only and truncated, level uses exact co
   assert.match(admissionText('STAGING_BLOCKED'),/khu đệm/i);
   assert.match(admissionText('RESERVATION_EXPIRED'),/15 phút/);
 });
+test('CO2 from MQ-2 maps to zone.co2; a snapshot without co2_ppm shows unknown, never 0',()=>{
+  const value=structuredClone(fixture);value.zones[0].environment={...value.zones[0].environment,co2_ppm:1200};
+  assert.equal(snapshotToView(value).zones[0].co2,1200);
+  const old=structuredClone(fixture);delete old.zones[0].environment.co2_ppm;
+  assert.equal(snapshotToView(old).zones[0].co2,null);
+});

@@ -1,6 +1,8 @@
 import { registry } from '../contracts/validate.js';
 
 export const TEMPERATURE_HYSTERESIS_C = 0.5;
+// Chương 2: MQ-2 stands in for CO2. Warning level only; the edge treats >= 1500 ppm with doors closed as trapped evidence.
+export const CO2_WARNING_PPM = 1000, CO2_HYSTERESIS_PPM = 100;
 // A condition that returns within this window reopens the same alert instead of adding a row.
 export const REOPEN_WINDOW_MS = 60000;
 const keyOf = (zone,door,code) => `${zone}|${door ?? '-'}|${code}`;
@@ -11,7 +13,7 @@ export function desiredAlerts(message,zone,activeKeys) {
   const p=message.payload, device=registry.devices.find(d=>d.id===message.device_id), out=[];
   const z=p.zone_id;
   for (const a of p.alarms ?? []) {
-    if (a.code==='TRAPPED_PERSON') out.push(alert(z,null,'TRAPPED_PERSON','danger',`Nghi có người mắc kẹt khu ${z}`,'Có hiện diện liên tục khi cả hai cửa đóng hơn 5 phút; đèn, còi và sưởi tại chỗ đã bật.'));
+    if (a.code==='TRAPPED_PERSON') out.push(alert(z,null,'TRAPPED_PERSON','danger',`Nghi có người mắc kẹt khu ${z}`,'PIR có chuyển động hoặc CO₂ ≥ 1500 ppm liên tục khi cả hai cửa đóng hơn 5 phút; đèn, còi và sưởi tại chỗ đã bật.'));
     else {
       const critical=a.code==='DOOR_OPEN_CRITICAL';
       out.push(alert(z,a.door_id,'DOOR_OPEN',critical ? 'danger':'warning',`Cửa ${a.door_id} mở ${critical ? 'quá 60 giây':'từ 30 giây'}`,
@@ -34,6 +36,9 @@ export function desiredAlerts(message,zone,activeKeys) {
       if (outside || (activeKeys.has(key) && !settled))
         out.push(alert(z,null,'TEMPERATURE_OUT_OF_RANGE','warning',`Nhiệt độ khu ${z} ngoài ngưỡng`,`${t.toLocaleString('vi-VN')} °C, cho phép ${zone.temperature_min} đến ${zone.temperature_max} °C; tự hết khi về trong ngưỡng ±${TEMPERATURE_HYSTERESIS_C} °C.`));
     }
+    const c=p.environment.co2_ppm;
+    if (Number.isFinite(c) && (c>=CO2_WARNING_PPM || (activeKeys.has(keyOf(z,null,'CO2_HIGH')) && c>=CO2_WARNING_PPM-CO2_HYSTERESIS_PPM)))
+      out.push(alert(z,null,'CO2_HIGH','warning',`CO₂ cao ở khu ${z}`,`${Math.round(c).toLocaleString('vi-VN')} ppm, ngưỡng ${CO2_WARNING_PPM} ppm; tự hết khi dưới ${CO2_WARNING_PPM-CO2_HYSTERESIS_PPM} ppm. Kiểm tra có người trong kho.`));
   }
   return out;
 }

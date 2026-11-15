@@ -120,3 +120,11 @@ test('Cloud dashboard has one zone table, two charts, a single warehouse alias a
     }
   }
 });
+
+test('CO2 is exported with its unit when known and as "Chưa rõ" when missing',()=>{
+  const s=freshSnapshot();s.zones.find(z=>z.id==='C').environment={temperature_c:-18,humidity_pct:55,co2_ppm:800};
+  const known=toThingsBoard(s,Date.parse(s.generated_at))['ESP-C01'];
+  assert.equal(known[0].values.co2_display,'800 ppm');assert.equal(known[1].values.co2_ppm,800);
+  const old=freshSnapshot(),missing=toThingsBoard(old,Date.parse(old.generated_at))['ESP-C01'];
+  assert.equal(missing[0].values.co2_display,'Chưa rõ');assert.equal(Object.hasOwn(missing[1].values,'co2_ppm'),false);
+});

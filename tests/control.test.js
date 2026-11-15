@@ -73,3 +73,16 @@ test('commands are bound to the live device session/revision, expire and accept 
   assert.equal(ackTransition({ ...row, status: 'applied' }, { status: 'applied', reason: null }), null, 'duplicate ack is ignored');
   assert.deepEqual(ackTransition({ ...row, status: 'expired', reason: 'COMMAND_EXPIRED' }, { status: 'applied', reason: null }), { late_ack: 'applied' });
 });
+
+test('CO2 >= 1000 ppm raises CO2_HIGH; clears only below 900; null or missing raises nothing', () => {
+  const env = co2 => esp({ environment: { temperature_c: -18, humidity_pct: 55, co2_ppm: co2 } });
+  const has = (m, keys = new Set()) => desiredAlerts(m, zone, keys).some(a => a.code === 'CO2_HIGH');
+  assert.equal(has(env(999)), false);
+  assert.equal(has(env(1000)), true);
+  const key = new Set(['C|-|CO2_HIGH']);
+  assert.equal(has(env(950), key), true, 'stays raised inside the hysteresis band');
+  assert.equal(has(env(899), key), false);
+  assert.equal(has(env(null)), false);
+  assert.equal(has(esp()), false, 'old payloads without co2_ppm');
+  assert.equal(desiredAlerts(env(1200), zone, new Set()).find(a => a.code === 'CO2_HIGH').level, 'warning');
+});

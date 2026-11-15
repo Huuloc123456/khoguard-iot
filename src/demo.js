@@ -1,5 +1,5 @@
 const zones = [
-  { id: 'C', name: 'Kho lạnh', temperature: -18.4, humidity: 55, range: [-22, -16], people: 2, occupied: 60, capacity: 78, presence: true, beam: false, panic: false },
+  { id: 'C', name: 'Kho lạnh', temperature: -18.4, humidity: 55, co2: 650, range: [-22, -16], people: 2, occupied: 60, capacity: 78, presence: true, beam: false, panic: false },
 ];
 
 const alerts = [
