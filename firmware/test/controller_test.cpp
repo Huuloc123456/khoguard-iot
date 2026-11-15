@@ -50,6 +50,6 @@ int main() {
   assert(std::isnan(kg::co2Ppm(0,1000,400,3000,5000)));
   assert(kg::co2Ppm(1000,1000,400,3000,5000)==400);
   assert(kg::co2Ppm(2000,1000,400,3000,5000)==2700);
-  assert(kg::co2Ppm(1,1000,400,3000,5000)>=0);
+  assert(std::isnan(kg::co2Ppm(1,1000,400,3000,5000)));            // below-zero extrapolation = fault, not 0 ppm
   std::puts("CO2 C++ PASS: ADC->ppm, unplugged=NaN, clamp");
 }

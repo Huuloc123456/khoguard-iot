@@ -33,7 +33,7 @@ Count chưa xác minh sau boot. `Occupancy::reconcile` có thể xác minh số 
 
 Đóng cửa chỉ khi count xác minh bằng 0, PIR clear, vật cản clear, input hợp lệ và không Panic. Bình thường chỉ mở một cửa khi cửa kia đã đóng. Panic nhả khóa và yêu cầu mở, được chốt cho tới thao tác reset_panic hợp lệ. Phản ứng và timer chạy tại thiết bị dù mất MQTT.
 
-Ngưỡng: debounce 30 ms, telemetry/DHT 2 s, stale sensor 5 s, contact timeout 10 s, servo 1,5 s, cảnh báo cửa mở từ 30 s, còi sau 60 s, nguy cơ mắc kẹt sau 300 s tín hiệu PIR hoặc CO₂ ≥ 1500 ppm liên tục khi hai contact báo đóng. Đầu ra sưởi/quạt là mô hình relay/LED.
+Ngưỡng: debounce 30 ms, telemetry/DHT 2 s, stale sensor 5 s, contact timeout 10 s, servo 1,5 s, cảnh báo cửa mở từ 30 s, còi sau 60 s, nguy cơ mắc kẹt sau 300 s tín hiệu PIR hoặc CO₂ ≥ 1500 ppm và tăng ≥ 200 ppm từ lúc đóng kín, liên tục khi hai contact báo đóng. Đầu ra sưởi/quạt là mô hình relay/LED.
 
 ## Kiểm tra
 

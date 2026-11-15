@@ -92,10 +92,16 @@ int main() {
   }
   {
     // Chuong 2: MQ-2 stands in for CO2; high CO2 with both doors closed >5 min is trapped-person evidence like PIR.
-    auto g=ready(now);g.setCo2(1500);const uint32_t seen=now+30;settle(g,SAFE_CLOSED,now);
+    // CO2 must RISE after both doors closed: baseline 600 at sealing, then breathing pushes it to 1500.
+    auto g=ready(now);g.setCo2(600);g.tick(now);g.setCo2(1500);const uint32_t seen=now+30;settle(g,SAFE_CLOSED,now);
     assert(!g.alarms(seen+300000).trapped && g.alarms(seen+300001).trapped && g.outputs(seen+300001).buzzer);
     g.setCo2(900);g.tick(seen+300002);assert(!g.alarms(seen+300003).trapped);
-    auto low=ready(now);low.setCo2(1499);settle(low,SAFE_CLOSED,now);assert(!low.alarms(now+400000).trapped);
+    // Residual CO2 after a normal exit: sealed at 1800 and falling is not a trapped sign; a further rise of 200 ppm is.
+    auto rest=ready(now);rest.setCo2(1800);rest.tick(now);rest.setCo2(1700);settle(rest,SAFE_CLOSED,now);assert(!rest.alarms(now+400000).trapped);
+    rest.setCo2(1999);rest.tick(now);assert(!rest.co2Rising);rest.setCo2(2000);rest.tick(now);assert(rest.co2Rising);
+    // Opening a door drops the baseline; the next sealing takes a new one.
+    settle(rest,with(SAFE_CLOSED,0,true),now);assert(!rest.co2Rising);
+    auto low=ready(now);low.setCo2(600);low.tick(now);low.setCo2(1499);settle(low,SAFE_CLOSED,now);assert(!low.alarms(now+400000).trapped);
     auto nan=ready(now);nan.setCo2(NAN);settle(nan,SAFE_CLOSED,now);assert(!nan.alarms(now+400000).trapped);
     auto open=ready(now);open.setCo2(5000);settle(open,with(SAFE_CLOSED,0,true),now);assert(!open.alarms(now+400000).trapped);
     std::puts("CO2 PASS: high CO2 + both doors closed >5 min = trapped; low/unknown/open door = not");
