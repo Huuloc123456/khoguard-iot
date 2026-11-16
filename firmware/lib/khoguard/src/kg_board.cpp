@@ -70,7 +70,7 @@ float servoTarget(const kg::Controller &c, unsigned door, float current) {
 }  // namespace
 
 void begin() {
-  for (unsigned i = 0; i < 7; i++) pinMode(INPUT_PINS[i], panicSlot(i) ? INPUT_PULLDOWN : beamSlotDoor(i) >= 0 ? INPUT : INPUT_PULLUP);
+  for (unsigned i = 0; i < 7; i++) pinMode(config::INPUT_PINS[i], panicSlot(i) ? INPUT_PULLDOWN : beamSlotDoor(i) >= 0 ? INPUT : INPUT_PULLUP);
   for (Sonar &sonar : sonars) attachInterruptArg(digitalPinToInterrupt(sonar.pin), onEcho, &sonar, CHANGE);
   for (int pin : config::LOCK_RELAY_PINS) {pinMode(pin, OUTPUT); digitalWrite(pin, LOW);}
   for (int pin : {config::LIGHT_PIN, config::CLIMATE_RELAY_PIN, config::SONAR_TRIG_PIN}) {pinMode(pin, OUTPUT); digitalWrite(pin, LOW);}
@@ -90,7 +90,7 @@ std::array<bool,7> readInputs() {
   std::array<bool,7> raw;
   for(unsigned i=0;i<raw.size();i++) {
     const int door = beamSlotDoor(i);
-    raw[i] = door >= 0 ? beamClear(unsigned(door), now) : digitalRead(INPUT_PINS[i])==HIGH;
+    raw[i] = door >= 0 ? beamClear(unsigned(door), now) : digitalRead(config::INPUT_PINS[i])==HIGH;
   }
   // Serial evidence of what each curtain sees, printed only when its clear/blocked reading flips.
   static int shown[2] = {-1, -1};

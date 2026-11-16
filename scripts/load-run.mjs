@@ -9,8 +9,8 @@ import WebSocket from 'ws';
 import { root, local } from './local-config.mjs';
 import { readConfig } from '../server/config.mjs';
 import { createDbPool } from '../server/database.mjs';
-import { signIn } from './check-session.mjs';
-import { SimDevice, ZONE_TEMPERATURE } from './sim-lib.mjs';
+import { signIn, until } from './check-session.mjs';
+import { SimDevice, COLD_RANGE } from './sim-lib.mjs';
 
 // One-zone transport check. Virtual senders share ESP-C01; they are never reported as physical devices.
 // Starts its own backend (stop the normal one and Wokwi ESP-C01 first). Usage: npm run load:test -- --nodes=50 --seconds=60
@@ -27,7 +27,6 @@ const rss=pid=>{
 };
 const pct=(list,p)=>{if (!list.length) return null;const s=[...list].sort((a,b)=>a-b);return s[Math.min(s.length-1,Math.ceil(p/100*s.length)-1)];};
 const stats=list=>({samples:list.length,p50_ms:pct(list,50),p95_ms:pct(list,95),max_ms:list.length ? Math.max(...list):null});
-async function until(read,accept,ms=15000) {const end=Date.now()+ms;while (Date.now()<end) {try {const v=await read();if (accept(v)) return v;} catch {} await delay(100);}throw new Error('LOAD_TIMEOUT');}
 try {
   if (await fetch(`${base}/api/health`,{signal:AbortSignal.timeout(1000)}).then(()=>true,()=>false)) throw Object.assign(new Error('stop the running backend first'),{code:'PORT_IN_USE'});
   backend=spawn(process.execPath,['--env-file=.local/runtime.env','server/start.mjs'],{cwd:root,stdio:'ignore',windowsHide:true});
@@ -35,7 +34,7 @@ try {
   const cookie=await signIn(base,'viewer'), rssStart=rss(backend.pid);
   let virtual=0; const clock=()=>virtual;
   const devices=['ESP-C01'].map(id=>new SimDevice(id,{config,clock,label:'load'}));
-  for (const d of devices) {if (d.spec.environment) d.state.temperature=ZONE_TEMPERATURE[d.spec.zone_id][0]+1; await d.connect();}
+  for (const d of devices) {if (d.spec.environment) d.state.temperature=COLD_RANGE[0]+1; await d.connect();}
   const sent=new Map(), shown=[], counters=new Map(devices.map(d=>[d.id,0]));
   let latest=null;
   ws=new WebSocket(`ws://${config.host}:${config.port}/ws`,{headers:{cookie},origin:'http://127.0.0.1:5173'});
@@ -47,7 +46,7 @@ try {
     }
   });
   await once(ws,'open');
-  const marker=d=>{const k=counters.get(d.id); counters.set(d.id,k+1); return Math.round((ZONE_TEMPERATURE[d.spec.zone_id][0]+1+(k%400)/100)*100)/100;};
+  const marker=d=>{const k=counters.get(d.id); counters.set(d.id,k+1); return Math.round((COLD_RANGE[0]+1+(k%400)/100)*100)/100;};
   const publishOne=async d=>{
     if (d.spec.environment) d.state.temperature=marker(d);
     virtual+=40; const m=await d.telemetry(); const at=Date.now();

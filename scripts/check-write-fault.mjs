@@ -5,7 +5,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { local } from './local-config.mjs';
 import { readConfig } from '../server/config.mjs';
 import { createDbPool } from '../server/database.mjs';
-import { signIn, authFetch } from './check-session.mjs';
+import { signIn, authFetch, until } from './check-session.mjs';
 import { SimDevice } from './sim-lib.mjs';
 
 // T24 write failure against the running backend and real MySQL. A second connection holds the ESP-C01 row lock, so the
@@ -18,11 +18,6 @@ let stage='setup', device, lock;
 const stored=async boot=>(await pool.execute('SELECT seq FROM telemetry WHERE device_id = ? AND boot_id = ? ORDER BY seq',['ESP-C01',boot]))[0].map(r=>Number(r.seq));
 const simA=async()=>(await (await authFetch(`${base}/api/snapshot`,{signal:AbortSignal.timeout(5000)})).json()).devices.find(d=>d.id==='ESP-C01');
 const readyStatus=()=>fetch(`${base}/api/ready`,{signal:AbortSignal.timeout(3000)}).then(r=>r.status,()=>0);
-async function until(read,accept,ms=15000) {
-  const end=Date.now()+ms; let last;
-  while (Date.now()<end) {try {last=await read(); if (accept(last)) return last;} catch {} await delay(200);}
-  throw new Error(`timeout (${JSON.stringify(last)?.slice(0,120)})`);
-}
 try {
   assert.equal(await readyStatus(),200,'backend must be running and ready');
   await signIn(base,'viewer');

@@ -13,7 +13,7 @@ export function desiredAlerts(message,zone,activeKeys) {
   const p=message.payload, device=registry.devices.find(d=>d.id===message.device_id), out=[];
   const z=p.zone_id;
   for (const a of p.alarms ?? []) {
-    if (a.code==='TRAPPED_PERSON') out.push(alert(z,null,'TRAPPED_PERSON','danger',`Nghi có người mắc kẹt khu ${z}`,'PIR có chuyển động hoặc CO₂ ≥ 1500 ppm và đang tăng liên tục khi cả hai cửa đóng hơn 5 phút; đèn, còi và sưởi tại chỗ đã bật.'));
+    if (a.code==='TRAPPED_PERSON') out.push(alert(z,null,'TRAPPED_PERSON','danger',`Nghi có người mắc kẹt khu ${z}`,'PIR có chuyển động hoặc CO₂ ≥ 1500 ppm và cao hơn lúc đóng cửa ít nhất 200 ppm, kéo dài hơn 5 phút khi cả hai cửa đóng; đèn, còi và sưởi tại chỗ đã bật.'));
     else {
       const critical=a.code==='DOOR_OPEN_CRITICAL';
       out.push(alert(z,a.door_id,'DOOR_OPEN',critical ? 'danger':'warning',`Cửa ${a.door_id} mở ${critical ? 'quá 60 giây':'từ 30 giây'}`,

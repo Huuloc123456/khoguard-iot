@@ -12,7 +12,7 @@ import { root, local, readJson, firmwareSecrets } from './local-config.mjs';
 import { readConfig } from '../server/config.mjs';
 import { brokerOptions } from '../server/mqtt.mjs';
 import { validateMqttMessage } from '../contracts/validate.js';
-import { signIn, authFetch } from './check-session.mjs';
+import { signIn, authFetch, until } from './check-session.mjs';
 
 // Real ESP32/Wokwi, with acquisition faults compiled into a private test image only. Controller rules stay byte-for-byte.
 // Needs .local/wokwi-remaining open as the VS Code workspace, with its simulator running and visible.
@@ -36,19 +36,15 @@ copyFileSync(originalBin,backupBin);copyFileSync(originalElf,backupElf);
 const hash=p=>createHash('sha256').update(readFileSync(p)).digest('hex');
 const allowedBins=new Set([hash(originalBin)]);
 const config=readConfig(process.env),base=`http://${config.host}:${config.port}`;
+const serialPort=Number(process.env.WOKWI_SERIAL_PORT??4000);
 const accounts=readJson(join(local,'mosquitto/accounts.json'));
 const ca=readFileSync(join(local,'tls/ca.crt'),'utf8');
 const frames=[],serial=[],checks=[];
 let observer,socket,partial='',iac=0,restored=false,deployedTest=false;
 const log=(name,text)=>writeFileSync(join(run,name),text,{flag:'a'});
 const say=text=>{console.log(text);log('steps.log',`${new Date().toISOString()} ${text}\n`);};
-async function until(read,accept,ms=20000,label='condition') {
-  const end=Date.now()+ms;let last;
-  while(Date.now()<end) {last=await read();if(accept(last))return last;await delay(100);}
-  throw new Error(`Timeout: ${label}`);
-}
 async function openSerial() {
-  socket=connect(4000,'127.0.0.1');
+  socket=connect(serialPort,'127.0.0.1');
   await new Promise((resolve,reject)=>{socket.once('connect',resolve);socket.once('error',reject);});
   socket.on('error',()=>{});
   socket.on('data',chunk=>{

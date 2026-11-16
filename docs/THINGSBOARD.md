@@ -61,7 +61,6 @@ npm.cmd run thingsboard:check
 - `bridge` gửi mỗi 10 giây; Ctrl+C để dừng. Chỉ bật khi cần demo và theo dõi hạn mức dữ liệu của gói Cloud; số trường telemetry cũng được tính vào mức sử dụng.
 - `check` đòi dữ liệu bridge trong vòng 30 giây và backend khả dụng. Nó vẫn phân biệt thiết bị offline/stale, không yêu cầu ép tất cả Wokwi online.
 - `setup` chạy lại chỉ cập nhật dashboard có ID do nó lưu. Nếu tên thiết bị đã thuộc một tích hợp khác, nó từ chối chiếm tên đó.
-- `infra/thingsboard/dashboard-template.json` là mẫu cấu trúc có ID thiết bị placeholder, **chưa gắn dữ liệu thật**. `setup` tạo `dashboard.json` theo ID thực; không coi template là kết quả nghiệm thu.
 
 ## 5. Quy tắc dữ liệu và bảo vệ kết nối
 

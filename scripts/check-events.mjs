@@ -1,14 +1,13 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
-import { setTimeout as delay } from 'node:timers/promises';
 import { join } from 'node:path';
 import { writeFileSync } from 'node:fs';
 import mqtt from 'mqtt';
 import { brokerOptions } from '../server/mqtt.mjs';
 import { local, readJson } from './local-config.mjs';
 import { readConfig } from '../server/config.mjs';
-import { signIn, authFetch } from './check-session.mjs';
+import { signIn, authFetch, until } from './check-session.mjs';
 import { createDbPool } from '../server/database.mjs';
 import { validateMqttMessage, validateSnapshot } from '../contracts/validate.js';
 
@@ -31,11 +30,6 @@ async function publish(client,id,message,options={}) {
   await client.publishAsync(topic(id,message.kind),raw,{qos:options.qos ?? 1,retain:options.retain ?? false});
 }
 const json=async path=>{const r=await authFetch(`${base}${path}`,{signal:AbortSignal.timeout(5000)});assert.equal(r.status,200,path);return r.json();};
-async function until(read,accept) {
-  const end=Date.now()+10000;
-  while (Date.now()<end) {const value=await read(); if (accept(value)) return value; await delay(100);}
-  throw new Error('CHECK_TIMEOUT');
-}
 const mine=async()=>(await json('/api/events?device_id=ESP-C01&limit=200')).items.filter(e=>e.id>baseline);
 let baseline=0;
 try {

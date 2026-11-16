@@ -10,9 +10,9 @@ const view = r => ({id:Number(r.id),request_id:r.request_id,slot_id:r.slot_id,zo
   size_class:r.size_class,load_kg:r.load_kg,status:r.status,requested_by:r.requested_by,created_at:iso(r.created_at),expires_at:iso(r.expires_at),
   finished_at:iso(r.finished_at),finished_by:r.finished_by});
 // Slot counts with pending reservations past expires_at already excluded (they are marked expired first).
-const COUNTS = `SELECT s.staging,SUM(s.status='occupied') AS occupied,SUM(s.status<>'defrost') AS capacity,COUNT(r.id) AS reserved
-  FROM slots s LEFT JOIN reservations r ON r.active_slot=s.id WHERE s.zone_id = ? GROUP BY s.staging`;
-const area = rows => staging => {const r=rows.find(x=>Boolean(x.staging)===staging); return {capacity:Number(r?.capacity ?? 0),occupied:Number(r?.occupied ?? 0),reserved:Number(r?.reserved ?? 0)};};
+const COUNTS = `SELECT SUM(s.status='occupied') AS occupied,SUM(s.status<>'defrost') AS capacity,COUNT(r.id) AS reserved
+  FROM slots s LEFT JOIN reservations r ON r.active_slot=s.id WHERE s.zone_id = ?`;
+const storage = ([r]) => ({capacity:Number(r?.capacity ?? 0),occupied:Number(r?.occupied ?? 0),reserved:Number(r?.reserved ?? 0)});
 
 // now() is the backend clock (injectable for boundary checks); the browser clock is never used.
 export function createReservationStore(pool,{now=()=>new Date()}={}) {
@@ -53,11 +53,10 @@ export function createReservationStore(pool,{now=()=>new Date()}={}) {
       // A refusal rolls back this expiry too; it is re-applied by the next transaction, so nothing is lost.
       await expireDue(connection,at);
       const [rows]=await execute(connection,COUNTS,[registry.zones[0]]);
-      const counts=area(rows);
-      const decision=capacityDecision(counts(false));
+      const decision=capacityDecision(storage(rows));
       if (!decision.ok) throw conflict('CAPACITY_LIMIT');
       const [free]=await execute(connection,`SELECT s.id,s.temperature_class,s.size_class,s.max_load_kg FROM slots s LEFT JOIN reservations r ON r.active_slot=s.id
-        WHERE s.zone_id = ? AND s.status='available' AND NOT s.staging AND s.temperature_class = ? AND r.id IS NULL ORDER BY s.id FOR UPDATE`,[registry.zones[0],request.temperature_class]);
+        WHERE s.zone_id = ? AND s.status='available' AND s.temperature_class = ? AND r.id IS NULL ORDER BY s.id FOR UPDATE`,[registry.zones[0],request.temperature_class]);
       const slot=pickSlot(free,request);
       if (!slot) throw conflict('NO_SUITABLE_SLOT');
       const expires=new Date(at.getTime()+RESERVATION_TTL_MS);
@@ -97,8 +96,7 @@ export function createReservationStore(pool,{now=()=>new Date()}={}) {
       if (expired.affectedRows) await bump(connection);
       const [rows]=await execute(connection,COUNTS,[registry.zones[0]]);
       const [items]=await execute(connection,'SELECT r.* FROM reservations r JOIN slots s ON s.id=r.slot_id WHERE s.zone_id = ? ORDER BY r.id DESC LIMIT ?',[registry.zones[0],limit]);
-      const counts=area(rows);
-      return {storage:counts(false),generated_at:at.toISOString(),items:items.map(view)};
+      return {storage:storage(rows),generated_at:at.toISOString(),items:items.map(view)};
     });
   }
   return {admit,confirm:(id,actor)=>finish(id,'confirm',actor),cancel:(id,actor)=>finish(id,'cancel',actor),list};

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Icon from './Icon.jsx';
 import { createDemo, getSummary, scenarios } from './demo.js';
 import { WarehouseMap, ZoneDetail, Pill } from './WarehouseMap.jsx';
@@ -6,7 +6,7 @@ import { DoorTable, EnvironmentTable, EventTable } from './DataTables.jsx';
 import {useLiveWarehouse} from './useLiveWarehouse.js';
 import {useSession} from './useSession.js';
 import {reading,needsAttention,can} from './live-data.js';
-import {LoginScreen,AccessAudit,roleLabel} from './AccessPanels.jsx';
+import {LoginScreen,AccessAudit,AuthAudit,roleLabel} from './AccessPanels.jsx';
 import {Receiving} from './Receiving.jsx';
 import {History} from './History.jsx';
 import {downloadCsv} from './csv.js';
@@ -37,6 +37,8 @@ export default function App() {
   const live=useLiveWarehouse(mode==='live' && Boolean(user),session.expired);
   const [showSimulation, setShowSimulation] = useState(false);
   const [notice, setNotice] = useState('');
+  // A notice is a one-off confirmation; the alert list itself shows whether the alert is still open.
+  useEffect(() => { if (!notice) return; const t = setTimeout(() => setNotice(''), 8000); return () => clearTimeout(t); }, [notice]);
   const modeControl=<label className="data-mode">Nguồn dữ liệu <select aria-label="Nguồn dữ liệu" value={mode} onChange={e=>{setMode(e.target.value);setShowSimulation(false);setNotice('');}}><option value="live">Backend / MQTT</option><option value="demo">Demo giao diện</option></select></label>;
   const demo=mode==='demo' ? sample:live.data;
   if(mode==='live' && session.status==='anonymous') return <LoginScreen session={session} modeControl={modeControl} />;
@@ -115,7 +117,7 @@ export default function App() {
         {view === 'doors' && <>{mode==='live' && <DoorControls canCommand={can(user,'command')} doors={demo.doors.filter(d=>['D07','D08'].includes(d.id))} online={demo.devices.some(d=>d.id==='ESP-C01' && d.state==='online' && d.freshness==='fresh')} />}<DoorTable demo={demo} onSelect={showZone} /></>}
         {view === 'environment' && <EnvironmentTable zones={demo.zones} onSelect={showZone} />}
         {view === 'receiving' && (mode==='live' ? <Receiving revision={demo.revision} canReserve={can(user,'reserve')} /> : <p className="notice visible" role="status">Giữ chỗ chỉ chạy với Backend / MQTT; demo giao diện không ghi gì vào hệ thống.</p>)}
-        {view === 'activity' && (mode==='live' ? <>{can(user,'access_audit') ? <AccessAudit revision={demo.revision} /> : <p className="notice visible" role="status">Nhật ký ra vào theo ca chỉ dành cho tài khoản vận hành hoặc quản trị.</p>}<History canAccess={can(user,'access_audit')} /></> : <EventTable events={demo.events} />)}
+        {view === 'activity' && (mode==='live' ? <>{can(user,'access_audit') ? <AccessAudit revision={demo.revision} /> : <p className="notice visible" role="status">Nhật ký ra vào theo ca chỉ dành cho tài khoản vận hành hoặc quản trị.</p>}<History canAccess={can(user,'access_audit')} />{can(user,'auth_audit') && <AuthAudit />}</> : <EventTable events={demo.events} />)}
         <footer className="page-footer"><span>KhoGuard · Mô hình mô phỏng</span><span><Icon name="flask" size={14} />{mode==='demo'?'Dữ liệu mẫu trong trình duyệt':'ESP-C01 trong Wokwi · đọc từ MySQL'}</span></footer>
       </main>
     </div>

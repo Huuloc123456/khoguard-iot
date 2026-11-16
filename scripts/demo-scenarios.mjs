@@ -2,12 +2,11 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { writeFileSync } from 'node:fs';
-import { setTimeout as delay } from 'node:timers/promises';
 import { local } from './local-config.mjs';
 import { readConfig } from '../server/config.mjs';
 import { createDbPool } from '../server/database.mjs';
 import { shiftAt } from '../server/auth.mjs';
-import { signIn } from './check-session.mjs';
+import { signIn, authFetch, until } from './check-session.mjs';
 import { FakeEdge } from './sim-lib.mjs';
 
 // M16: the four final demos (Agent.md §11) end to end through MQTT → backend → MySQL → API, with a FAKE ESP-C01.
@@ -15,13 +14,11 @@ import { FakeEdge } from './sim-lib.mjs';
 // Usage: npm run demo:scenarios -- --scenario=all|1|2|3|4   (backend running; Wokwi ESP-C01 must be stopped)
 const pick = (/^--scenario=(all|[1-4])$/.exec(process.argv.slice(2).join(' ')) ?? [, 'all'])[1];
 const config=readConfig(process.env), pool=createDbPool(config.db), base=`http://${config.host}:${config.port}`;
-const report=[]; let cookie, edge, scenario='setup';
+const report=[]; let edge, scenario='setup';
 let virtual=0; const clock=()=>(virtual+=500);
 const step=text=>{report.push({scenario,step:text});console.log(`  ✓ ${text}`);};
-const headers=()=>({origin:'http://127.0.0.1:5173','content-type':'application/json',cookie});
-const get=async path=>{const r=await fetch(`${base}${path}`,{headers:{cookie},signal:AbortSignal.timeout(5000)});assert.equal(r.status,200,path);return r.json();};
-const post=async(path,body)=>{const r=await fetch(`${base}${path}`,{method:'POST',headers:headers(),body:JSON.stringify(body),signal:AbortSignal.timeout(8000)});return {status:r.status,body:await r.json()};};
-async function until(read,accept,ms=10000) {const end=Date.now()+ms;let last;while (Date.now()<end) {try {last=await read();if (accept(last)) return last;} catch {} await delay(150);}throw new Error(`timeout waiting (${scenario})`);}
+const get=async path=>{const r=await authFetch(`${base}${path}`,{signal:AbortSignal.timeout(5000)});assert.equal(r.status,200,path);return r.json();};
+const post=async(path,body)=>{const r=await authFetch(`${base}${path}`,{method:'POST',headers:{origin:'http://127.0.0.1:5173','content-type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(8000)});return {status:r.status,body:await r.json()};};
 const snap=()=>get('/api/snapshot');
 const esp=s=>s.devices.find(d=>d.id==='ESP-C01');
 const zoneC=s=>s.zones.find(z=>z.id==='C');
@@ -111,7 +108,7 @@ async function scenario4() {
   }
 }
 try {
-  cookie=await signIn(base,'operator');
+  await signIn(base,'operator');
   edge=new FakeEdge({config,clock,label:'demo'}); await edge.connect(); await sync();
   for (const [id,run] of [['1',scenario1],['2',scenario2],['3',scenario3],['4',scenario4]]) if (pick==='all' || pick===id) {console.log(`Demo ${id}:`); await run();}
   writeFileSync(join(local,'demo-scenarios.json'),JSON.stringify({checked_at:new Date().toISOString(),edge:'fake ESP-C01 (Node)',steps:report},null,2));

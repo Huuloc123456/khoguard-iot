@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import { spawn } from 'node:child_process';
-import { setTimeout as delay } from 'node:timers/promises';
 import { join } from 'node:path';
 import { readFileSync, writeFileSync } from 'node:fs';
 import mqtt from 'mqtt';
@@ -10,7 +9,7 @@ import { root, local, readJson } from './local-config.mjs';
 import { readConfig } from '../server/config.mjs';
 import { createDbPool } from '../server/database.mjs';
 import { brokerOptions } from '../server/mqtt.mjs';
-import { signIn } from './check-session.mjs';
+import { signIn, until } from './check-session.mjs';
 import { toCsv } from '../src/csv.js';
 import { REPORT_COLUMNS, reportRows } from '../src/reports.js';
 import { validateMqttMessage } from '../contracts/validate.js';
@@ -27,7 +26,6 @@ const envelope=(kind,n,payload,extra={})=>({schema_version:1,warehouse_id:'WH01'
   clock_synced:false,sent_at:null,uptime_ms:n*1000+500,...extra,payload:{zone_id:'C',...payload}});
 const door=id=>({door_id:id,state:'closed',beam_clear:true,panic_latched:false,local_inputs_healthy:true,locked:true});
 async function publish(m,retain=false) {const raw=JSON.stringify(m);assert.equal(validateMqttMessage(topic(m.kind),raw).ok,true);await device.publishAsync(topic(m.kind),raw,{qos:1,retain});}
-async function until(read,accept,ms=10000) {const end=Date.now()+ms;let last;while (Date.now()<end) {try {last=await read();if (accept(last)) return last;} catch {} await delay(150);}throw new Error('CHECK_TIMEOUT');}
 async function startBackend() {
   backend=spawn(process.execPath,['--env-file=.local/runtime.env','server/start.mjs'],{cwd:root,stdio:'ignore',windowsHide:true});
   await until(()=>fetch(`${base}/api/ready`).then(r=>r.status),s=>s===200,15000);

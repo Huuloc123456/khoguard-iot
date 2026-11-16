@@ -44,7 +44,7 @@ if exist ".local\thingsboard-cloud.json" (
   powershell -NoProfile -Command "if (Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Where-Object CommandLine -match 'scripts[/\\]thingsboard\.mjs bridge') { exit 0 } else { exit 1 }" && (
     echo [BỎ QUA] Bridge ThingsBoard đã chạy.
   ) || (
-    start "KhoGuard-T4 ThingsBoard" cmd /k "cd /d %~dp0 & title KhoGuard-T4 ThingsBoard & npm.cmd run thingsboard:bridge"
+    start /b "KhoGuard-T4 ThingsBoard" cmd /c "cd /d %~dp0 & title KhoGuard-T4 ThingsBoard & npm.cmd run thingsboard:bridge"
   )
 )
 
@@ -77,12 +77,12 @@ rem %1 cổng, %2 tên cửa sổ, %3 lệnh, %4 số giây chờ cổng mở
   exit /b 0
 )
 echo [MỞ] %~2 ...
-start "KhoGuard-%~2" cmd /k "cd /d %~dp0 & title KhoGuard-%~2 & %~3"
+start /b "KhoGuard-%~2" cmd /c "cd /d %~dp0 & title KhoGuard-%~2 & %~3"
 %PORTCHECK% -Port %1 -Seconds %4 >nul 2>&1 && (
   echo       sẵn sàng ở cổng %1.
   exit /b 0
 )
-echo [LỖI] %~2 không mở cổng %1 sau %4 giây. Xem cửa sổ "KhoGuard-%~2" để biết lỗi.
+echo [LỖI] %~2 không mở cổng %1 sau %4 giây. Xem log phía trên trong cửa sổ này.
 exit /b 1
 
 :status

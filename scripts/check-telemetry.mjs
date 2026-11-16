@@ -13,7 +13,7 @@ import { applyTelemetry, telemetryMigration } from '../db/migrate.mjs';
 import { gate } from './loopback-gate.mjs';
 import { createDbPool, loadOwnership, databaseReady } from '../server/database.mjs';
 import { readConfig } from '../server/config.mjs';
-import { signIn, authFetch } from './check-session.mjs';
+import { signIn, authFetch, until } from './check-session.mjs';
 import { createTelemetryStore } from '../server/telemetry-store.mjs';
 import { createAccessStore } from '../server/access-store.mjs';
 import { validateSnapshot } from '../contracts/validate.js';
@@ -69,11 +69,6 @@ try {
     const response=await authFetch(`${base}/api/snapshot`,{signal:AbortSignal.timeout(5000)});
     assert.equal(response.status,200); const value=await response.json();
     assert.equal(validateSnapshot(value).ok,true); return value;
-  }
-  async function until(read,accept) {
-    const end=Date.now()+10000;
-    while (Date.now()<end) {const value=await read(); if (accept(value)) return value; await delay(100);}
-    throw new Error('CHECK_TIMEOUT');
   }
   const accounts=readJson(join(local,'mosquitto/accounts.json'));
   const liveBoot=`mqtt-${randomUUID()}`, liveSession=`session-${randomUUID()}`;

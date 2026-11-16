@@ -8,7 +8,7 @@ import mqtt from 'mqtt';
 import { brokerOptions } from '../server/mqtt.mjs';
 import { local, readJson } from './local-config.mjs';
 import { readConfig } from '../server/config.mjs';
-import { signIn, authFetch } from './check-session.mjs';
+import { signIn, authFetch, until } from './check-session.mjs';
 import { createDbPool } from '../server/database.mjs';
 import { validateMqttMessage, validateSnapshot } from '../contracts/validate.js';
 
@@ -36,11 +36,6 @@ const ack=(command,status,reason=null,ids)=>envelope('acks',++ackSeq,{door_id:co
 const json=async path=>{const r=await authFetch(`${base}${path}`,{signal:AbortSignal.timeout(5000)});assert.equal(r.status,200,path);return r.json();};
 const post=(path,body,origin='http://127.0.0.1:5173')=>authFetch(`${base}${path}`,{method:'POST',body,signal:AbortSignal.timeout(5000),
   headers:{'content-type':'application/json',...(origin ? {origin}:{})}});
-async function until(read,accept,ms=10000) {
-  const end=Date.now()+ms;
-  while (Date.now()<end) {const value=await read(); if (accept(value)) return value; await delay(100);}
-  throw new Error('CHECK_TIMEOUT');
-}
 const snapshot=async()=>{const s=await json('/api/snapshot');assert.equal(validateSnapshot(s).ok,true);return s;};
 const mine=(s,code,door_id=null)=>s.alerts.find(a=>a.code===code && a.door_id===door_id && a.zone==='C');
 const nextCommand=()=>until(async()=>received.shift(),c=>c!==undefined,5000);

@@ -17,7 +17,7 @@ import { signIn, authFetch } from './check-session.mjs';
 // Manual-assisted acceptance against the real ESP-C01 firmware in Wokwi (no FakeEdge): RFID via RFC2217 serial,
 // switches toggled by a person in the simulator, T08 by stopping the project broker. Evidence stays in .local.
 const config = readConfig(process.env), base = `http://${config.host}:${config.port}`;
-const SERIAL_PORT = 4000, MANUAL_MS = 180000, TOPIC = 'khoguard/v1/WH01/devices/ESP-C01/';
+const SERIAL_PORT = Number(process.env.WOKWI_SERIAL_PORT ?? 4000), MANUAL_MS = 180000, TOPIC = 'khoguard/v1/WH01/devices/ESP-C01/';
 const from = process.argv.find(a => a.startsWith('--from='))?.slice(7) ?? 'S0';
 const runDir = join(local, 'wokwi-acceptance', 'runs', new Date().toISOString().replace(/[:.]/g, '-'));
 mkdirSync(runDir, { recursive: true });
@@ -139,8 +139,8 @@ const json = async (path, init = {}) => {
   return { status: r.status, body: await r.json().catch(() => null) };
 };
 const post = (path, body) => json(path, { method: 'POST', headers: { origin: 'http://127.0.0.1:5173', 'content-type': 'application/json' }, body: JSON.stringify(body) });
-async function command(doorId, action, attempt = 1) {
-  await settled();
+async function command(doorId, action, attempt = 1, waitForSettled = true) {
+  if (waitForSettled) await settled();
   const created = await post(`/api/doors/${doorId}/commands`, { action });
   assert.equal(created.status, 202, `POST command ${doorId} ${action} → ${created.status} ${JSON.stringify(created.body)}`);
   for (let i = 0; i < 60; i++) {
@@ -298,19 +298,18 @@ try {
   await step('S3a', 'T11', 'Liên động: D07 mở thì lệnh mở D08 bị từ chối', async () => {
     ask('Gạt CONTACT07 sang HIGH (cửa D07 mở).');
     await telemetryWait(p => door(p, 'D07').state === 'open', MANUAL_MS, 'D07 mở');
-    const c = await command('D08', 'open');
+    const c = await command('D08', 'open', 1, false);
     assert.equal(c.status, 'rejected'); assert.equal(c.reason, 'INTERLOCK_ACTIVE');
     return c.reason;
   });
   await step('S3b', 'T10', 'Rèm quang bị chặn khi đang đóng → đảo chiều', async () => {
-    await settled();
-    say('  Harness sẽ gửi lệnh ĐÓNG D07 sau 5 giây. Khi servo D07 bắt đầu quay về 0°, kéo HC-SR04 D07 xuống dưới 100 cm trong vòng 8 giây.');
-    for (let i = 5; i > 0; i--) { process.stdout.write(`  ${i}… `); await delay(1000); }
+    ask('Gạt CONTACT07 sang HIGH để mở lại D07.');
+    await telemetryWait(p => door(p, 'D07').state === 'open', MANUAL_MS, 'D07 mở lại');
     const mark = serialMark(), since = Date.now();
     const created = await post('/api/doors/D07/commands', { action: 'close' });
     assert.equal(created.status, 202);
-    say('\x07\n>>> KÉO HC-SR04 D07 XUỐNG DƯỚI 100 CM NGAY.');
-    const hit = await serialWait(/^SAFETY_EVENT door=D07 closing reversed BEAM_BLOCKED/, mark, 12000);
+    say('\x07\n>>> KÉO HC-SR04 D07 XUỐNG DƯỚI 100 CM NGAY khi servo bắt đầu đóng.');
+    const hit = await serialWait(/^SAFETY_EVENT door=D07 closing reversed BEAM_BLOCKED/, mark, 22000);
     const ev = await eventWait(p => p.event_type === 'door' && p.door_id === 'D07' && p.reason === 'BEAM_BLOCKED', since);
     return { serial: hit.text, event_state: ev.payload.state };
   });

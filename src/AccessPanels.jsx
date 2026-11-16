@@ -38,3 +38,25 @@ export function AccessAudit({ revision }) {
     <div className="table-scroll"><table><thead><tr><th>Thời gian</th><th>Thẻ</th><th>Cửa</th><th>Ca</th><th>Đánh giá</th></tr></thead><tbody>{rows.map(r => <tr key={r.id}><td className="muted time-cell">{r.time}</td><td><strong>{r.card}</strong><small className="cell-secondary">{r.holder}</small></td><td>{r.way} · {r.door}</td><td>{r.shift}</td><td><Pill tone={r.tone}>{r.label}</Pill>{r.note && <small className="cell-secondary">{r.note}</small>}</td></tr>)}</tbody></table>
       {state.rows && !rows.length && <div className="empty-state"><Icon name="history" size={26} /><strong>Chưa có lượt quẹt thẻ</strong><p>Lượt quẹt RFID tại ESP-C01 sẽ hiện ở đây.</p></div>}</div></section>;
 }
+
+const AUTH_ACTIONS = { login: ['Đăng nhập', 'success'], logout: ['Đăng xuất', 'neutral'], login_failed: ['Sai mật khẩu', 'warning'],
+  login_locked: ['Tạm khóa 60 giây', 'danger'], denied: ['Bị từ chối quyền', 'warning'] };
+const stamp = at => new Date(at).toLocaleString('vi-VN', { timeZone: 'Asia/Bangkok', hour12: false });
+
+// Admin only (auth_audit): the latest 50 sign-in records the backend keeps in MySQL.
+export function AuthAudit() {
+  const [state, setState] = useState({ rows: null, error: '' });
+  useEffect(() => {
+    let stopped = false;
+    fetch('/api/auth/audit', { cache: 'no-store', signal: AbortSignal.timeout(5000) })
+      .then(async r => { if (!r.ok) throw new Error(); const body = await r.json(); if (!stopped) setState({ rows: body.items, error: '' }); })
+      .catch(() => { if (!stopped) setState(s => ({ ...s, error: 'Không tải được nhật ký đăng nhập.' })); });
+    return () => { stopped = true; };
+  }, []);
+  const rows = state.rows ?? [];
+  return <section className="panel" aria-labelledby="auth-audit-title"><div className="panel-heading"><div><h2 id="auth-audit-title">Nhật ký đăng nhập</h2><p>50 lượt gần nhất, chỉ tài khoản quản trị xem được.</p></div><span className="count">{rows.filter(r => r.action !== 'login' && r.action !== 'logout').length}</span></div>
+    {state.error && <p className="warning-text" role="status">{state.error}</p>}
+    <div className="table-scroll"><table><thead><tr><th>Thời gian</th><th>Tài khoản</th><th>Kết quả</th></tr></thead><tbody>{rows.map(r => { const [label, tone] = AUTH_ACTIONS[r.action] ?? [r.action, 'neutral'];
+      return <tr key={r.id}><td className="muted time-cell">{stamp(r.at)}</td><td><strong>{r.username}</strong></td><td><Pill tone={tone}>{label}</Pill>{r.detail && <small className="cell-secondary">{r.detail}</small>}</td></tr>; })}</tbody></table>
+      {state.rows && !rows.length && <div className="empty-state"><Icon name="history" size={26} /><strong>Chưa có lượt đăng nhập</strong></div>}</div></section>;
+}

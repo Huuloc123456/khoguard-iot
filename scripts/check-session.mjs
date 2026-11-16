@@ -12,3 +12,12 @@ export async function signIn(base, role = 'operator') {
   return cookie;
 }
 export const authFetch = (url, init = {}) => fetch(url, { ...init, headers: { ...(init.headers ?? {}), cookie } });
+// Polls read() until accept(value); read errors are retried and the last one is reported on timeout.
+export async function until(read, accept, ms = 10000, label = '') {
+  const end = Date.now() + ms; let error;
+  while (Date.now() < end) {
+    try { const value = await read(); if (accept(value)) return value; } catch (e) { error = e; }
+    await new Promise(r => setTimeout(r, 150));
+  }
+  throw new Error(`CHECK_TIMEOUT${label ? `: ${label}` : ''}${error ? ` (last error: ${error.message})` : ''}`, { cause: error });
+}

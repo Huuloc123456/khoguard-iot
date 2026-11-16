@@ -19,7 +19,7 @@ export const REPORT_COLUMNS = {
   access: [...common, { key: 'door', label: 'Cửa' }, { key: 'summary', label: 'Thẻ' }, { key: 'shift', label: 'Ca' }, { key: 'type', label: 'Đánh giá' }],
 };
 const ACTIONS = { open: 'Mở cửa', close: 'Đóng cửa', reset_panic: 'Đặt lại khẩn cấp' };
-const CLASSES = { ambient: 'Thường', chilled: 'Mát', frozen: 'Lạnh' };
+const CLASSES = { frozen: 'Lạnh' };
 const SIZES = { 1: 'nhỏ', 2: 'vừa', 3: 'lớn' };
 function eventSummary(e) {
   if (e.event_type === 'rfid') return `Thẻ ${e.card_id} ${way(e.direction)} ${e.door_id} (${{ accepted: 'hợp lệ', duplicate: 'đọc lặp', unauthorized: 'bị từ chối' }[e.result] ?? e.result})`;

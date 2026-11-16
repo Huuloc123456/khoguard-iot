@@ -7,6 +7,7 @@ import { writeFileSync } from 'node:fs';
 import mqtt from 'mqtt';
 import WebSocket from 'ws';
 import { local, readJson } from './local-config.mjs';
+import { until } from './check-session.mjs';
 import { readConfig } from '../server/config.mjs';
 import { createDbPool } from '../server/database.mjs';
 import { brokerOptions } from '../server/mqtt.mjs';
@@ -40,7 +41,6 @@ const telemetry=(n,count,presence)=>envelope('telemetry',n,{controller_revision:
   occupancy:{current_occupants:count,count_verified:true,presence},doors:[door('D07'),door('D08')]});
 const rfid=(n,card,direction,result)=>envelope('events',n,{event_type:'rfid',door_id:'D07',card_id:card,direction,result},{event_id:`${boot}:${n}`});
 async function publish(m,retain=false) {const raw=JSON.stringify(m);assert.equal(validateMqttMessage(topic(m.kind),raw).ok,true);await device.publishAsync(topic(m.kind),raw,{qos:1,retain});}
-async function until(read,accept,ms=10000) {const end=Date.now()+ms;while (Date.now()<end) {const v=await read();if (accept(v)) return v;await delay(150);}throw new Error('CHECK_TIMEOUT');}
 try {
   for (const path of ['/api/snapshot','/api/events','/api/access','/api/auth/me']) assert.equal((await get(path)).status,401,path);
   assert.equal((await post('/api/doors/D07/commands',{action:'open'})).status,401);

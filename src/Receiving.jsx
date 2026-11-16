@@ -3,7 +3,7 @@ import Icon from './Icon.jsx';
 import { Pill } from './WarehouseMap.jsx';
 import { areaView, admissionText } from './live-data.js';
 
-const CLASSES = [['frozen', 'Đông lạnh −22 đến −16°C (khu C)']];
+const FROZEN = 'Đông lạnh −22 đến −16°C';
 const SIZES = [[1, 'Nhỏ'], [2, 'Vừa'], [3, 'Lớn']];
 const STATUS = { pending: ['Đang giữ', 'info'], confirmed: ['Đã nhập kho', 'success'], cancelled: ['Đã hủy', 'neutral'], expired: ['Hết hạn', 'warning'] };
 const TONE = { normal: 'success', warning: 'warning', danger: 'danger' };
@@ -59,7 +59,7 @@ export function Receiving({ revision, canReserve }) {
     </section>
     <section className="panel" aria-labelledby="admission-title"><div className="panel-heading"><div><h2 id="admission-title">Yêu cầu nhận hàng</h2><p>Mỗi yêu cầu giữ một vị trí trong 15 phút theo đồng hồ backend.</p></div>{!canReserve && <Pill tone="info">Chỉ xem</Pill>}</div>
       <form className="admission-form" onSubmit={submit}>
-        <label>Loại hàng<select value={form.temperature_class} onChange={set('temperature_class')} disabled={!canReserve}>{CLASSES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
+        <label>Loại hàng<input value={`${FROZEN} (khu C)`} readOnly disabled={!canReserve} /></label>
         <label>Kích thước pallet<select value={form.size_class} onChange={set('size_class')} disabled={!canReserve}>{SIZES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select></label>
         <label>Tải trọng (kg)<input type="number" min="1" max="5000" step="1" required value={form.load_kg} onChange={set('load_kg')} disabled={!canReserve} /></label>
         <button className="button primary" disabled={!canReserve || busy}><Icon name="box" size={16} />Giữ chỗ</button>
@@ -69,7 +69,7 @@ export function Receiving({ revision, canReserve }) {
     <section className="panel" aria-labelledby="reservation-title"><div className="panel-heading"><div><h2 id="reservation-title">Giữ chỗ gần đây</h2><p>Mỗi giữ chỗ chỉ có một kết quả: nhập kho, hủy hoặc hết hạn.</p></div></div>
       <div className="table-scroll"><table><thead><tr><th>Mã</th><th>Vị trí</th><th>Hàng</th><th>Trạng thái</th><th>Hết hạn</th><th><span className="sr-only">Thao tác</span></th></tr></thead><tbody>{(page?.items ?? []).map(r => {
         const [label, tone] = STATUS[r.status];
-        return <tr key={r.id}><td className="muted">#{r.id}<small className="cell-secondary">{r.requested_by}</small></td><td><strong>{r.slot_id}</strong><small className="cell-secondary">Khu {r.zone_id}</small></td><td>{CLASSES.find(c => c[0] === r.temperature_class)[1].split(' (')[0]}<small className="cell-secondary">{SIZES.find(s => s[0] === r.size_class)[1]} · {r.load_kg} kg</small></td><td><Pill tone={tone}>{label}</Pill></td><td className="muted time-cell">{time(r.expires_at)}</td>
+        return <tr key={r.id}><td className="muted">#{r.id}<small className="cell-secondary">{r.requested_by}</small></td><td><strong>{r.slot_id}</strong><small className="cell-secondary">Khu {r.zone_id}</small></td><td>{FROZEN}<small className="cell-secondary">{SIZES.find(s => s[0] === r.size_class)[1]} · {r.load_kg} kg</small></td><td><Pill tone={tone}>{label}</Pill></td><td className="muted time-cell">{time(r.expires_at)}</td>
           <td>{r.status === 'pending' && canReserve && <span className="row-actions"><button className="button small" disabled={busy} onClick={() => finish(r.id, 'confirm')}>Nhập kho</button><button className="text-button" disabled={busy} onClick={() => finish(r.id, 'cancel')}>Hủy</button></span>}</td></tr>;
       })}</tbody></table>{page && !page.items.length && <div className="empty-state"><Icon name="box" size={26} /><strong>Chưa có giữ chỗ</strong><p>Tạo yêu cầu nhận hàng để giữ một vị trí.</p></div>}</div></section>
   </>;

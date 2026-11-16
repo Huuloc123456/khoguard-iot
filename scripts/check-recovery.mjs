@@ -2,13 +2,12 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import { spawn } from 'node:child_process';
-import { setTimeout as delay } from 'node:timers/promises';
 import { join } from 'node:path';
 import { writeFileSync } from 'node:fs';
 import mqtt from 'mqtt';
 import { root, local, readJson } from './local-config.mjs';
 import { readConfig } from '../server/config.mjs';
-import { signIn, authFetch } from './check-session.mjs';
+import { signIn, authFetch, until } from './check-session.mjs';
 import { createDbPool } from '../server/database.mjs';
 import { brokerOptions } from '../server/mqtt.mjs';
 import { validateMqttMessage } from '../contracts/validate.js';
@@ -34,11 +33,6 @@ async function publish(message,options={}) {
   await device.publishAsync(topic(message.kind),raw,{qos:1,retain:options.retain ?? false});
 }
 const json=async path=>{const r=await authFetch(`${base}${path}`,{signal:AbortSignal.timeout(3000)});assert.equal(r.status,200,path);return r.json();};
-async function until(read,accept,ms=10000) {
-  const end=Date.now()+ms; let last;
-  while (Date.now()<end) {try {last=await read(); if (accept(last)) return last;} catch {} await delay(150);}
-  throw new Error('CHECK_TIMEOUT');
-}
 async function startBackend() {
   backend=spawn(process.execPath,['--env-file=.local/runtime.env','server/start.mjs'],{cwd:root,stdio:'ignore',windowsHide:true});
   await until(()=>fetch(`${base}/api/ready`).then(r=>r.status),status=>status===200,15000);

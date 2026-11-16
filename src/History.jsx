@@ -41,7 +41,7 @@ export function History({ canAccess }) {
     try {
       let items = [], cursor = null, pages = 0;
       do { const body = await load(applied, cursor, 500); items = items.concat(body.items); cursor = body.next_cursor; pages++; } while (cursor && pages < MAX_EXPORT_PAGES);
-      downloadCsv(`khoguard-${applied.kind}-${applied.from.slice(0, 10)}.csv`, REPORT_COLUMNS[applied.kind], reportRows(applied.kind, items));
+      downloadCsv(`khoguard-${applied.kind}-${applied.from.slice(0, 10)}_${applied.to.slice(0, 10)}.csv`, REPORT_COLUMNS[applied.kind], reportRows(applied.kind, items));
       setNote(`Đã xuất ${items.length} dòng ${REPORT_LABELS[applied.kind].toLowerCase()}${cursor ? ` (giới hạn ${MAX_EXPORT_PAGES * 500} dòng; thu hẹp khoảng thời gian để lấy phần còn lại)` : ''}.`);
     } catch (e) { setNote(e.message); }
   }
