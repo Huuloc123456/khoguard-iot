@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="960" viewBox="0 0 1440 960" role="img" aria-labelledby="title desc">
+  <title id="title">Phác thảo dashboard KhoGuard khu C</title>
+  <desc id="desc">Bản phác thảo dựa trên các màn hình và thành phần hiện có trong ứng dụng KhoGuard. Các số liệu để trống, không phải ảnh chụp dữ liệu thật.</desc>
+  <rect width="1440" height="960" fill="#f5f8f8"/>
+  <rect x="0" y="0" width="216" height="960" fill="#ffffff"/>
+  <rect x="0" y="0" width="216" height="960" fill="none" stroke="#dce5e5"/>
+  <rect x="24" y="24" width="42" height="42" rx="10" fill="#176b5b"/>
+  <text x="45" y="52" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#ffffff">K</text>
+  <text x="78" y="45" font-family="Arial,sans-serif" font-size="21" font-weight="700" fill="#24343b">KhoGuard</text>
+  <text x="78" y="63" font-family="Arial,sans-serif" font-size="11" fill="#76878c">Quản lý kho thông minh</text>
+  <g font-family="Arial,sans-serif" font-size="15" fill="#33464d">
+    <rect x="14" y="112" width="188" height="44" rx="8" fill="#e8f4f1"/><text x="32" y="140" fill="#176b5b" font-weight="700">▦  Tổng quan</text>
+    <text x="32" y="196">▤  Sơ đồ kho</text><text x="32" y="250">▣  Giám sát cửa</text>
+    <text x="32" y="304">♧  Môi trường</text><text x="32" y="358">▣  Nhận hàng</text><text x="32" y="412">◷  Nhật ký</text>
+  </g>
+  <text x="250" y="39" font-family="Arial,sans-serif" font-size="13" fill="#718188">Kho lạnh · Khu C</text>
+  <text x="250" y="90" font-family="Arial,sans-serif" font-size="30" font-weight="700" fill="#24343b">Tổng quan kho hàng</text>
+  <text x="250" y="119" font-family="Arial,sans-serif" font-size="15" fill="#718188">Theo dõi môi trường, hai cửa liên động và cảnh báo.</text>
+  <rect x="1124" y="31" width="266" height="42" rx="7" fill="#ffffff" stroke="#d9e3e4"/>
+  <text x="1142" y="57" font-family="Arial,sans-serif" font-size="13" fill="#53666d">Nguồn dữ liệu: Backend / MQTT  ▾</text>
+  <rect x="250" y="149" width="1140" height="81" rx="9" fill="#ffffff" stroke="#dce5e5"/>
+  <circle cx="275" cy="178" r="5" fill="#d49a35"/>
+  <text x="290" y="183" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#33464d">Trạng thái dữ liệu</text>
+  <text x="275" y="207" font-family="Arial,sans-serif" font-size="13" fill="#718188">Chưa có dữ liệu mới · trạng thái phải được xác nhận từ thiết bị</text>
+  <g font-family="Arial,sans-serif">
+    <rect x="250" y="250" width="270" height="110" rx="9" fill="#ffffff" stroke="#dce5e5"/><text x="272" y="281" font-size="14" fill="#718188">Cửa giám sát</text><text x="272" y="329" font-size="30" font-weight="700" fill="#24343b">— <tspan font-size="14" font-weight="400">/ 2 cửa</tspan></text><text x="272" y="347" font-size="12" fill="#718188">D07 · D08</text>
+    <rect x="540" y="250" width="270" height="110" rx="9" fill="#ffffff" stroke="#dce5e5"/><text x="562" y="281" font-size="14" fill="#718188">Người trong kho</text><text x="562" y="329" font-size="30" font-weight="700" fill="#24343b">— <tspan font-size="14" font-weight="400">người</tspan></text><text x="562" y="347" font-size="12" fill="#718188">Chưa xác minh nếu thiếu dữ liệu</text>
+    <rect x="830" y="250" width="270" height="110" rx="9" fill="#ffffff" stroke="#dce5e5"/><text x="852" y="281" font-size="14" fill="#718188">Nhiệt độ · Độ ẩm</text><text x="852" y="329" font-size="25" font-weight="700" fill="#24343b">— °C  ·  — %</text><text x="852" y="347" font-size="12" fill="#718188">DHT22 · dữ liệu mới nhất</text>
+    <rect x="1120" y="250" width="270" height="110" rx="9" fill="#ffffff" stroke="#dce5e5"/><text x="1142" y="281" font-size="14" fill="#718188">Cảnh báo cần theo dõi</text><text x="1142" y="329" font-size="30" font-weight="700" fill="#24343b">— <tspan font-size="14" font-weight="400">cảnh báo</tspan></text><text x="1142" y="347" font-size="12" fill="#718188">Lấy từ trạng thái hệ thống</text>
+  </g>
+  <rect x="250" y="380" width="710" height="330" rx="9" fill="#ffffff" stroke="#dce5e5"/>
+  <text x="276" y="416" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#24343b">Sơ đồ kho · Khu C</text>
+  <text x="276" y="441" font-family="Arial,sans-serif" font-size="13" fill="#718188">Một khu lạnh · hai cửa được giám sát</text>
+  <rect x="276" y="463" width="658" height="219" rx="8" fill="#f6faf9" stroke="#e0e9e8"/>
+  <rect x="300" y="486" width="610" height="170" rx="8" fill="#edf5f3" stroke="#b9d1cb"/>
+  <text x="326" y="522" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#176b5b">Khu C · Kho lạnh</text>
+  <text x="326" y="551" font-family="Arial,sans-serif" font-size="13" fill="#53666d">Nhiệt độ: — °C</text><text x="326" y="575" font-family="Arial,sans-serif" font-size="13" fill="#53666d">Độ ẩm: — %</text>
+  <rect x="326" y="597" width="238" height="38" rx="6" fill="#ffffff" stroke="#d4e1de"/><text x="344" y="621" font-family="Arial,sans-serif" font-size="13" fill="#53666d">D07 · Chưa rõ</text>
+  <rect x="581" y="597" width="238" height="38" rx="6" fill="#ffffff" stroke="#d4e1de"/><text x="599" y="621" font-family="Arial,sans-serif" font-size="13" fill="#53666d">D08 · Chưa rõ</text>
+  <rect x="980" y="380" width="410" height="330" rx="9" fill="#ffffff" stroke="#dce5e5"/>
+  <text x="1006" y="416" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#24343b">Chi tiết khu vực</text>
+  <text x="1006" y="448" font-family="Arial,sans-serif" font-size="13" fill="#718188">Khu C · Kho lạnh</text>
+  <line x1="1006" y1="466" x2="1364" y2="466" stroke="#e5ebeb"/>
+  <text x="1006" y="496" font-family="Arial,sans-serif" font-size="13" fill="#53666d">Nhiệt độ</text><text x="1325" y="496" text-anchor="end" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#24343b">— °C</text>
+  <text x="1006" y="526" font-family="Arial,sans-serif" font-size="13" fill="#53666d">Độ ẩm</text><text x="1325" y="526" text-anchor="end" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#24343b">— %</text>
+  <text x="1006" y="556" font-family="Arial,sans-serif" font-size="13" fill="#53666d">Người bên trong</text><text x="1325" y="556" text-anchor="end" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#24343b">—</text>
+  <text x="1006" y="586" font-family="Arial,sans-serif" font-size="13" fill="#53666d">Cửa đang mở</text><text x="1325" y="586" text-anchor="end" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#24343b">— / 2</text>
+  <line x1="1006" y1="606" x2="1364" y2="606" stroke="#e5ebeb"/>
+  <text x="1006" y="637" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#24343b">Liên động an toàn</text>
+  <text x="1006" y="663" font-family="Arial,sans-serif" font-size="12" fill="#718188">RFID · PIR · vật cản · Panic: trạng thái từ ESP-C01</text>
+  <rect x="250" y="730" width="1140" height="185" rx="9" fill="#ffffff" stroke="#dce5e5"/>
+  <text x="276" y="769" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#24343b">Cảnh báo cần theo dõi</text>
+  <text x="276" y="798" font-family="Arial,sans-serif" font-size="13" fill="#718188">Cảnh báo được ghi nhận từ backend; tiếp nhận không xóa điều kiện cảnh báo.</text>
+  <rect x="276" y="820" width="1088" height="58" rx="7" fill="#f7f9f9" stroke="#e6ecec"/>
+  <text x="298" y="855" font-family="Arial,sans-serif" font-size="13" fill="#718188">Chưa có dữ liệu cảnh báo để hiển thị</text>
+  <text x="250" y="943" font-family="Arial,sans-serif" font-size="11" fill="#819095">Phác thảo theo cấu trúc giao diện hiện có · số liệu để trống, không phải ảnh chụp phiên chạy</text>
+</svg>

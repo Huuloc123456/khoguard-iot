@@ -103,7 +103,7 @@ HC-SR04: khoảng cách **<100 cm** hoặc mất echo mới quá **250 ms** đư
 
 Hai servo dùng LEDC kênh 0/1 ở 50 Hz. Buzzer dùng kênh 2 để không đổi tần số servo. Một relay chuyển mạch đủ vì mô hình quy định sưởi và quạt luôn ngược nhau.
 
-Safety relay chỉ cắt nguồn khóa **trong lúc giữ nút**. Sau khi nhả, firmware vẫn chốt Panic và giữ khóa nhả đến khi operator đặt lại. Đã kiểm tra 20 trường hợp trên wokwi.com (4 trạng thái nút × khóa giữ/nhả). Ở cả 20 ca, LED khóa chỉ sáng khi firmware giữ khóa và không nút nào bị giữ. Sketch thử vẫn xuất HIGH trong lúc giữ Panic, tương tự firmware bị treo, mà khóa vẫn mất điện.
+Safety relay chỉ cắt nguồn khóa **trong lúc giữ nút**. Sau khi nhả, firmware vẫn chốt Panic và giữ khóa nhả đến khi operator đặt lại. Đã thử 20 lần trên wokwi.com, phủ 4 trạng thái nút (không bấm, D07, D08, cả hai) với khóa giữ và nhả. Ở cả 20 ca, LED khóa chỉ sáng khi firmware giữ khóa và không nút nào bị giữ. Sketch thử vẫn xuất HIGH trong lúc giữ Panic, tương tự firmware bị treo, mà khóa vẫn mất điện.
 
 ## Nguồn cấp và giới hạn
 

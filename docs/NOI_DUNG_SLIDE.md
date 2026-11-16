@@ -1,6 +1,6 @@
 # Nội dung thuyết trình KhoGuard một khu
 
-33 trang, chia 5 chương. Thiết kế nền sáng với tiêu đề navy, điểm nhấn cyan, ảnh minh họa và sơ đồ theo nội dung. Phạm vi: C / ESP-C01 / D07–D08. Nội dung cập nhật đến 25/10/2026. Xem bố cục chuẩn trong [outline.json](slides/outline.json).
+37 trang, chia 5 chương. Thiết kế nền sáng với tiêu đề navy, điểm nhấn cyan, ảnh minh họa và sơ đồ theo nội dung. Phạm vi: C / ESP-C01 / D07–D08. Nội dung cập nhật đến 15/11/2026 (bổ sung MQ-2/CO₂ và safety relay theo Chương 2). Xem bố cục chuẩn trong [outline.json](slides/outline.json).
 
 ## Trang 1 KhoGuard một khu lạnh
 
@@ -11,13 +11,10 @@
 
 ## Trang 2 Nội dung chính
 
-- Chương 1 Bài toán và phạm vi một khu
-- Chương 2 Linh kiện, nối dây và quy tắc cửa
-- Chương 3 Triển khai và ThingsBoard Cloud
-- Chương 4 Demo và kết quả kiểm tra
-- Chương 5 Kết luận và giới hạn
+- Bảy mục: phạm vi, thiết bị, triển khai, demo, kiểm thử, giới hạn, kết luận
+- Trình bày khoảng 9–10 phút
 
-**Hình hoặc bảng:** Lộ trình 5 phần theo đường thời gian.
+**Hình hoặc bảng:** Lộ trình 7 mục theo đường thời gian.
 
 ## Trang 3 Chương 1 Bài toán và phạm vi
 
@@ -30,6 +27,7 @@
 - Một khu lạnh cần theo dõi trạng thái cửa và điều kiện bảo quản.
 - Người còn bên trong, vật cản và Panic là những tín hiệu quyết định thao tác cửa.
 - Website cần ghi rõ dữ liệu mới, cũ hoặc chưa xác định.
+- CO₂ tăng khi kho đã đóng kín là dấu hiệu thứ hai có người, bên cạnh PIR.
 - Mô hình dùng Wokwi để minh họa phản ứng của chương trình.
 
 **Hình hoặc bảng:** So sánh tín hiệu nguy hiểm và cách hệ thống phản ứng.
@@ -38,7 +36,8 @@
 
 - Theo dõi nhiệt độ, độ ẩm và hai cửa của khu C.
 - RFID ghi nhận lượt vào/ra giả lập, PIR bổ sung tín hiệu chuyển động.
-- ESP32 xử lý liên động và khẩn cấp tại chỗ.
+- MQ-2 đóng vai cảm biến CO₂ (Wokwi không có cảm biến CO₂).
+- ESP32 xử lý liên động và khẩn cấp tại chỗ; safety relay cắt nguồn khóa khi giữ Panic.
 - MySQL lưu lịch sử. React điều hành. ThingsBoard bổ sung quan trắc Cloud.
 
 **Hình hoặc bảng:** Trình bày chữ ngắn theo mẫu HUIT.
@@ -64,13 +63,23 @@
 
 **Hình hoặc bảng:** [Kiến trúc một khu](diagrams/kien-truc-mot-khu.svg), sơ đồ trong PowerPoint sửa được.
 
-## Trang 8 Chương 2 Linh kiện và an toàn mô phỏng
+## Trang 8 Kiến trúc 3 lớp của phân hệ an toàn
+
+- Tầng edge: nút Panic và cảm biến nối GPIO; MQ-2 thay CO₂, PIR thay radar mmWave, HC-SR04 thay rèm quang.
+- Tầng cục bộ: 2 safety relay cắt nguồn khóa khi giữ Panic, không cần firmware hay mạng; ESP32 xử lý liên động, Panic và mắc kẹt tại chỗ.
+- Tầng máy chủ: Mosquitto riêng (TLS 18885, ACL 3 tài khoản), backend + MySQL, React, ThingsBoard; chỉ giám sát, ghi log, cảnh báo và chuyển yêu cầu lệnh.
+
+**Hình:** [Kiến trúc 3 lớp](diagrams/kien-truc-3-lop.svg), ảnh trong slide: slides/assets/architecture-3-lop.png.
+
+**Lưu ý khi trình bày:** VLAN của bản thực tế được thay bằng tài khoản + ACL topic riêng. Camera nhiệt, radar mmWave, LoRaWAN là hướng nâng cấp.
+
+## Trang 9 Chương 2 Linh kiện và an toàn mô phỏng
 
 - Trang phân chương theo mẫu HUIT.
 
 **Hình hoặc bảng:** Nền và nhận diện HUIT giữ từ bản trước.
 
-## Trang 9 Bộ linh kiện được sử dụng
+## Trang 10 Bộ linh kiện được sử dụng
 
 | Nhóm | Số lượng và vai trò |
 | --- | --- |
@@ -85,7 +94,7 @@
 
 **Lưu ý khi trình bày:** Tổng 33 phần tử điện. Không có LCD, radar hoặc nút Reset vật lý. MQ-2 chỉ thay vai trò cảm biến CO₂ trong mô phỏng.
 
-## Trang 10 Nối dây đầu vào và RFID
+## Trang 11 Nối dây đầu vào và RFID
 
 | Tín hiệu | GPIO | Quy ước |
 | --- | --- | --- |
@@ -106,26 +115,41 @@
 
 **Nguồn:** Nguồn: firmware/include/config.h, firmware/diagram.json. https://docs.wokwi.com/parts/board-mfrc522 https://docs.wokwi.com/parts/wokwi-hc-sr04
 
-## Trang 11 Nối dây đầu ra và nguồn cấp
+## Trang 12 Nối dây đầu ra và nguồn cấp
 
 | Đầu ra | GPIO | Tải mô phỏng |
 | --- | --- | --- |
-| Relay khóa D07 / D08 | 25 / 26 | COM 3V3, NO qua 220 Ω tới LED |
+| Relay khóa D07 / D08 | 25 / 26 | COM nhận nguồn từ chuỗi safety relay, NO qua 220 Ω tới LED |
+| Safety relay 07 / 08 | Nút Panic (dây cứng) | NC 07 nối tiếp NC 08, cấp COM hai relay khóa |
 | Servo D07 / D08 | 27 / 14 | V+ 5 V, GND chung, 0° đóng, 90° mở |
 | Đèn / buzzer | 32 / 33 | LED qua 220 Ω, còi dùng tone |
 | Relay sưởi / quạt | 4 | NO sưởi, NC quạt, mỗi LED có 220 Ω |
 | Nguồn logic | 3V3 | MFRC522, DHT22, công tắc và Panic |
-| Nguồn mô phỏng tải | VIN 5 V | Servo, sonar, PIR và relay |
+| Nguồn mô phỏng tải | VIN 5 V | Servo, sonar, PIR, MQ-2 và relay |
 
 **Hình:** Sơ đồ tổng hợp chân ESP-C01; bảng giải thích từng dây nằm trong [LINH_KIEN_VA_NOI_DAY.md](LINH_KIEN_VA_NOI_DAY.md).
 
 [Sơ đồ dây đầy đủ](diagrams/so-do-noi-day.svg).
 
-**Lưu ý khi trình bày:** Mạch thật cần hạ mức ECHO 5 V xuống 3,3 V, nguồn tải riêng và xét chân strapping.
+**Lưu ý khi trình bày:** Năm relay Wokwi loại npn: IN HIGH nối COM–NO, LOW nối COM–NC (đo lại 15/11/2026). Mạch thật cần hạ mức ECHO 5 V xuống 3,3 V, nguồn tải riêng và xét chân strapping.
 
 **Nguồn:** https://docs.wokwi.com/parts/wokwi-relay-module https://docs.wokwi.com/parts/wokwi-servo https://documentation.espressif.com/esp32_datasheet_en.html
 
-## Trang 12 Điều kiện đóng và liên động hai cửa
+## Trang 13 Safety relay cắt nguồn khóa không cần firmware
+
+| Cách nối | Kết quả đo trên wokwi.com (15/11/2026) |
+| --- | --- |
+| Panic chân 1.r nối thẳng IN safety relay | Sketch cố ý giữ khóa và bỏ qua Panic, như firmware treo |
+| NC 07 nối tiếp NC 08, cấp COM hai relay khóa | Relay pnp cũ: 15/20 ca đúng |
+| Giữ Panic: khóa mất nguồn ngay | Đổi sang npn: 20/20 ca đúng |
+
+**Hình hoặc bảng:** Hai cột so sánh theo mẫu HUIT.
+
+**Lưu ý khi trình bày:** Safety relay chỉ cắt nguồn khi nút đang bị giữ. Nhả nút: firmware vẫn chốt Panic đến khi reset hợp lệ.
+
+**Nguồn:** docs/evidence/CHUONG2-2026-11-15.md, firmware/diagram.json.
+
+## Trang 14 Điều kiện đóng và liên động hai cửa
 
 - Số người đã xác minh và bằng 0.
 - PIR không báo chuyển động, sonar không báo vật cản.
@@ -137,20 +161,36 @@
 
 **Lưu ý khi trình bày:** PIR LOW không chứng minh không còn người. Quy tắc xác minh số 0 là giả định demo.
 
-## Trang 13 Panic và các ngưỡng thời gian
+## Trang 15 Panic và các ngưỡng thời gian
 
 | Điều kiện | Phản ứng của mô hình |
 | --- | --- |
 | Nhấn Panic | Chốt khẩn cấp, nhả khóa, yêu cầu mở |
 | Nhả Panic | Latch vẫn còn, reset_panic phải hợp lệ |
 | Cửa mở từ 30 s / sau 60 s | Cảnh báo đèn / cảnh báo còi |
-| PIR liên tục hơn 5 phút, hai cửa đóng | Cảnh báo nguy cơ mắc kẹt |
+| PIR hoặc CO₂ ≥ 1.500 ppm và tăng ≥ 200 ppm, liên tục hơn 5 phút, hai cửa đóng | Cảnh báo nguy cơ mắc kẹt |
+| CO₂ ≥ 1.000 ppm | Cảnh báo CO2_HIGH, tự hết dưới 900 ppm |
 | Contact không xác nhận trong 10 s | Lỗi hành trình, không coi servo quay là cửa đã tới |
 | Mất MQTT | Bộ điều khiển cục bộ và timer tiếp tục chạy |
 
 **Hình hoặc bảng:** Bảng trong PowerPoint, chữ và ô có thể chỉnh sửa.
 
-## Trang 14 Sức chứa và tiếp nhận trong khu C
+## Trang 16 CO₂ từ MQ-2 là dấu hiệu thứ hai có người
+
+| Chỉ số | Ý nghĩa |
+| --- | --- |
+| 1.000 ppm | Backend bật CO2_HIGH, tự hết dưới 900 ppm |
+| 1.500 ppm và tăng ≥ 200 ppm | Firmware coi là dấu hiệu mắc kẹt, so với mức lúc hai cửa vừa đóng kín |
+| 5 phút | Dấu hiệu kéo dài khi hai cửa đóng → TRAPPED_PERSON, đèn/còi/sưởi |
+| ≤ 1% | Sai số hiệu chuẩn ADC → ppm, 61 mức đo trên Wokwi, GPIO36 |
+
+**Hình hoặc bảng:** Bốn thẻ số liệu theo mẫu HUIT.
+
+**Lưu ý khi trình bày:** ADC 0 (rút dây) hoặc ngoài bảng gửi null, không thành 0 ppm. Thuộc tính ppm trong diagram.json không đổi lúc khởi động; phải kéo thanh trượt khi đang mô phỏng.
+
+**Nguồn:** docs/evidence/MQ2-CALIBRATION-2026-11-15.md, firmware/include/config.h, firmware/include/controller.h.
+
+## Trang 17 Sức chứa và tiếp nhận trong khu C
 
 - 80 vị trí vật lý, loại 2 vị trí xả đá còn 78 khả dụng.
 - Dữ liệu seed ban đầu có 60 vị trí đang chứa.
@@ -162,13 +202,13 @@
 
 **Lưu ý khi trình bày:** Sức chứa hàng hóa là dữ liệu demo và nghiệp vụ MySQL, chưa nối WMS.
 
-## Trang 15 Chương 3 Triển khai mô hình
+## Trang 18 Chương 3 Triển khai mô hình
 
 - Trang phân chương theo mẫu HUIT.
 
 **Hình hoặc bảng:** Nền và nhận diện HUIT giữ từ bản trước.
 
-## Trang 16 Công cụ và cấu trúc mã nguồn
+## Trang 19 Công cụ và cấu trúc mã nguồn
 
 | Thành phần | Công nghệ / thư mục |
 | --- | --- |
@@ -183,7 +223,7 @@
 
 **Lưu ý khi trình bày:** Không cần Docker hoặc PostgreSQL cho phương án Cloud.
 
-## Trang 17 Luồng quan trắc và lệnh cửa
+## Trang 20 Luồng quan trắc và lệnh cửa
 
 - Quan trắc từ ESP32 tới MySQL, React và Cloud.
 - Lệnh chứa boot/session/revision và TTL 10 s.
@@ -191,7 +231,7 @@
 
 **Hình hoặc bảng:** [Kiến trúc một khu](diagrams/kien-truc-mot-khu.svg), sơ đồ trong PowerPoint sửa được.
 
-## Trang 18 MySQL và lịch sử của bản nhiều khu
+## Trang 21 MySQL và lịch sử của bản nhiều khu
 
 - Lưu telemetry, trạng thái hiện tại, sự kiện, cảnh báo và lệnh cửa.
 - Lưu phiên đăng nhập, lịch ca, access audit và giữ chỗ.
@@ -201,21 +241,21 @@
 
 **Hình hoặc bảng:** Trình bày chữ ngắn theo mẫu HUIT.
 
-## Trang 19 Giao diện React của kho lạnh C
+## Trang 22 Giao diện React của kho lạnh C
 
 | Trang | Thông tin và thao tác |
 | --- | --- |
 | Tổng quan / sơ đồ | Một khu C, hai cửa, môi trường, cảnh báo |
 | Giám sát cửa | D07/D08, trạng thái lệnh và ACK |
-| Môi trường | DHT22 và ngưỡng −22 đến −16 °C |
+| Môi trường | DHT22, CO₂ (MQ-2) và ngưỡng −22 đến −16 °C |
 | Nhận hàng | 78 vị trí khả dụng, hàng đông lạnh |
-| Nhật ký | Lọc, tra cứu và xuất CSV theo phạm vi C |
+| Nhật ký | Lọc, tra cứu và xuất CSV theo phạm vi C; admin xem nhật ký đăng nhập |
 
 **Hình hoặc bảng:** Bảng trong PowerPoint, chữ và ô có thể chỉnh sửa.
 
 **Lưu ý khi trình bày:** Demo giao diện là dữ liệu mẫu. Backend / MQTT đọc dữ liệu lưu trong MySQL.
 
-## Trang 20 Phân quyền và bảo vệ kết nối
+## Trang 23 Phân quyền và bảo vệ kết nối
 
 - Viewer chỉ xem. Operator vận hành. Admin xem thêm nhật ký xác thực.
 - Ba account MQTT hoạt động: ESP-C01, backend, observer.
@@ -227,11 +267,11 @@
 
 **Lưu ý khi trình bày:** Cấu hình hiện tại dành cho demo local. Cần đổi mật khẩu demo ngắn trước khi triển khai ra mạng.
 
-## Trang 21 Dashboard ThingsBoard Cloud
+## Trang 24 Dashboard ThingsBoard Cloud
 
 | Widget | Dữ liệu |
 | --- | --- |
-| Bảng khu C | Độ mới, môi trường, count, PIR, D07/D08 |
+| Bảng khu C | Độ mới, môi trường (có CO₂), count, PIR, D07/D08 |
 | Biểu đồ nhiệt độ | ESP_C01_temperature_c, timestamp nguồn |
 | Biểu đồ độ ẩm | ESP_C01_humidity_pct, timestamp nguồn |
 | Kết nối | Snapshot viewer, bridge mỗi 10 s, MQTT/TLS |
@@ -241,13 +281,13 @@
 
 **Lưu ý khi trình bày:** Một Cloud device KhoGuard-WH01, tổng 3 widget. Bridge chỉ giám sát, không có RPC.
 
-## Trang 22 Chương 4 Demo và kiểm tra
+## Trang 25 Chương 4 Demo và kiểm tra
 
 - Trang phân chương theo mẫu HUIT.
 
 **Hình hoặc bảng:** Nền và nhận diện HUIT giữ từ bản trước.
 
-## Trang 23 Demo RFID và PIR
+## Trang 26 Demo RFID và PIR
 
 | Tình huống | Thao tác | Kết quả cần thấy |
 | --- | --- | --- |
@@ -260,7 +300,7 @@
 
 **Lưu ý khi trình bày:** Quét UID đại diện cho lượt đi qua. PIR không tự cộng/trừ số người.
 
-## Trang 24 Demo Panic và giới hạn nhận hàng
+## Trang 27 Demo Panic và giới hạn nhận hàng
 
 - Nhấn Panic từ trạng thái cửa đóng, quan sát nhả khóa và yêu cầu mở.
 - Nhả nút rồi tiếp nhận cảnh báo không xóa latch.
@@ -272,7 +312,7 @@
 
 **Lưu ý khi trình bày:** FakeEdge kiểm tra chuỗi phần mềm, không thay bằng chứng linh kiện Wokwi.
 
-## Trang 25 Tín hiệu chưa rõ và dữ liệu cũ
+## Trang 28 Tín hiệu chưa rõ và dữ liệu cũ
 
 - Sonar mất echo hoặc khoảng cách <100 cm được coi là có vật cản.
 - Count chưa xác minh, input không hợp lệ hoặc Panic đều chặn đóng.
@@ -282,22 +322,25 @@
 
 **Hình hoặc bảng:** Trình bày chữ ngắn theo mẫu HUIT.
 
-## Trang 26 Trạng thái nghiệm thu Wokwi hiện tại
+## Trang 29 Wokwi 25–26/10: các ca đạt và việc còn lại
 
-- Bản một khu đã kiểm tra chân nối, schema và build firmware.
-- Kiểm thử C++ xác nhận gate đóng, Panic, liên động, timer và lệnh hết hạn.
-- Bằng chứng Wokwi ngày 13/10 thuộc cấu hình trước và chỉ dùng tham khảo lịch sử.
-- Cần chạy lại tương tác MFRC522, sonar, PIR, relay và servo trên diagram hiện hành.
-- Không ghi linh kiện đã phản ứng thực tế chỉ từ việc build thành công.
+| Đã quan sát đạt | Chưa xác nhận |
+| --- | --- |
+| RFID Blue IN/OUT; Red bị từ chối | Đảo chiều khi chắn giữa lúc đóng |
+| PIR và sonar tĩnh chặn đóng | Reset Panic sau khi nhả nút |
+| Liên động, DHT22, timer cửa | Mất nguồn vật lý |
+| Panic hai cửa; offline local và MySQL reconnect | Phần cứng thật và điện thoại |
+| Fault-suite 26/10: reboot, mất echo, TLS sai | |
 
 **Hình hoặc bảng:** Trình bày chữ ngắn theo mẫu HUIT.
 
-## Trang 27 Kết quả kiểm tra bản một khu
+## Trang 30 Kết quả kiểm tra bản một khu
 
-| Hạng mục | Kết quả ngày 24/10/2026 |
+| Hạng mục | Kết quả ngày 15/11/2026 (số liệu tải: 24/10) |
 | --- | --- |
-| Unit JavaScript | 128/128 đạt, không bỏ qua |
-| Logic C++ / build firmware | Hai bộ C++ đạt, ESP32 build thành công |
+| Unit JavaScript | 135/135 đạt, không bỏ qua |
+| verify:all | 19 bước đạt, 0 bỏ qua |
+| Logic C++ / build firmware | Hai bộ C++ đạt, có CO2 PASS; ESP32 build thành công |
 | Build website | Vite production thành công |
 | Hạ tầng và nghiệp vụ | MQTT/TLS, DB, telemetry, events, control, auth, reservations, recovery, reports đạt |
 | Một nguồn và 50 bản tin burst | Lưu 58/58, không mất bản tin |
@@ -307,7 +350,22 @@
 
 **Lưu ý khi trình bày:** Kết quả tự động trên máy Windows hiện tại, không phải cam kết thời gian phần cứng.
 
-## Trang 28 Những thay đổi để rút gọn
+## Trang 31 Bổ sung 15/11: MQ-2, safety relay và việc còn chờ
+
+| Đã đạt | Còn chờ trên Wokwi |
+| --- | --- |
+| Hiệu chuẩn MQ-2: 61 mức, sai số ≤ 1% | CO₂ 1.200 ppm báo, 850 ppm tự hết |
+| Safety relay npn: 20/20 ca | Mắc kẹt theo CO₂ sau 5 phút |
+| C++ có CO2 PASS; firmware build đạt | Chạy lại Panic D07/D08 với relay npn |
+| 135 unit test; verify:all 19 bước | Dashboard Cloud có cột CO₂ |
+
+**Hình hoặc bảng:** Hai cột so sánh theo mẫu HUIT.
+
+**Lưu ý khi trình bày:** Không ghi các bước còn chờ là đạt.
+
+**Nguồn:** docs/evidence/CHUONG2-2026-11-15.md.
+
+## Trang 32 Những thay đổi để rút gọn
 
 | Trước | Hiện hành |
 | --- | --- |
@@ -317,49 +375,52 @@
 | PIR ghi mmWave, sonar ghi rèm quang | Tên linh kiện đúng chức năng mô phỏng |
 | LED nối trực tiếp | 5 điện trở 220 Ω, một cho mỗi LED |
 | Word có nhiều chân/tham số đề xuất | Word, GPIO và schematic khớp code hiện hành |
+| 30 phần tử, relay pnp | 33 phần tử: thêm MQ-2 và 2 safety relay; relay npn |
 
 **Hình hoặc bảng:** Bảng trong PowerPoint, chữ và ô có thể chỉnh sửa.
 
-## Trang 29 Chương 5 Kết luận và giới hạn
+## Trang 33 Chương 5 Kết luận và giới hạn
 
 - Trang phân chương theo mẫu HUIT.
 
 **Hình hoặc bảng:** Nền và nhận diện HUIT giữ từ bản trước.
 
-## Trang 30 Kết quả của mô hình rút gọn
+## Trang 34 Kết quả của mô hình rút gọn
 
 - Một cấu hình hoạt động thống nhất từ ESP32 đến React và ThingsBoard.
 - Hai cửa tiếp tục minh họa liên động, vật cản và khẩn cấp tại chỗ.
 - MySQL giữ lịch sử và nghiệp vụ tiếp nhận hàng trong khu C.
+- MQ-2 bổ sung tín hiệu CO₂; safety relay cắt nguồn khóa bằng phần cứng khi giữ Panic.
 - Có bảng linh kiện, sơ đồ nối dây và hướng dẫn chạy lại.
 - Kết quả kiểm tra tự động được lưu, tách khỏi nghiệm thu Wokwi tương tác.
 
 **Hình hoặc bảng:** Trình bày chữ ngắn theo mẫu HUIT.
 
-## Trang 31 Giới hạn cần hiểu đúng
+## Trang 35 Giới hạn cần hiểu đúng
 
 - PIR chỉ báo chuyển động, không bảo đảm phát hiện người đứng yên.
 - HC-SR04 không phải rèm quang an toàn, servo không mô phỏng lực kẹp cửa.
 - ECHO nối trực tiếp chỉ trong Wokwi. Mạch thật cần chuyển mức và nguồn tải riêng.
 - Giả định xác minh count bằng PIR clear không chứng minh kho thật trống.
+- MQ-2 không đo CO₂ thật; bảng hiệu chuẩn chỉ đúng với linh kiện Wokwi. Safety relay là relay mô phỏng, không phải mô-đun an toàn có chứng nhận.
 - Chưa nghiệm thu phần cứng, WMS, an toàn công nghiệp hoặc độ trễ tới DOM.
 
 **Hình hoặc bảng:** Trình bày chữ ngắn theo mẫu HUIT.
 
-## Trang 32 Chạy lại và hoàn thiện demo
+## Trang 36 Chạy lại và hoàn thiện demo
 
 - Chạy run.bat, mở một Simulator và giữ tab hiển thị.
 - Đăng nhập website, kiểm tra 1/1 thiết bị fresh và đúng D07–D08.
-- Thực hiện bốn kịch bản, lưu ảnh hoặc log theo checklist.
+- Thực hiện các kịch bản, kể cả CO₂ và giữ Panic để thấy safety relay, lưu ảnh hoặc log theo checklist.
 - Mở ThingsBoard để đối chiếu độ mới và thời điểm dữ liệu nguồn.
 - Kết thúc bằng close.bat, dừng bridge khi không còn demo.
 
 **Hình hoặc bảng:** Trình bày chữ ngắn theo mẫu HUIT.
 
-## Trang 33 Cảm ơn thầy cô và các bạn
+## Trang 37 Cảm ơn thầy cô và các bạn
 
 - Nhóm 17 · KhoGuard · Đề tài 42
 - Một khu C, hai cửa D07–D08 và một ESP32
-- Demo RFID, vật cản, Panic và giữ chỗ nhận hàng
+- Demo RFID, vật cản, Panic, CO₂ và giữ chỗ nhận hàng
 
 **Hình hoặc bảng:** Nền và nhận diện HUIT giữ từ bản trước.
