@@ -56,30 +56,28 @@ Windows, Node.js 24, npm, Git, MySQL Server, Mosquitto, VS Code với PlatformIO
 
 Firmware khóa platform `espressif32@7.0.1`, MQTT 2.5.3, ArduinoJson 7.4.3, DHT 1.4.7, Adafruit Unified Sensor 1.1.15 và MFRC522 1.4.11. PlatformIO cài theo `firmware/platformio.ini`. DHT library hiện giữ theo bản đã build; nếu gặp đọc lỗi, telemetry phải về null, không sửa thành số 0 để che lỗi.
 
-## Cấu hình lần đầu
+## Chạy: chỉ cần bấm `run.bat`
 
-Mở PowerShell tại thư mục dự án:
-
-```powershell
-npm.cmd ci
-npm.cmd run infra:setup
-# Mở .local/mysql-admin.env, tự điền tài khoản MySQL admin trên máy và lưu.
-npm.cmd run infra:db:init
-npm.cmd run db:migrate
-npm.cmd run auth:setup
-# Chạy khi broker dự án chưa bật:
-npm.cmd run infra:tls:setup
-npm.cmd run firmware:gateway:setup
-npm.cmd run firmware:build
-```
-
-Máy đã cấu hình không cần chạy lại các bước tạo tài khoản/chứng chỉ. `db:migrate` kiểm tra journal và checksum, không reset DB. `.local/dashboard-users.json` chứa thông tin đăng nhập demo trên máy. Không gửi mật khẩu/key vào chat hay đưa `.local` vào file nộp.
-
-## Khởi động hằng ngày
+Cài sẵn phần mềm ở mục trên (Node.js, MySQL Server đang chạy service, Mosquitto, Git, VS Code với PlatformIO và Wokwi), rồi bấm đúp `run.bat` hoặc chạy:
 
 ```powershell
 .\run.bat
 ```
+
+Trước khi mở dịch vụ, `run.bat` gọi [scripts/ensure-setup.ps1](scripts/ensure-setup.ps1) để tự làm những bước máy còn thiếu:
+
+| Khi nào | Việc tự làm |
+| --- | --- |
+| Chưa có `node_modules` hoặc `package-lock.json` vừa đổi | `npm ci` |
+| Chưa có `.local/runtime.env` | `infra:setup` (tạo `.local`, tài khoản và ACL broker) |
+| Chưa tạo database | Hỏi **một lần** tài khoản MySQL admin (mặc định `root`, mật khẩu gõ ẩn), lưu vào `.local/mysql-admin.env`, chạy `infra:db:init`. Sai mật khẩu thì lần sau hỏi lại |
+| Mỗi lần chạy | `db:migrate` (đã đủ thì chỉ kiểm tra, khoảng 0,3 giây; không reset DB) |
+| Chưa có `.local/dashboard-users.json` | `auth:setup` tạo viewer/operator/admin |
+| Chưa có chứng chỉ trong `.local/tls` | `infra:tls:setup` |
+| Chưa có gateway Wokwi | `firmware:gateway:setup` (tải bản chính thức, kiểm tra SHA256) |
+| Chưa có `firmware.bin` hoặc mã firmware mới hơn | `firmware:build` |
+
+Thiếu Node.js, Mosquitto hoặc MySQL thì `run.bat` dừng và in lệnh `winget` để cài. Service MySQL đang tắt thì nó thử bật; nếu cần quyền quản trị, mở `services.msc` và Start MySQL. Mật khẩu tài khoản web nằm trong `.local/dashboard-users.json`. Không gửi mật khẩu/key vào chat hay đưa `.local` vào file nộp.
 
 Launcher mở broker, backend, website, gateway và **một** project VS Code `firmware`. Nếu có cấu hình Cloud, nó bật bridge. Trong VS Code nhấn F1 → **Wokwi: Start Simulator**, giữ tab Simulator hiển thị.
 

@@ -8,6 +8,8 @@ Node.js 24/npm, Git, MySQL Server, Mosquitto, VS Code, PlatformIO và Wokwi. Pyt
 
 ## Cài và cấu hình lần đầu
 
+Cách nhanh nhất: bấm `run.bat`. Lần đầu nó tự chạy các bước dưới đây và chỉ hỏi tài khoản MySQL admin một lần (xem bảng trong [README](../README.md#chạy-chỉ-cần-bấm-runbat)). Các lệnh tay sau đây dùng khi cần chạy riêng từng bước:
+
 ```powershell
 npm.cmd ci
 npm.cmd run infra:setup

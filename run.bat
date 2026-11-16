@@ -21,18 +21,10 @@ set "PORTCHECK=powershell -NoProfile -ExecutionPolicy Bypass -File scripts\wait-
 
 if /i "%MODE%"=="status" goto :status
 
-if not exist ".local\runtime.env" (
-  echo [LỖI] Chưa cấu hình máy này: thiếu .local\runtime.env. Làm theo docs\HUONG_DAN_CAU_HINH.md trước.
-  exit /b 1
-)
-where npm.cmd >nul 2>&1 || (echo [LỖI] Không tìm thấy npm.cmd. Cài Node.js trước. & exit /b 1)
-if not exist "node_modules" (
-  echo [LỖI] Chưa cài thư viện. Chạy: npm.cmd ci
-  exit /b 1
-)
-powershell -NoProfile -Command "if (Get-Service MySQL* -ErrorAction SilentlyContinue | Where-Object Status -eq 'Running') { exit 0 } else { exit 1 }" || (
-  echo [CẢNH BÁO] Service MySQL chưa chạy. Mở services.msc và Start MySQL, backend sẽ báo database unavailable cho tới khi MySQL chạy.
-)
+rem Lần đầu (hoặc sau git pull): tự cài thư viện, .local, database, tài khoản, TLS, gateway và build firmware còn thiếu.
+echo.
+echo === KhoGuard: kiểm tra cấu hình máy ===
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\ensure-setup.ps1 -Mode %MODE% || goto :failed
 
 echo.
 echo === KhoGuard: khởi động chế độ %MODE% ===
@@ -49,11 +41,6 @@ if exist ".local\thingsboard-cloud.json" (
 )
 
 if /i "%MODE%"=="wokwi" (
-  if not exist ".local\wokwigw-2.0.1\wokwigw.exe" (
-    echo [LỖI] Chưa có gateway Wokwi. Chạy: npm.cmd run firmware:gateway:setup
-    goto :failed
-  )
-  for %%E in (esp32dev) do if not exist ".local\firmware-build\%%E\firmware.bin" echo [CẢNH BÁO] Chưa có firmware %%E. Chạy: npm.cmd run firmware:build
   call :launch 9011 "T5 Gateway Wokwi" "npm.cmd run firmware:gateway:start" 15 || goto :failed
   where code >nul 2>&1 || echo [CẢNH BÁO] Không tìm thấy lệnh code. Mở bằng VS Code thủ công: firmware.
   where code >nul 2>&1 && for %%F in (firmware) do call code --new-window "%~dp0%%F"
@@ -63,6 +50,7 @@ start "" "http://127.0.0.1:5173"
 echo.
 echo === Đã mở xong ===
 echo  - Dashboard: http://127.0.0.1:5173  ^(Nguồn dữ liệu: Backend / MQTT, đăng nhập operator^)
+echo    Mật khẩu tài khoản web nằm trong .local\dashboard-users.json
 if /i "%MODE%"=="wokwi" (
   echo  - Trong cửa sổ VS Code firmware: F1 ^> Wokwi: Start Simulator, giữ tab Simulator hiển thị.
   echo    Serial Monitor: ESP-C01 phải có MQTT_ONLINE. Chỉ chạy một Simulator.
