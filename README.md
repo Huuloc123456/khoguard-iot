@@ -13,14 +13,14 @@ Phạm vi cập nhật 24–25/10/2026. Các khu A/B/D, SIM-C02 và cửa ngoài
 | [Kiến trúc](ARCHITECTURE.md) | Dữ liệu, lệnh cửa, lớp lưu trữ và Cloud |
 | [Cấu hình máy](docs/HUONG_DAN_CAU_HINH.md) | Cài và cấu hình lần đầu |
 | [Chạy demo](docs/HUONG_DAN_DEMO.md) | Chuẩn bị, kịch bản trình diễn, kết quả đã xác nhận và kết thúc an toàn |
-| [Kịch bản thuyết trình](docs/KICH_BAN_THUYET_TRINH.md) | Lời nói mẫu theo đủ 33 trang và câu trả lời thường gặp |
+| [Kịch bản thuyết trình](docs/KICH_BAN_THUYET_TRINH.md) | Lời nói mẫu viết cho bộ slide 37 trang cũ và câu trả lời thường gặp |
 | [ThingsBoard](docs/THINGSBOARD.md) | Cloud phụ, setup, bridge, kiểm tra dữ liệu |
 | [Đối chiếu bài thực hành](docs/DOI_CHIEU_BAI_LAB.md) | Ma trận bài thực hành từ tài liệu môn học và project |
 | [Lab Python](labs/python/README.md) | GPIO/PWM/Flask giả lập và tiếp nhận hàng bằng Python |
-| [Nội dung slide](docs/NOI_DUNG_SLIDE.md) | 33 trang, chia 5 chương, nội dung/hình và lời nói |
-| [PowerPoint](docs/slides/KhoGuard-thuyet-trinh.pptx) | Bản thuyết trình 33 trang; nguồn bố cục ở [outline.json](docs/slides/outline.json) |
-| [Tài liệu thư mục slide](docs/slides/README.md) | Deck theo template HUIT, outline và cách dựng |
-| [Báo cáo Word](docs/Bao_cao_KhoGuard_mot_khu.docx) | Báo cáo đồng bộ với code hiện hành |
+| [Nội dung slide](docs/NOI_DUNG_SLIDE.md) | Nội dung/hình của bộ slide 37 trang cũ |
+| [PowerPoint](docs/slides/BaoCaoPowerPoint.pptx) | Bản thuyết trình 11 trang, số liệu theo nghiệm thu 15/11/2026 |
+| [Tài liệu thư mục slide](docs/slides/README.md) | Ghi chú về bộ slide hiện hành |
+| [Báo cáo Word](docs/BaoCao_DoAn_IOT_KhoGuard.docx) | Báo cáo đồ án, đồng bộ với code hiện hành |
 | [Quyết định](DESITION.md), [quá trình](QUA_TRINH.md), [công việc](tasks/todo.md) | Lý do thay đổi và kết quả kiểm tra |
 
 ## Chức năng

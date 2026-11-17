@@ -1,13 +1,7 @@
 # Tài liệu slide
 
-Bản hiện hành gồm [PowerPoint 37 trang](KhoGuard-thuyet-trinh.pptx), nội dung chuẩn ở [outline.json](outline.json), và mẫu HUIT gốc [2-template-bvkltn-khoa12-2024.pptx](2-template-bvkltn-khoa12-2024.pptx).
+Bộ thuyết trình hiện hành là [BaoCaoPowerPoint.pptx](BaoCaoPowerPoint.pptx), 11 trang, đi kèm báo cáo [BaoCao_DoAn_IOT_KhoGuard.docx](../BaoCao_DoAn_IOT_KhoGuard.docx). Deck dùng khung trang HUIT (logo và thanh xanh ở đầu trang, chân trang họa tiết xanh).
 
-Deck dùng bố cục của mẫu HUIT: logo và thanh xanh ở đầu trang, nền trắng, chân trang họa tiết xanh; trang mở đầu, chia chương và cảm ơn giữ hình thức của mẫu. Nội dung giữa các chương được thay bằng nội dung KhoGuard và bố trí theo sơ đồ, thẻ, số liệu, so sánh, timeline hoặc ảnh. Chia thành 5 chương. Ảnh kho lạnh, linh kiện và liên động cửa là hình minh họa, không phải ảnh thiết bị thật. Sơ đồ dây lấy từ project; xem bản giải thích đầy đủ tại [LINH_KIEN_VA_NOI_DAY.md](../LINH_KIEN_VA_NOI_DAY.md).
+Ngày 17/11/2026 deck được sửa trực tiếp trên PPTX cho khớp nghiệm thu 15/11/2026: mạch 33 phần tử điện có MQ-2 và 5 relay (2 safety relay theo Panic), CO₂ trên website và bảng ThingsBoard, điều kiện mắc kẹt "PIR hoặc CO₂ tăng", 135 unit test, 19 bước verify, hiệu chuẩn MQ-2 sai số ≤ 1% và 20/20 ca safety relay.
 
-Deck được dựng theo quy trình **Edit Native PPTX** của [ppt-master](https://github.com/hugohe3/ppt-master), dùng mẫu HUIT làm nguồn và giữ master/layout gốc. Bản cài công cụ, file dựng trung gian và báo cáo kiểm tra nằm trong `.local/ppt-master-projects/khoguard-huit-template/` và bị Git bỏ qua; PowerPoint đầu ra là file được chia sẻ. Không chỉnh trực tiếp PPTX đã sinh.
-
-Lần nghiệm thu HUIT: 33/33 trang qua kiểm tra SVG, 33 trang được xuất và đọc lại, gói PPTX hợp lệ; đã render đủ trang bằng PowerPoint để xem bố cục. Bộ giao hàng còn advisory font theme từ mẫu HUIT, có thể được PowerPoint thay font tùy máy. Outline hiện mô tả nội dung, nhưng công cụ dựng và bản sao SVG đã duyệt thuộc `.local`.
-
-## Cập nhật 16/11/2026 theo báo cáo mới
-
-Deck được sửa trực tiếp trên PPTX (không dựng lại qua ppt-master) để khớp báo cáo đồng bộ Chương 2: thêm 4 trang (kiến trúc 3 lớp, safety relay, CO₂ từ MQ-2, nghiệm thu bổ sung 15/11), cập nhật số liệu 33 linh kiện, 135 unit test, 19 bước verify, cột CO₂ trên web/Cloud, và thay sơ đồ nối dây ([wiring-diagram-slide.png](assets/wiring-diagram-slide.png), [architecture-3-lop.png](assets/architecture-3-lop.png)). Vì vậy `outline.json` và bản SVG trong `.local` chưa phản ánh 4 trang mới; nếu dựng lại bằng ppt-master phải bổ sung chúng trước.
+Bộ 37 trang cũ (`KhoGuard-thuyet-trinh.pptx`) đã được gỡ. [outline.json](outline.json), [assets/](assets/) và mẫu [2-template-bvkltn-khoa12-2024.pptx](2-template-bvkltn-khoa12-2024.pptx) là nguồn dựng của bộ cũ; [NOI_DUNG_SLIDE.md](../NOI_DUNG_SLIDE.md) và [KICH_BAN_THUYET_TRINH.md](../KICH_BAN_THUYET_TRINH.md) vẫn viết theo bộ cũ.

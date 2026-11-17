@@ -1,6 +1,6 @@
 # Nội dung thuyết trình KhoGuard một khu
 
-37 trang, chia 5 chương. Thiết kế nền sáng với tiêu đề navy, điểm nhấn cyan, ảnh minh họa và sơ đồ theo nội dung. Phạm vi: C / ESP-C01 / D07–D08. Nội dung cập nhật đến 15/11/2026 (bổ sung MQ-2/CO₂ và safety relay theo Chương 2). Xem bố cục chuẩn trong [outline.json](slides/outline.json).
+37 trang, chia 5 chương. Đây là nội dung của bộ slide cũ đã gỡ ngày 17/11/2026; bộ hiện hành là [BaoCaoPowerPoint.pptx](slides/BaoCaoPowerPoint.pptx), 11 trang. Thiết kế nền sáng với tiêu đề navy, điểm nhấn cyan, ảnh minh họa và sơ đồ theo nội dung. Phạm vi: C / ESP-C01 / D07–D08. Nội dung cập nhật đến 15/11/2026 (bổ sung MQ-2/CO₂ và safety relay theo Chương 2). Xem bố cục chuẩn trong [outline.json](slides/outline.json).
 
 ## Trang 1 KhoGuard một khu lạnh
 

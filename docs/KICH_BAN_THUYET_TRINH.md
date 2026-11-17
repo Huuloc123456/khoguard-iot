@@ -1,6 +1,6 @@
 # Kịch bản thuyết trình KhoGuard
 
-> Lời nói mẫu cho bộ PowerPoint **37 trang, 5 chương**, đúng thứ tự slide trong [KhoGuard-thuyet-trinh.pptx](slides/KhoGuard-thuyet-trinh.pptx). Thời lượng khoảng 9–10 phút, chưa tính lúc chờ thiết bị phản hồi. Có thể chia người nói tại các tiêu đề chương. Phạm vi hiện hành là **một khu C, ESP-C01 và hai cửa D07–D08**; nội dung cập nhật đến 15/11/2026 (MQ-2 thay CO₂, safety relay theo Panic).
+> Lời nói mẫu cho bộ PowerPoint **37 trang, 5 chương**, đúng thứ tự slide của bộ KhoGuard-thuyet-trinh.pptx cũ (đã gỡ ngày 17/11/2026; bộ hiện hành là [BaoCaoPowerPoint.pptx](slides/BaoCaoPowerPoint.pptx), 11 trang). Thời lượng khoảng 9–10 phút, chưa tính lúc chờ thiết bị phản hồi. Có thể chia người nói tại các tiêu đề chương. Phạm vi hiện hành là **một khu C, ESP-C01 và hai cửa D07–D08**; nội dung cập nhật đến 15/11/2026 (MQ-2 thay CO₂, safety relay theo Panic).
 
 Nguồn đối chiếu: [Nội dung từng slide](NOI_DUNG_SLIDE.md), [hướng dẫn demo](HUONG_DAN_DEMO.md), [linh kiện và sơ đồ nối dây](LINH_KIEN_VA_NOI_DAY.md), [nghiệm thu 15/11](evidence/CHUONG2-2026-11-15.md). Thao tác thực tế chỉ dùng trong Wokwi.
 
