@@ -1,6 +1,6 @@
 # Kịch bản thuyết trình KhoGuard
 
-> Lời nói mẫu cho bộ [BaoCaoPowerPoint.pptx](slides/BaoCaoPowerPoint.pptx), **11 trang**, đúng thứ tự slide. Nói hết khoảng 7 phút, chưa tính phần demo. Ba bạn có thể chia nhau: trang 1–4, trang 5–7, trang 8–11. Phạm vi hiện hành là **một khu C, ESP-C01 và hai cửa D07–D08**; số liệu theo báo cáo [BaoCao_DoAn_IOT_KhoGuard.docx](BaoCao_DoAn_IOT_KhoGuard.docx) và nghiệm thu 15/11/2026.
+> Lời nói mẫu cho bộ [BaoCaoPowerPoint.pptx](slides/BaoCaoPowerPoint.pptx), **11 trang**, đúng thứ tự slide. Nói hết khoảng 7 phút, chưa tính phần demo. Ba bạn có thể chia nhau: trang 1–4, trang 5–7, trang 8–11. Phạm vi hiện hành là **một khu C, ESP-C01 và hai cửa D07–D08**; số liệu theo báo cáo [BaoCao_DoAn_IOT_KhoGuard.docx](BaoCao_DoAn_IOT_KhoGuard.docx) và nghiệm thu 15/11/2026 (riêng thử tải là lượt 25/10).
 
 Nguồn đối chiếu: [hướng dẫn demo](HUONG_DAN_DEMO.md), [linh kiện và sơ đồ nối dây](LINH_KIEN_VA_NOI_DAY.md), [nghiệm thu 15/11](evidence/CHUONG2-2026-11-15.md). Mọi thao tác đều làm trong Wokwi.
 
@@ -40,7 +40,7 @@ Lệnh đóng được xét theo năm bước, gặp bước nào trước thì 
 
 ## Trang 7: Panic và mốc thời gian (khoảng 1 phút)
 
-“Nhấn Panic ở D07 hay D08 thì hai việc xảy ra. Về phần cứng, safety relay cắt nguồn khóa ngay trong lúc nút còn bị giữ, kể cả khi firmware treo. Về phần mềm, ESP32 bật đầu ra khẩn cấp: đèn, còi và sưởi bật, quạt tắt. Nhả nút thì chốt vẫn giữ; chỉ khi nút đã nhả hợp lệ mới gửi lệnh reset được.
+“Nhấn Panic ở D07 hay D08 thì có ba bước. Một, nhả khóa cả hai cửa; safety relay cắt nguồn khóa bằng dây cứng trong lúc nút còn bị giữ, kể cả khi firmware treo. Hai, ESP32 bật đầu ra khẩn cấp: đèn, còi và sưởi bật, quạt tắt, tất cả là mô phỏng. Ba, nhả nút thì chốt vẫn giữ; chỉ khi nút đã nhả hợp lệ mới gửi lệnh reset được.
 
 Bên phải là các mốc thời gian. Contact không tới đích sau 10 giây là lỗi hành trình. Cửa mở từ 30 giây thì bật đèn cảnh báo, quá 60 giây thì thêm còi. Hai cửa đóng mà PIR còn chuyển động, hoặc CO₂ tăng, kéo dài trên 5 phút thì báo nghi có người mắc kẹt. Với CO₂, phải đạt 1.500 ppm và tăng ít nhất 200 ppm so với lúc kho vừa đóng; điều kiện tăng giúp không báo nhầm khi CO₂ còn sót từ ca trước.
 
@@ -48,25 +48,25 @@ Một điểm hay bị nhầm: tiếp nhận cảnh báo chỉ ghi là đã xem,
 
 ## Trang 8: Website (khoảng 40 giây)
 
-“Đây là ảnh thật trang Giám sát cửa, chạy với nguồn Backend và MQTT. Website có sáu trang theo công việc: Tổng quan cho cảnh báo và sức chứa; Sơ đồ kho cho khu C và hai cửa; Giám sát cửa để gửi lệnh, xem ACK và điều kiện cửa; Môi trường cho DHT22, CO₂ và dải bảo quản; Nhận hàng để chọn vị trí và giữ chỗ; Nhật ký để tra cứu và xuất CSV.
+“Đây là ảnh thật trang Giám sát cửa, chạy với nguồn Backend và MQTT. Website có sáu trang theo công việc: Tổng quan cho cảnh báo và sức chứa; Sơ đồ kho cho khu C và hai cửa; Giám sát cửa để gửi lệnh, xem ACK và điều kiện cửa; Môi trường cho DHT22, CO₂ và dải bảo quản; Nhận hàng để chọn vị trí và giữ chỗ; Nhật ký để tra cứu, lọc và xuất CSV.
 
-Có ba vai trò. Viewer chỉ xem, operator được vận hành, admin xem thêm nhật ký đăng nhập. Quyền được kiểm tra ở API, không chỉ ẩn nút trên giao diện.”
+Có ba vai trò. Viewer có quyền xem giới hạn, operator được vận hành, admin được xem thêm nhật ký xác thực. Quyền được kiểm tra ở API, không chỉ ẩn nút trên giao diện.”
 
 ## Trang 9: ThingsBoard (khoảng 30 giây)
 
-“ThingsBoard là màn hình giám sát phụ. Một chương trình bridge đăng nhập backend bằng tài khoản viewer, cứ 10 giây đọc trạng thái một lần rồi gửi lên thiết bị KhoGuard-WH01 trên Cloud. Dashboard có ba phần: bảng khu C gồm độ mới dữ liệu, môi trường, CO₂, số người và cửa; biểu đồ nhiệt độ; và biểu đồ độ ẩm. Cloud không có nút điều khiển cửa.”
+“ThingsBoard là màn hình giám sát phụ. Một chương trình bridge đăng nhập backend bằng tài khoản viewer, cứ 10 giây đọc trạng thái một lần rồi gửi lên thiết bị KhoGuard-WH01 trên Cloud. Dashboard có ba phần: bảng khu C gồm độ mới dữ liệu, môi trường, CO₂, số người và cửa; biểu đồ nhiệt độ và biểu đồ độ ẩm, vẽ theo thời điểm gốc của số đo. Cloud không có nút điều khiển cửa.”
 
 ## Trang 10: Sức chứa và nhận hàng (khoảng 40 giây)
 
 “Kho chỉ nhận hàng đông lạnh, mỗi yêu cầu được cấp một vị trí vừa kích thước và tải trọng. Khu C có 80 vị trí, trừ 2 vị trí xả đá còn 78 vị trí dùng được; dữ liệu khởi tạo có sẵn 60 vị trí đang chứa hàng.
 
-Vì sao giới hạn là 74? Vì 74 trên 78 khoảng 94,87%, còn trong ngưỡng 95%; lên 75 là 96,15%, vượt ngưỡng nên bị từ chối. Từ 85% thì hệ thống cảnh báo. Một giữ chỗ chờ xác nhận được 15 phút; xác nhận thì thành vị trí đã chứa, hủy hoặc hết hạn thì trả lại vị trí.”
+Vì sao giới hạn là 74? Hệ thống tính cả vị trí đã chứa và vị trí đang giữ chỗ. 74 trên 78 khoảng 94,87%, còn trong ngưỡng 95%; lên 75 là 96,15%, vượt ngưỡng nên bị từ chối. Từ 85% thì hệ thống cảnh báo. Một giữ chỗ chờ xác nhận được 15 phút; xác nhận thì thành vị trí đã chứa, hủy hoặc hết hạn thì trả lại vị trí.”
 
 ## Trang 11: Kết quả kiểm thử và kết thúc (khoảng 1 phút)
 
 “Lượt kiểm tra tự động ngày 15/11 đạt 135 trên 135 unit test JavaScript và 19 bước kiểm tra tích hợp. Hai bộ test C++ cho bộ điều khiển và phần an toàn đều đạt, bài thực hành Python đạt 4 trên 4, web và firmware ESP32 biên dịch được. Bảng quy đổi MQ-2 được đo trên Wokwi, kiểm tra 20 điểm thì sai số không quá 1%. Safety relay đúng 20 trên 20 ca sau khi đổi sang loại npn; loại pnp cũ chỉ đúng 15 ca.
 
-Bên phải là lượt thử tải với một danh tính thiết bị: 8 mẫu gửi đều và một đợt dồn 50 bản tin, lưu đủ 58 trên 58, độ trễ P95 từ lúc publish tới WebSocket là 499 mili giây.
+Bên phải là lượt thử tải ngày 25/10 với một danh tính thiết bị: 8 mẫu gửi đều và một đợt dồn 50 bản tin, lưu đủ 58 trên 58, độ trễ P95 từ lúc publish tới WebSocket là 499 mili giây.
 
 Nhóm cũng ghi rõ phần chưa xong. Các bước trên simulator cho cảnh báo CO₂, mắc kẹt theo CO₂, chạy lại Panic với relay npn và cột CO₂ trên Cloud vẫn đang chờ; nhóm không ghi chúng là đạt. Đây là mô hình mô phỏng, chưa phải thiết bị an toàn công nghiệp.
 
