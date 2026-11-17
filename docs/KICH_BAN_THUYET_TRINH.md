@@ -1,12 +1,12 @@
 # Kịch bản thuyết trình KhoGuard
 
-> Lời nói mẫu cho bộ [BaoCaoPowerPoint.pptx](slides/BaoCaoPowerPoint.pptx), **11 trang**, đúng thứ tự slide. Nói hết khoảng 7 phút, chưa tính phần demo. Ba bạn có thể chia nhau: trang 1–4, trang 5–7, trang 8–11. Phạm vi hiện hành là **một khu C, ESP-C01 và hai cửa D07–D08**; số liệu theo báo cáo [BaoCao_DoAn_IOT_KhoGuard.docx](BaoCao_DoAn_IOT_KhoGuard.docx) và nghiệm thu 15/11/2026 (riêng thử tải là lượt 25/10).
+> Lời nói mẫu cho bộ [BaoCaoPowerPoint.pptx](slides/BaoCaoPowerPoint.pptx), **11 trang**, đúng thứ tự slide. Nói hết khoảng 7 phút 30 giây (cộng các mốc từng trang), chưa tính phần demo. Ba bạn có thể chia nhau: trang 1–4, trang 5–7, trang 8–11. Phạm vi hiện hành là **một khu C, ESP-C01 và hai cửa D07–D08**; số liệu theo báo cáo [BaoCao_DoAn_IOT_KhoGuard.docx](BaoCao_DoAn_IOT_KhoGuard.docx) và nghiệm thu 15/11/2026 (riêng thử tải là lượt 25/10).
 
 Nguồn đối chiếu: [hướng dẫn demo](HUONG_DAN_DEMO.md), [linh kiện và sơ đồ nối dây](LINH_KIEN_VA_NOI_DAY.md), [nghiệm thu 15/11](evidence/CHUONG2-2026-11-15.md). Mọi thao tác đều làm trong Wokwi.
 
 ## Trang 1: Bìa (khoảng 20 giây)
 
-“Em xin chào thầy và các bạn. Nhóm 17 gồm Hữu Lộc, Thanh Mẫn và Viết Long, dưới sự hướng dẫn của thầy Đinh Huy Hoàng, xin trình bày đề tài 42: hệ thống quản lý kho hàng thông minh. Sản phẩm tên KhoGuard, là mô hình một kho lạnh chạy bằng ESP32 trên Wokwi.”
+“Em xin chào thầy và các bạn. Nhóm 17 gồm Hữu Lộc, Thanh Mẫn và Viết Long, dưới sự hướng dẫn của thầy Đinh Huy Hoàng, xin trình bày đồ án môn Internet of Things, đề tài 42: hệ thống quản lý kho hàng thông minh. Sản phẩm tên KhoGuard, là mô hình một kho lạnh chạy bằng ESP32 trên Wokwi.”
 
 ## Trang 2: Bài toán (khoảng 40 giây)
 
