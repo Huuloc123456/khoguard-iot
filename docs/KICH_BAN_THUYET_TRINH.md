@@ -1,94 +1,86 @@
 # Kịch bản thuyết trình KhoGuard
 
-> Lời nói mẫu cho bộ PowerPoint **37 trang, 5 chương**, đúng thứ tự slide của bộ KhoGuard-thuyet-trinh.pptx cũ (đã gỡ ngày 17/11/2026; bộ hiện hành là [BaoCaoPowerPoint.pptx](slides/BaoCaoPowerPoint.pptx), 11 trang). Thời lượng khoảng 9–10 phút, chưa tính lúc chờ thiết bị phản hồi. Có thể chia người nói tại các tiêu đề chương. Phạm vi hiện hành là **một khu C, ESP-C01 và hai cửa D07–D08**; nội dung cập nhật đến 15/11/2026 (MQ-2 thay CO₂, safety relay theo Panic).
+> Lời nói mẫu cho bộ [BaoCaoPowerPoint.pptx](slides/BaoCaoPowerPoint.pptx), **11 trang**, đúng thứ tự slide. Nói hết khoảng 7 phút, chưa tính phần demo. Ba bạn có thể chia nhau: trang 1–4, trang 5–7, trang 8–11. Phạm vi hiện hành là **một khu C, ESP-C01 và hai cửa D07–D08**; số liệu theo báo cáo [BaoCao_DoAn_IOT_KhoGuard.docx](BaoCao_DoAn_IOT_KhoGuard.docx) và nghiệm thu 15/11/2026.
 
-Nguồn đối chiếu: [Nội dung từng slide](NOI_DUNG_SLIDE.md), [hướng dẫn demo](HUONG_DAN_DEMO.md), [linh kiện và sơ đồ nối dây](LINH_KIEN_VA_NOI_DAY.md), [nghiệm thu 15/11](evidence/CHUONG2-2026-11-15.md). Thao tác thực tế chỉ dùng trong Wokwi.
+Nguồn đối chiếu: [hướng dẫn demo](HUONG_DAN_DEMO.md), [linh kiện và sơ đồ nối dây](LINH_KIEN_VA_NOI_DAY.md), [nghiệm thu 15/11](evidence/CHUONG2-2026-11-15.md). Mọi thao tác đều làm trong Wokwi.
 
-## Mở đầu — trang 1–2 (khoảng 30 giây)
+## Trang 1: Bìa (khoảng 20 giây)
 
-**Trang 1:** “Em xin chào thầy cô và các bạn. Nhóm 17 xin trình bày đề tài KhoGuard, mô hình giám sát và hỗ trợ vận hành một kho lạnh. Phần trình bày tập trung vào cấu hình đang chạy được: khu C, một bộ điều khiển ESP32 và hai cửa D07, D08.”
+“Em xin chào thầy và các bạn. Nhóm 17 gồm Hữu Lộc, Thanh Mẫn và Viết Long, dưới sự hướng dẫn của thầy Đinh Huy Hoàng, xin trình bày đề tài 42: hệ thống quản lý kho hàng thông minh. Sản phẩm tên KhoGuard, là mô hình một kho lạnh chạy bằng ESP32 trên Wokwi.”
 
-**Trang 2:** “Bài trình bày có bảy mục: phạm vi, thiết bị, triển khai, demo, kiểm thử, giới hạn và kết luận.”
+## Trang 2: Bài toán (khoảng 40 giây)
 
-## Chương 1 — Bài toán và phạm vi, trang 3–8 (khoảng 1 phút 20 giây)
+“Kho lạnh có ba việc phải để ý cùng lúc. Thứ nhất là môi trường bảo quản: cửa mở lâu thì nhiệt độ trong kho thay đổi. Thứ hai là người trong kho: trước khi cho đóng cửa, hệ thống dùng RFID để đếm người và PIR để xem còn chuyển động không. Thứ ba là cửa và vật cản: contact cho biết cửa đóng hay mở, sonar cho biết lối cửa có bị chắn không, và nút Panic để người bên trong thoát ra.
 
-**Trang 3:** “Đầu tiên là lý do cần theo dõi cửa và môi trường của kho lạnh.”
+Hình bên phải là trang Sơ đồ kho của KhoGuard: khu C có nhiệt độ, độ ẩm, CO₂ đo bằng MQ-2 và trạng thái hai cửa. Nguyên tắc của nhóm là ESP32 tự quyết định tại chỗ, còn máy chủ lưu lịch sử để người vận hành tra lại.”
 
-**Trang 4:** “Cửa không nên đóng khi còn người bên trong, khi PIR báo chuyển động, khi sonar thấy vật cản hoặc khi tín hiệu chưa rõ. Ngoài PIR, CO₂ tăng sau khi kho đã đóng kín cũng là dấu hiệu có người. Quy tắc của nhóm là ESP32 tự từ chối đóng, cửa còn lại phải đóng, Panic xử lý tại chỗ, và safety relay cắt nguồn khóa khi giữ Panic.”
+## Trang 3: Phạm vi (khoảng 30 giây)
 
-**Trang 5:** “Luồng chính rất đơn giản: đo bằng DHT22, MQ-2, RFID, PIR, sonar và contact; ESP32 quyết định theo luật an toàn; backend lưu vào MySQL; React để vận hành, ThingsBoard là màn hình phụ.”
+“Phạm vi gồm một khu lạnh C, một ESP32 tên ESP-C01 và hai cửa D07, D08. Nhóm đặt ba mục tiêu: thu tín hiệu và đánh dấu dữ liệu nào còn tin được; kiểm tra điều kiện cửa và xử lý Panic ngay tại thiết bị; lưu lịch sử, phân quyền và hỗ trợ nhận hàng.
 
-**Trang 6:** “Phạm vi đã được rút gọn còn một khu C, một ESP32 tên ESP-C01 và hai cửa liên động. Khu C có 78 vị trí dùng được, tức 80 vị trí vật lý trừ 2 vị trí xả đá. Các khu cũ vẫn còn trong MySQL nhưng chỉ là lịch sử.”
+Ranh giới cũng cần nói rõ. Toàn bộ chạy trong Wokwi, dải nhiệt độ khu C là âm 22 đến âm 16 độ C. Servo, relay và LED chỉ biểu diễn đầu ra; nhóm chưa lắp tải công suất hay cửa thật.”
 
-**Trang 7:** “Dữ liệu đi qua bốn lớp: ESP-C01 đọc cảm biến và xử lý tại chỗ, MQTT và API chuyển trạng thái và lệnh, MySQL lưu telemetry và sự kiện, giao diện React là chính và Cloud là phụ.”
+## Trang 4: Kiến trúc (khoảng 40 giây)
 
-**Trang 8:** “Nhìn theo góc độ an toàn thì hệ thống có ba lớp. Lớp edge là nút Panic và cảm biến; MQ-2 thay cảm biến CO₂, PIR thay radar, HC-SR04 thay rèm quang. Lớp cục bộ là safety relay và ESP32: relay cắt nguồn khóa mà không cần firmware hay mạng. Lớp máy chủ chỉ giám sát, ghi log và chuyển yêu cầu. Vì vậy khi mất mạng, ESP32 và safety relay vẫn xử lý được tại chỗ.”
+“Dữ liệu đi từ trái sang phải. Tại kho, ESP-C01 đọc cảm biến, điều khiển cửa và xử lý Panic; cạnh nó có hai safety relay nối cứng với nút Panic. Bản tin qua Mosquitto bằng MQTT có TLS. Backend Node.js kiểm tra quyền, xử lý rồi lưu vào MySQL. Website React có sáu trang để theo dõi và gửi lệnh.
 
-## Chương 2 — Linh kiện và an toàn mô phỏng, trang 9–17 (khoảng 2 phút)
+Chiều ngược lại, lệnh từ website không được làm thẳng: ESP32 kiểm tra điều kiện cửa rồi mới thực hiện hoặc trả lý do từ chối. ThingsBoard chỉ nhận bản sao dữ liệu quan trắc, còn MySQL giữ dữ liệu nghiệp vụ.”
 
-**Trang 9:** “Sang phần linh kiện, đây là mô hình mô phỏng nên các tải được thay bằng đèn báo.”
+## Trang 5: Linh kiện (khoảng 50 giây)
 
-**Trang 10:** “Mạch có 33 phần tử điện. Nhóm nhận tín hiệu gồm DHT22, MQ-2 đóng vai cảm biến CO₂, đầu đọc RFID, PIR và hai cảm biến siêu âm. ESP32 đọc thêm contact, công tắc chiều quét thẻ và hai nút Panic. Đầu ra gồm 2 servo, 5 relay, trong đó có 2 safety relay, 5 đèn LED và một còi.”
+“Mạch Wokwi có 33 phần tử điện, kể cả công tắc và điện trở. Đầu vào gồm DHT22 đo nhiệt độ và độ ẩm; đầu đọc RFID MFRC522 đặt ở D07, có công tắc chọn chiều vào hay ra; PIR báo chuyển động; và MQ-2 nối GPIO36. Wokwi không có cảm biến CO₂ nên MQ-2 đóng vai đó. Mỗi cửa có riêng một contact, một sonar HC-SR04 và một nút Panic.
 
-**Trang 11:** “Sơ đồ cho thấy các tín hiệu nối vào GPIO. Phần mới là MQ-2 ở GPIO36 và hai safety relay nối thẳng từ nút Panic, không qua chân GPIO nào. Có thể nhớ đơn giản: dây nguồn nuôi thiết bị, dây GND là đường về, dây tín hiệu mang lời báo về bộ não.”
+Đầu ra có hai servo biểu diễn cánh cửa, năm relay gồm hai relay khóa, một relay sưởi hoặc quạt và hai safety relay, cùng năm LED và một còi. Relay trong Wokwi là loại npn: mức HIGH nối COM với NO.”
 
-**Trang 12:** “Relay giống công tắc được ESP32 bấm hộ. Relay khóa lấy nguồn qua chuỗi safety relay. Relay trong Wokwi là loại npn: mức HIGH nối COM với NO. Servo chỉ minh họa cánh cửa; contact vẫn do người demo gạt tay, nên servo quay không chứng minh cửa đã tới đúng vị trí.”
+## Trang 6: Hai cửa liên động (khoảng 40 giây)
 
-**Trang 13:** “Đây là phần bổ sung quan trọng. Chân thứ hai của nút Panic nối thẳng vào safety relay; hai tiếp điểm thường đóng nối tiếp nhau rồi cấp nguồn cho hai relay khóa. Giữ Panic là khóa mất nguồn ngay, kể cả khi firmware bị treo. Nhóm đã thử bằng một sketch cố ý giữ khóa và bỏ qua Panic: với relay pnp cũ chỉ đúng 15/20 ca, đổi sang npn thì đúng cả 20/20. Khi nhả nút, firmware vẫn chốt Panic cho tới khi được đặt lại hợp lệ.”
+“Firmware luôn dùng tín hiệu ở thời điểm hiện tại để quyết định. Muốn mở một cửa, contact phải rõ ràng và cửa còn lại phải đang đóng, không chuyển động. Vì vậy D07 mở thì D08 bị chặn, và ngược lại.
 
-**Trang 14:** “ESP32 chỉ chấp nhận lệnh đóng khi số người đã xác minh bằng 0, PIR không báo chuyển động, sonar thông thoáng, cửa còn lại đóng, tín hiệu rõ ràng và không có Panic. D07 đang mở thì D08 không được mở đồng thời.”
+Lệnh đóng được xét theo năm bước, gặp bước nào trước thì trả mã đó: Panic còn chốt là PANIC_ACTIVE; tín hiệu hoặc số người chưa xác minh là INPUT_UNKNOWN; còn người trong kho là OCCUPIED; PIR còn chuyển động là PRESENCE_DETECTED; sonar bị chắn hoặc không có mẫu mới là BEAM_BLOCKED. Thứ tự cố định nên người vận hành luôn biết vì sao bị từ chối.”
 
-**Trang 15:** “Mỗi mốc thời gian có một phản ứng riêng. Panic phản ứng ngay và giữ chốt. Cửa mở từ 30 giây thì cảnh báo nhắc, quá 60 giây thì cảnh báo nghiêm trọng có đèn và còi. Contact không xác nhận trong 10 giây là lỗi hành trình. PIR hoặc CO₂ tăng kéo dài 5 phút khi hai cửa đóng thì báo nguy cơ người mắc kẹt.”
+## Trang 7: Panic và mốc thời gian (khoảng 1 phút)
 
-**Trang 16:** “Wokwi không có cảm biến CO₂ nên nhóm dùng MQ-2 thay vai trò. Từ 1.000 ppm, backend bật cảnh báo CO₂ cao, xuống dưới 900 ppm thì tự hết. Dấu hiệu mắc kẹt cần CO₂ từ 1.500 ppm và tăng ít nhất 200 ppm so với lúc kho vừa đóng kín; điều kiện tăng giúp không báo nhầm khi CO₂ còn sót lại từ ca làm việc trước. Bảng quy đổi ADC sang ppm được đo 61 mức trên Wokwi, sai số không quá 1%. Nếu rút dây, giá trị là null chứ không thành 0 ppm.”
+“Nhấn Panic ở D07 hay D08 thì hai việc xảy ra. Về phần cứng, safety relay cắt nguồn khóa ngay trong lúc nút còn bị giữ, kể cả khi firmware treo. Về phần mềm, ESP32 bật đầu ra khẩn cấp: đèn, còi và sưởi bật, quạt tắt. Nhả nút thì chốt vẫn giữ; chỉ khi nút đã nhả hợp lệ mới gửi lệnh reset được.
 
-**Trang 17:** “Cuối chương là sức chứa. Khu C có 80 vị trí vật lý, 78 khả dụng, ban đầu đang chứa 60. Giữ chỗ có hiệu lực 15 phút; tổng tối đa là 74 để không vượt ngưỡng 95%, yêu cầu làm tổng lên 75 bị từ chối.”
+Bên phải là các mốc thời gian. Contact không tới đích sau 10 giây là lỗi hành trình. Cửa mở từ 30 giây thì bật đèn cảnh báo, quá 60 giây thì thêm còi. Hai cửa đóng mà PIR còn chuyển động, hoặc CO₂ tăng, kéo dài trên 5 phút thì báo nghi có người mắc kẹt. Với CO₂, phải đạt 1.500 ppm và tăng ít nhất 200 ppm so với lúc kho vừa đóng; điều kiện tăng giúp không báo nhầm khi CO₂ còn sót từ ca trước.
 
-## Chương 3 — Triển khai hệ thống, trang 18–24 (khoảng 1 phút 30 giây)
+Một điểm hay bị nhầm: tiếp nhận cảnh báo chỉ ghi là đã xem, còn reset Panic mới đổi trạng thái chốt.”
 
-**Trang 18:** “Tiếp theo là cách triển khai chương trình trên ESP32, backend và website.”
+## Trang 8: Website (khoảng 40 giây)
 
-**Trang 19:** “Firmware viết bằng C++ với PlatformIO và chạy trong Wokwi. Mosquitto MQTT có TLS chuyển telemetry, sự kiện, lệnh và ACK; Node.js cùng MySQL kiểm tra và lưu dữ liệu. React là màn hình vận hành, ThingsBoard Cloud chỉ xem bản sao.”
+“Đây là ảnh thật trang Giám sát cửa, chạy với nguồn Backend và MQTT. Website có sáu trang theo công việc: Tổng quan cho cảnh báo và sức chứa; Sơ đồ kho cho khu C và hai cửa; Giám sát cửa để gửi lệnh, xem ACK và điều kiện cửa; Môi trường cho DHT22, CO₂ và dải bảo quản; Nhận hàng để chọn vị trí và giữ chỗ; Nhật ký để tra cứu và xuất CSV.
 
-**Trang 20:** “Dữ liệu quan trắc đi lên: ESP gửi qua MQTT-TLS, backend ghi MySQL, React và Cloud đọc trạng thái. Lệnh cửa đi ngược lại: operator gửi yêu cầu, backend kiểm tra phiên và thời hạn 10 giây, ESP tự kiểm tra rồi trả ACK. Backend không thể ép ESP bỏ qua điều kiện an toàn.”
+Có ba vai trò. Viewer chỉ xem, operator được vận hành, admin xem thêm nhật ký đăng nhập. Quyền được kiểm tra ở API, không chỉ ẩn nút trên giao diện.”
 
-**Trang 21:** “MySQL lưu telemetry, trạng thái gần nhất, sự kiện, cảnh báo, lệnh, phiên, lịch ca và giữ chỗ. Dữ liệu CO₂ đi trong telemetry dạng JSON nên không cần thêm migration. Lịch sử nhiều khu cũ được giữ nguyên, truy vấn hoạt động chỉ lọc khu C.”
+## Trang 9: ThingsBoard (khoảng 30 giây)
 
-**Trang 22:** “Website có sáu trang, gom thành ba nhóm việc. Theo dõi gồm tổng quan, sơ đồ kho, môi trường với DHT22, CO₂ và cảnh báo. Điều khiển là giám sát hai cửa, lệnh đang chờ và ACK. Nghiệp vụ là nhận hàng, giữ chỗ và nhật ký có xuất CSV; tài khoản admin còn xem được nhật ký đăng nhập.”
+“ThingsBoard là màn hình giám sát phụ. Một chương trình bridge đăng nhập backend bằng tài khoản viewer, cứ 10 giây đọc trạng thái một lần rồi gửi lên thiết bị KhoGuard-WH01 trên Cloud. Dashboard có ba phần: bảng khu C gồm độ mới dữ liệu, môi trường, CO₂, số người và cửa; biểu đồ nhiệt độ; và biểu đồ độ ẩm. Cloud không có nút điều khiển cửa.”
 
-**Trang 23:** “Có ba lớp giới hạn quyền. Viewer chỉ xem, operator vận hành, admin xem thêm nhật ký đăng nhập. MQTT có ACL theo topic, TLS kiểm tra chứng chỉ và hostname, còn mật khẩu và token nằm trong thư mục .local, không đưa vào Git.”
+## Trang 10: Sức chứa và nhận hàng (khoảng 40 giây)
 
-**Trang 24:** “ThingsBoard Cloud là màn hình quan trắc phụ với ba widget: bảng khu C có cột CO₂, biểu đồ nhiệt độ và độ ẩm. Bridge gửi bản sao mỗi 10 giây qua TLS. Cloud không có nút điều khiển cửa.”
+“Kho chỉ nhận hàng đông lạnh, mỗi yêu cầu được cấp một vị trí vừa kích thước và tải trọng. Khu C có 80 vị trí, trừ 2 vị trí xả đá còn 78 vị trí dùng được; dữ liệu khởi tạo có sẵn 60 vị trí đang chứa hàng.
 
-## Chương 4 — Demo và kết quả, trang 25–32 (khoảng 2 phút 30 giây, gồm thao tác)
+Vì sao giới hạn là 74? Vì 74 trên 78 khoảng 94,87%, còn trong ngưỡng 95%; lên 75 là 96,15%, vượt ngưỡng nên bị từ chối. Từ 85% thì hệ thống cảnh báo. Một giữ chỗ chờ xác nhận được 15 phút; xác nhận thì thành vị trí đã chứa, hủy hoặc hết hạn thì trả lại vị trí.”
 
-**Trang 25:** “Bây giờ em xin trình diễn và trình bày kết quả. Các tín hiệu được tạo trong Wokwi, không phải cảm biến và khóa kho thật.”
+## Trang 11: Kết quả kiểm thử và kết thúc (khoảng 1 phút)
 
-**Trang 26:** “Đầu tiên là thẻ RFID. Thẻ Blue quét vào thì số người tăng; khi còn một người, firmware chặn lệnh đóng. Quét ra thì số người về 0. Thẻ Red bị từ chối, và nếu PIR báo chuyển động thì lệnh đóng vẫn bị chặn.”
+“Lượt kiểm tra tự động ngày 15/11 đạt 135 trên 135 unit test JavaScript và 19 bước kiểm tra tích hợp. Hai bộ test C++ cho bộ điều khiển và phần an toàn đều đạt, bài thực hành Python đạt 4 trên 4, web và firmware ESP32 biên dịch được. Bảng quy đổi MQ-2 được đo trên Wokwi, kiểm tra 20 điểm thì sai số không quá 1%. Safety relay đúng 20 trên 20 ca sau khi đổi sang loại npn; loại pnp cũ chỉ đúng 15 ca.
 
-**Trang 27:** “Panic ưu tiên lối thoát. Panic ở cả hai cửa đã chạy; khi mất broker, đầu ra tại ESP vẫn hoạt động và sự kiện tới MySQL sau khi kết nối lại. Giữ nút mà reset thì bị chặn đúng mã PANIC_ACTIVE. Chuỗi nhả nút rồi reset chưa được xác nhận trọn vẹn.”
+Bên phải là lượt thử tải với một danh tính thiết bị: 8 mẫu gửi đều và một đợt dồn 50 bản tin, lưu đủ 58 trên 58, độ trễ P95 từ lúc publish tới WebSocket là 499 mili giây.
 
-**Trang 28:** “Tín hiệu mơ hồ hoặc quá cũ được xử lý theo hướng an toàn. Sonar gần hoặc echo cũ coi như có vật cản. Input chưa rõ thì không đóng. Dữ liệu ESP cũ quá 10 giây thì backend từ chối lệnh. Khi khởi động lại, phiên mới làm lệnh cũ hết hiệu lực.”
+Nhóm cũng ghi rõ phần chưa xong. Các bước trên simulator cho cảnh báo CO₂, mắc kẹt theo CO₂, chạy lại Panic với relay npn và cột CO₂ trên Cloud vẫn đang chờ; nhóm không ghi chúng là đạt. Đây là mô hình mô phỏng, chưa phải thiết bị an toàn công nghiệp.
 
-**Trang 29:** “Đây là kết quả Wokwi ngày 25 và 26 tháng 10. Đã đạt: RFID, PIR và sonar chặn đóng, liên động, DHT22, timer cửa, Panic hai cửa và phục hồi sau mất broker; fault-suite ngày 26/10 còn xác nhận reboot, mất echo và chứng chỉ TLS sai đều được xử lý đúng. Chưa xác nhận: đảo chiều khi có vật cản đúng lúc cửa đang đóng, reset Panic sau khi nhả nút, mất nguồn vật lý và phần cứng thật.”
+Nhóm em xin kết thúc phần trình bày. Cảm ơn thầy và các bạn đã lắng nghe, nhóm xin nhận câu hỏi.”
 
-**Trang 30:** “Kiểm thử tự động ngày 15/11 đạt 135 trên 135 unit test và 19 bước verify, không bỏ bước nào. Con số 625 mili giây là độ trễ P95 từ lúc publish tới WebSocket, đo ở lượt tải ngày 24/10. Các kết quả này chứng minh phần mềm, không chứng minh linh kiện hay cam kết độ trễ thiết bị.”
+## Phần demo (nếu thầy yêu cầu)
 
-**Trang 31:** “Đợt bổ sung ngày 15/11 đã đạt: hiệu chuẩn MQ-2 với sai số không quá 1%, safety relay đúng 20/20 ca, test C++ cho CO₂ và build firmware. Còn chờ chạy trên Wokwi: cảnh báo CO₂ ở 1.200 ppm và tự hết ở 850 ppm, báo mắc kẹt theo CO₂ sau 5 phút, chạy lại Panic với relay npn và kiểm tra cột CO₂ trên Cloud. Nhóm không ghi các bước còn chờ là đạt.”
+Chuẩn bị trước theo [hướng dẫn demo](HUONG_DAN_DEMO.md): bấm `run.bat` (lần đầu nó tự cài và cấu hình máy), mở một tab Wokwi, đăng nhập operator và kiểm tra ESP-C01 đang có dữ liệu mới.
 
-**Trang 32:** “So với bản trước có bốn khu và mười hai cửa, bản hiện hành còn một khu C, một firmware và hai cửa liên động, Cloud một bảng và hai biểu đồ, và 33 linh kiện khớp đúng mạch, có thêm MQ-2 và safety relay. Lịch sử MySQL vẫn được giữ nguyên.”
-
-## Chương 5 — Kết luận và giới hạn, trang 33–37 (khoảng 1 phút 20 giây)
-
-**Trang 33:** “Cuối cùng là kết quả, giới hạn và phần cần làm tiếp.”
-
-**Trang 34:** “KhoGuard nối được tín hiệu, quy tắc và lịch sử trong một demo. Đo được nhiệt độ, độ ẩm, CO₂, thẻ, chuyển động, vật cản và contact. Bảo vệ bằng liên động, Panic, timeout, từ chối lệnh không an toàn và safety relay cắt khóa bằng phần cứng. Quan sát qua website và MySQL, ThingsBoard là bản sao Cloud.”
-
-**Trang 35:** “Đây chưa phải thiết bị an toàn công nghiệp. Người đứng yên có thể không được PIR nhận ra; CO₂ giúp bổ sung, nhưng MQ-2 thật không đo CO₂. HC-SR04 không phải rèm quang an toàn. Mạch thật cần chuyển mức ECHO 5 V, nguồn riêng và cách ly. Servo, LED, relay và safety relay chỉ minh họa, và nhiệt độ không tự điều khiển sưởi hay quạt.”
-
-**Trang 36:** “Demo được chạy theo một vòng dễ lặp lại: khởi động bằng run.bat, mở một tab Wokwi, kiểm tra trang web và ESP-C01 còn dữ liệu mới, trình diễn RFID, PIR và sonar, Panic, CO₂ và cảnh báo, rồi khôi phục: nhả Panic, đóng cửa, để sonar thông thoáng và chạy close.bat.”
-
-**Trang 37:** “Nhóm em xin kết thúc phần trình bày. Cảm ơn thầy cô và các bạn đã lắng nghe. Nhóm xin nhận câu hỏi.”
+1. Quét thẻ Blue chiều vào, số người lên 1; bấm đóng cửa, bị từ chối OCCUPIED. Quét chiều ra cho về 0.
+2. Bật PIR hoặc kéo sonar xuống dưới 100 cm, bấm đóng cửa, bị từ chối PRESENCE_DETECTED hoặc BEAM_BLOCKED.
+3. Giữ Panic: LED khóa tắt ngay, đèn và còi bật. Nhả nút rồi reset khẩn cấp trên trang Giám sát cửa.
+4. Kéo MQ-2 lên 1.200 ppm để thấy cảnh báo CO₂ cao, hạ về 850 ppm để cảnh báo tự hết.
+5. Khôi phục: nhả Panic, đóng hai cửa, để sonar thông thoáng, rồi chạy `close.bat`.
 
 ## Câu trả lời ngắn khi được hỏi
 
@@ -96,7 +88,9 @@ Nguồn đối chiếu: [Nội dung từng slide](NOI_DUNG_SLIDE.md), [hướng 
 - **PIR có biết chắc còn người?** “Không. PIR phát hiện chuyển động; người đứng yên có thể không tạo tín hiệu. CO₂ tăng sau khi kho đóng kín là dấu hiệu thứ hai, nhưng vẫn chỉ là dấu hiệu gián tiếp.”
 - **Sao dùng MQ-2 mà gọi là CO₂?** “Wokwi không có cảm biến CO₂ nên MQ-2 đóng vai đó trong mô phỏng. MQ-2 thật đo khí dễ cháy và khói. Làm thật thì nên dùng cảm biến CO₂ loại NDIR và hiệu chuẩn lại ngưỡng.”
 - **Sao cần CO₂ tăng 200 ppm, không chỉ vượt 1.500 ppm?** “Để không báo nhầm khi CO₂ còn cao từ ca làm việc trước. Phải tăng so với lúc kho vừa đóng kín mới cho thấy có người đang thở bên trong.”
+- **Cảnh báo CO₂ khác dấu hiệu mắc kẹt thế nào?** “Backend bật cảnh báo CO₂ cao từ 1.000 ppm và tự hết khi xuống dưới 900 ppm. Dấu hiệu mắc kẹt do firmware xét, cần hai cửa đóng và CO₂ hoặc PIR kéo dài trên 5 phút.”
 - **Safety relay khác gì Panic trong firmware?** “Safety relay cắt nguồn khóa bằng dây cứng trong lúc nút đang bị giữ, kể cả khi firmware treo. Firmware lo phần chốt trạng thái sau khi nhả nút, ghi sự kiện và điều kiện reset.”
 - **Relay có chạy động cơ/khóa thật không?** “Không trong mô hình này. Relay chỉ chuyển LED mô phỏng tải; safety relay cũng là relay mô phỏng, chưa phải mô-đun an toàn có chứng nhận.”
-- **Đã thử mọi trường hợp chưa?** “Chưa. Đảo chiều khi gặp vật cản động, reset Panic sau nhả nút, và các bước CO₂ trên simulator vẫn cần nghiệm thu bổ sung.”
+- **Website gửi lệnh đóng thì ESP32 có bắt buộc làm theo không?** “Không. Backend kiểm tra quyền, phiên và thời hạn 10 giây, nhưng ESP32 vẫn tự kiểm tra lại điều kiện hiện tại và có thể từ chối. Không có lệnh nào bỏ qua được điều kiện an toàn.”
+- **Đã thử mọi trường hợp chưa?** “Chưa. Đảo chiều khi gặp vật cản đúng lúc cửa đang đóng, reset Panic sau khi nhả nút, và các bước CO₂ trên simulator vẫn cần nghiệm thu bổ sung.”
 - **Có thể lắp trực tiếp ngoài đời không?** “Không. Sơ đồ hiện tại dành cho Wokwi. Mạch thật cần chuyển mức ECHO 5 V, cầu chia áp cho ngõ ra MQ-2, nguồn tải riêng, kiểm tra relay, cách ly và đánh giá an toàn.”

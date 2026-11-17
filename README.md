@@ -13,7 +13,7 @@ Phạm vi cập nhật 24–25/10/2026. Các khu A/B/D, SIM-C02 và cửa ngoài
 | [Kiến trúc](ARCHITECTURE.md) | Dữ liệu, lệnh cửa, lớp lưu trữ và Cloud |
 | [Cấu hình máy](docs/HUONG_DAN_CAU_HINH.md) | Cài và cấu hình lần đầu |
 | [Chạy demo](docs/HUONG_DAN_DEMO.md) | Chuẩn bị, kịch bản trình diễn, kết quả đã xác nhận và kết thúc an toàn |
-| [Kịch bản thuyết trình](docs/KICH_BAN_THUYET_TRINH.md) | Lời nói mẫu viết cho bộ slide 37 trang cũ và câu trả lời thường gặp |
+| [Kịch bản thuyết trình](docs/KICH_BAN_THUYET_TRINH.md) | Lời nói mẫu theo 11 trang slide, các bước demo và câu trả lời thường gặp |
 | [ThingsBoard](docs/THINGSBOARD.md) | Cloud phụ, setup, bridge, kiểm tra dữ liệu |
 | [Đối chiếu bài thực hành](docs/DOI_CHIEU_BAI_LAB.md) | Ma trận bài thực hành từ tài liệu môn học và project |
 | [Lab Python](labs/python/README.md) | GPIO/PWM/Flask giả lập và tiếp nhận hàng bằng Python |
