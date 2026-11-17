@@ -43,11 +43,12 @@
   <line x1="1006" y1="466" x2="1364" y2="466" stroke="#e5ebeb"/>
   <text x="1006" y="496" font-family="Arial,sans-serif" font-size="13" fill="#53666d">Nhiệt độ</text><text x="1325" y="496" text-anchor="end" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#24343b">— °C</text>
   <text x="1006" y="526" font-family="Arial,sans-serif" font-size="13" fill="#53666d">Độ ẩm</text><text x="1325" y="526" text-anchor="end" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#24343b">— %</text>
-  <text x="1006" y="556" font-family="Arial,sans-serif" font-size="13" fill="#53666d">Người bên trong</text><text x="1325" y="556" text-anchor="end" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#24343b">—</text>
-  <text x="1006" y="586" font-family="Arial,sans-serif" font-size="13" fill="#53666d">Cửa đang mở</text><text x="1325" y="586" text-anchor="end" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#24343b">— / 2</text>
-  <line x1="1006" y1="606" x2="1364" y2="606" stroke="#e5ebeb"/>
-  <text x="1006" y="637" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#24343b">Liên động an toàn</text>
-  <text x="1006" y="663" font-family="Arial,sans-serif" font-size="12" fill="#718188">RFID · PIR · vật cản · Panic: trạng thái từ ESP-C01</text>
+  <text x="1006" y="556" font-family="Arial,sans-serif" font-size="13" fill="#53666d">CO₂ (MQ-2)</text><text x="1325" y="556" text-anchor="end" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#24343b">— ppm</text>
+  <text x="1006" y="586" font-family="Arial,sans-serif" font-size="13" fill="#53666d">Người bên trong</text><text x="1325" y="586" text-anchor="end" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#24343b">—</text>
+  <text x="1006" y="616" font-family="Arial,sans-serif" font-size="13" fill="#53666d">Cửa đang mở</text><text x="1325" y="616" text-anchor="end" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#24343b">— / 2</text>
+  <line x1="1006" y1="636" x2="1364" y2="636" stroke="#e5ebeb"/>
+  <text x="1006" y="667" font-family="Arial,sans-serif" font-size="15" font-weight="700" fill="#24343b">Liên động an toàn</text>
+  <text x="1006" y="693" font-family="Arial,sans-serif" font-size="12" fill="#718188">RFID · PIR · vật cản · Panic: trạng thái từ ESP-C01</text>
   <rect x="250" y="730" width="1140" height="185" rx="9" fill="#ffffff" stroke="#dce5e5"/>
   <text x="276" y="769" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#24343b">Cảnh báo cần theo dõi</text>
   <text x="276" y="798" font-family="Arial,sans-serif" font-size="13" fill="#718188">Cảnh báo được ghi nhận từ backend; tiếp nhận không xóa điều kiện cảnh báo.</text>
