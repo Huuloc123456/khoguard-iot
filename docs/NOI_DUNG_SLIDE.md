@@ -6,12 +6,12 @@ Bộ 37 trang cũ (`KhoGuard-thuyet-trinh.pptx`) đã gỡ ngày 17/11/2026; n�
 
 ## Trang 1 Trang bìa
 
-- Trường Đại học Công Thương TP.HCM, Khoa Công nghệ Thông tin
+- Trường Đại học Công Thương Thành phố Hồ Chí Minh, Khoa Công nghệ Thông tin
 - Báo cáo đồ án môn Internet of Things
 - Đề tài 42: Hệ thống quản lý kho hàng thông minh
 - KhoGuard: mô hình kho lạnh với ESP32 và Wokwi
 - Giảng viên hướng dẫn: Thầy Đinh Huy Hoàng
-- Nhóm 17: Bùi Hữu Lộc (2001230467), Đỗ Lê Thanh Mẫn (2001230510), Đinh Thái Viết Long (2001230460)
+- Nhóm 17, thành viên thực hiện: Bùi Hữu Lộc (2001230467), Đỗ Lê Thanh Mẫn (2001230510), Đinh Thái Viết Long (2001230460)
 
 **Hình:** Banner và logo HUIT theo mẫu.
 
@@ -23,10 +23,11 @@ Bộ 37 trang cũ (`KhoGuard-thuyet-trinh.pptx`) đã gỡ ngày 17/11/2026; n�
 - 03 Cửa và vật cản: contact, sonar và Panic quyết định việc chấp nhận hay từ chối lệnh.
 - Chú thích ảnh: ESP32 quyết định tại chỗ, máy chủ lưu lịch sử để người vận hành truy vết.
 
-**Hình:** Ảnh chụp trang Sơ đồ kho của website (khu C, D07, D08), nguồn dữ liệu demo, có CO₂ 650 ppm.
+**Hình:** Ảnh chụp trang Sơ đồ kho, chú thích "Khu C và trạng thái vận hành trong giao diện KhoGuard". Ảnh dùng nguồn dữ liệu demo (nhãn "Demo giao diện"), có CO₂ 650 ppm.
 
 ## Trang 3 Phạm vi: một khu lạnh và hai cửa
 
+- Mô phỏng luồng dữ liệu từ cảm biến đến bộ điều khiển, cơ sở dữ liệu và website.
 - Ba con số: 1 khu lạnh C, 1 ESP32 ESP-C01, 2 cửa D07 và D08.
 - Mục tiêu triển khai:
   1. Thu thập tín hiệu và đánh dấu chất lượng dữ liệu.
@@ -43,8 +44,8 @@ Bộ 37 trang cũ (`KhoGuard-thuyet-trinh.pptx`) đã gỡ ngày 17/11/2026; n�
   - Tại kho: ESP32 ESP-C01 kèm 2 safety relay (điều khiển cửa, Panic); cảm biến và đầu ra DHT, MQ-2, RFID, PIR…
   - Truyền thông: Mosquitto chuyển bản tin qua MQTT/TLS.
   - Xử lý dữ liệu: Node.js kiểm tra quyền, xử lý và lưu dữ liệu; MySQL lưu trạng thái và lịch sử.
-  - Vận hành: website React 6 trang để theo dõi và gửi lệnh; ThingsBoard nhận bản sao dữ liệu.
-- Ghi chú: điều kiện cửa được xử lý tại ESP32. Cloud nhận bản sao quan trắc, MySQL lưu dữ liệu nghiệp vụ.
+  - Vận hành: website React gồm 6 trang để theo dõi và gửi lệnh; ThingsBoard nhận bản sao dữ liệu.
+- Ghi chú: điều kiện cửa được xử lý tại ESP32. Cloud nhận bản sao quan trắc, MySQL lưu dữ liệu nghiệp vụ của hệ thống.
 
 **Hình hoặc bảng:** Sơ đồ khối vẽ bằng shape trong PowerPoint, mũi tên theo chiều dữ liệu.
 
@@ -55,7 +56,7 @@ Bộ 37 trang cũ (`KhoGuard-thuyet-trinh.pptx`) đã gỡ ngày 17/11/2026; n�
   - DHT22 × 1: nhiệt độ và độ ẩm.
   - MFRC522 × 1: đọc thẻ tại D07, chiều vào/ra.
   - PIR × 1, MQ-2 × 1: chuyển động; MQ-2 đóng vai cảm biến CO₂.
-  - Contact, sonar, Panic: mỗi loại × 2, mỗi cửa một bộ.
+  - Contact, sonar, Panic: mỗi loại × 2; mỗi cửa có một bộ tín hiệu riêng.
 - Điều khiển: ESP32 ESP-C01.
 - Đầu ra:
   - Servo × 2: biểu diễn hành trình cửa.
@@ -88,7 +89,7 @@ Bộ 37 trang cũ (`KhoGuard-thuyet-trinh.pptx`) đã gỡ ngày 17/11/2026; n�
 - Mốc thời gian trong mô hình:
   - 10 giây: contact chưa tới đích thì báo lỗi hành trình.
   - Từ 30 giây: cửa mở thì bật đèn, cảnh báo.
-  - Trên 60 giây: cửa vẫn mở thì thêm còi.
+  - Trên 60 giây: cửa vẫn mở thì bổ sung còi.
   - Trên 5 phút: PIR hoặc CO₂ tăng, hai cửa đóng thì cảnh báo nghi mắc kẹt.
 - Ghi chú: tiếp nhận cảnh báo chỉ ghi nhận "đã xem"; reset Panic mới thay đổi trạng thái chốt.
 
@@ -96,7 +97,7 @@ Bộ 37 trang cũ (`KhoGuard-thuyet-trinh.pptx`) đã gỡ ngày 17/11/2026; n�
 
 ## Trang 8 Website gắn theo công việc của người vận hành
 
-- Ảnh thật của trang Giám sát cửa, nguồn Backend/MQTT.
+- Ảnh thật của trang Giám sát cửa, sử dụng nguồn Backend/MQTT.
 - Sáu trang:
   - Tổng quan: cảnh báo và sức chứa.
   - Sơ đồ kho: khu C, D07 và D08.
@@ -104,9 +105,9 @@ Bộ 37 trang cũ (`KhoGuard-thuyet-trinh.pptx`) đã gỡ ngày 17/11/2026; n�
   - Môi trường: DHT22, CO₂ (MQ-2) và dải bảo quản.
   - Nhận hàng: chọn vị trí, giữ chỗ.
   - Nhật ký: tra cứu, lọc và xuất CSV.
-- Phân quyền: Viewer xem giới hạn, Operator vận hành, Admin xem thêm nhật ký xác thực.
+- Phân quyền: Viewer có quyền xem giới hạn, Operator vận hành, Admin được xem thêm nhật ký xác thực.
 
-**Hình:** Ảnh chụp trang Giám sát cửa và danh sách sáu trang.
+**Hình:** Ảnh chụp trang Giám sát cửa (thanh trạng thái MySQL, MQTT, 1/1 thiết bị có dữ liệu mới) và danh sách sáu trang.
 
 ## Trang 9 Giám sát bổ sung trên ThingsBoard
 
@@ -115,16 +116,16 @@ Bộ 37 trang cũ (`KhoGuard-thuyet-trinh.pptx`) đã gỡ ngày 17/11/2026; n�
 - 10 giây là chu kỳ bridge đọc dữ liệu trạng thái.
 - Ba thành phần của dashboard:
   - Bảng khu C: độ mới, môi trường, CO₂, số người và cửa.
-  - Biểu đồ nhiệt độ theo thời điểm gốc.
-  - Biểu đồ độ ẩm theo thời điểm gốc.
+  - Biểu đồ nhiệt độ: diễn biến số đo theo thời điểm gốc.
+  - Biểu đồ độ ẩm: diễn biến độ ẩm theo thời điểm gốc.
 
 **Hình hoặc bảng:** Ba khối luồng dữ liệu và ba dòng thành phần dashboard.
 
 ## Trang 10 Sức chứa và quy tắc nhận hàng
 
 - Chỉ nhận hàng đông lạnh; mỗi yêu cầu tương ứng một vị trí phù hợp kích thước và tải trọng.
-- Bốn con số: 80 vị trí vật lý, 2 vị trí xả đá (không tính), 78 khả dụng (= 80 − 2), tối đa 74 đã chứa và đang giữ chỗ.
-- Vì sao là 74: 74/78 ≈ 94,87% còn trong ngưỡng, 75/78 ≈ 96,15% vượt ngưỡng. Không nhận thêm nếu tổng đã chứa và đang giữ chỗ sau yêu cầu mới vượt 95% sức chứa khả dụng.
+- Bốn con số: 80 vị trí vật lý, 2 vị trí xả đá (không tính vào sức chứa), 78 khả dụng (= 80 − 2), tối đa 74 đã chứa và đang giữ chỗ.
+- Giải thích vì sao giới hạn lại là 74 vị trí: 74/78 ≈ 94,87% còn trong ngưỡng, 75/78 ≈ 96,15% vượt ngưỡng. Không nhận thêm nếu tổng đã chứa và đang giữ chỗ sau yêu cầu mới vượt 95% sức chứa khả dụng.
 - Dữ liệu khởi tạo: 60 vị trí đang có hàng.
 - Vòng đời giữ chỗ: chờ xác nhận (pending) 15 phút; xác nhận thì thành vị trí đã chứa; hủy hoặc hết hạn thì giải phóng.
 - Cảnh báo từ 85% và từ chối nếu vượt 95%, tính cả vị trí đã chứa và đang giữ chỗ.
@@ -139,7 +140,7 @@ Bộ 37 trang cũ (`KhoGuard-thuyet-trinh.pptx`) đã gỡ ngày 17/11/2026; n�
   - C++ qua WSL: 2 bộ controller/safety đạt.
   - Bài thực hành Python: 4/4 test đạt.
   - Web và ESP32: biên dịch thành công.
-- Thử tải với 1 danh tính thiết bị: 58/58 bản tin đã lưu (8 mẫu gửi đều và một đợt gửi dồn 50 bản tin), độ trễ P95 499 ms.
+- Thử tải với 1 danh tính thiết bị: 58/58 bản tin đã lưu trong lượt đo (8 mẫu gửi đều và một đợt gửi dồn 50 bản tin), độ trễ P95 499 ms.
 - Hiệu chuẩn MQ-2: sai số ≤ 1% trên 20 điểm.
 - Safety relay npn: 20/20 ca đúng.
 
