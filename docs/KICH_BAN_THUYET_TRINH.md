@@ -64,7 +64,7 @@ Vì sao giới hạn là 74? Hệ thống tính cả vị trí đã chứa và v
 
 ## Trang 11: Kết quả kiểm thử và kết thúc (khoảng 1 phút)
 
-“Lượt kiểm tra tự động ngày 15/11 đạt 135 trên 135 unit test JavaScript và 19 bước kiểm tra tích hợp. Hai bộ test C++ cho bộ điều khiển và phần an toàn đều đạt, bài thực hành Python đạt 4 trên 4, web và firmware ESP32 biên dịch được. Bảng quy đổi MQ-2 được đo trên Wokwi, kiểm tra 20 điểm thì sai số không quá 1%. Safety relay đúng 20 trên 20 ca sau khi đổi sang loại npn; loại pnp cũ chỉ đúng 15 ca.
+“Lượt kiểm tra tự động ngày 15/11 đạt 135 trên 135 unit test JavaScript và 19 bước kiểm tra tích hợp. Hai bộ test C++ cho bộ điều khiển và phần an toàn đều đạt, web và firmware ESP32 biên dịch được; bài thực hành Python đạt 4 trên 4 ở lượt 26/10. Bảng quy đổi MQ-2 được đo trên Wokwi, kiểm tra 20 điểm thì sai số không quá 1%. Safety relay đúng 20 trên 20 ca sau khi đổi sang loại npn; loại pnp cũ chỉ đúng 15 ca.
 
 Bên phải là lượt thử tải ngày 25/10 với một danh tính thiết bị: 8 mẫu gửi đều và một đợt dồn 50 bản tin, lưu đủ 58 trên 58, độ trễ P95 từ lúc publish tới WebSocket là 499 mili giây.
 
