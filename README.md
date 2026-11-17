@@ -17,7 +17,7 @@ Phạm vi cập nhật 24–25/10/2026. Các khu A/B/D, SIM-C02 và cửa ngoài
 | [ThingsBoard](docs/THINGSBOARD.md) | Cloud phụ, setup, bridge, kiểm tra dữ liệu |
 | [Đối chiếu bài thực hành](docs/DOI_CHIEU_BAI_LAB.md) | Ma trận bài thực hành từ tài liệu môn học và project |
 | [Lab Python](labs/python/README.md) | GPIO/PWM/Flask giả lập và tiếp nhận hàng bằng Python |
-| [Nội dung slide](docs/NOI_DUNG_SLIDE.md) | Nội dung/hình của bộ slide 37 trang cũ |
+| [Nội dung slide](docs/NOI_DUNG_SLIDE.md) | Nội dung/hình từng trang của bộ slide 11 trang |
 | [PowerPoint](docs/slides/BaoCaoPowerPoint.pptx) | Bản thuyết trình 11 trang, số liệu theo nghiệm thu 15/11/2026 |
 | [Tài liệu thư mục slide](docs/slides/README.md) | Ghi chú về bộ slide hiện hành |
 | [Báo cáo Word](docs/BaoCao_DoAn_IOT_KhoGuard.docx) | Báo cáo đồ án, đồng bộ với code hiện hành |
